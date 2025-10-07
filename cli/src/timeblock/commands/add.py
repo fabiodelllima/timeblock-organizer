@@ -7,7 +7,7 @@ import typer
 from rich.console import Console
 from sqlmodel import Session
 
-from ..database import create_event, get_engine
+from ..database import get_engine
 from ..models import Event, EventStatus
 
 console = Console()
@@ -75,8 +75,10 @@ def add(
                 scheduled_end=scheduled_end,
             )
 
-            created = create_event(session, event)
-
+            session.add(event)
+            session.commit()
+            session.refresh(event)
+            created = event
             # Success message
             duration = (scheduled_end - scheduled_start).total_seconds() / 3600
             console.print(
