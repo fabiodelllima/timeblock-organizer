@@ -17,7 +17,8 @@ def init() -> None:
     """
     try:
         # Check if database already exists
-        if DB_PATH.exists():
+        db_path = Path(DB_PATH)  # Converter string para Path
+        if db_path.exists():
             console.print(
                 f"[yellow]⚠[/yellow]  Database already exists at: {DB_PATH}",
                 style="yellow",
