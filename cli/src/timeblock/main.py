@@ -5,6 +5,7 @@ from rich.console import Console
 
 from .commands import add as add_cmd
 from .commands import init as init_cmd
+from .commands import list as list_cmd
 
 app = typer.Typer(
     name="timeblock",
@@ -38,6 +39,9 @@ def add(
 ):
     """Add a new event to the schedule."""
     add_cmd.add(title, start, end, color, description)
+
+
+app.command(name="list")(list_cmd.list_events)
 
 
 if __name__ == "__main__":
