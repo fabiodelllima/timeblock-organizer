@@ -6,10 +6,9 @@ from typing import Optional
 
 import typer
 from rich.console import Console
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from ..database import get_engine
-from ..models import Event
 from ..utils.date_helpers import (
     add_months,
     get_day_bounds,
@@ -18,6 +17,7 @@ from ..utils.date_helpers import (
     parse_offset,
 )
 from ..utils.formatters import create_events_table
+from ..utils.queries import fetch_events_in_range
 
 console = Console()
 
@@ -97,8 +97,7 @@ def list_events(
 
             # NO FILTER: Show all events
             if no_filter:
-                statement = select(Event).order_by(Event.scheduled_start.desc())  # type: ignore
-                events = list(session.exec(statement))
+                events = fetch_events_in_range(session, ascending=False)
 
                 if not events:
                     console.print("[yellow]No events found.[/yellow]")
@@ -116,17 +115,9 @@ def list_events(
             if day is not None:
                 day_offset = parse_offset(day)
                 day_start, day_end = get_day_bounds(day_offset)
-
-                statement = (
-                    select(Event)
-                    .where(
-                        Event.scheduled_start >= day_start,
-                        Event.scheduled_start <= day_end,
-                    )
-                    .order_by(Event.scheduled_start)  # type: ignore
+                events = fetch_events_in_range(
+                    session, day_start, day_end, ascending=True
                 )
-
-                events = list(session.exec(statement))
 
                 # Day label
                 if day_offset == 0:
@@ -177,20 +168,11 @@ def list_events(
                         target_year = year if year else datetime.now(timezone.utc).year
 
                 month_start, month_end = get_month_bounds(month_num, target_year)
-
-                statement = (
-                    select(Event)
-                    .where(
-                        Event.scheduled_start >= month_start,
-                        Event.scheduled_start <= month_end,
-                    )
-                    .order_by(Event.scheduled_start)  # type: ignore
+                events = fetch_events_in_range(
+                    session, month_start, month_end, ascending=True
                 )
 
-                events = list(session.exec(statement))
-
                 month_name = calendar.month_name[month_num]
-                date_range = f"{month_name} {target_year}"
 
                 if not events:
                     console.print(
@@ -211,17 +193,9 @@ def list_events(
             if week is not None:
                 week_offset = parse_offset(week)
                 week_start, week_end = get_week_bounds(week_offset)
-
-                statement = (
-                    select(Event)
-                    .where(
-                        Event.scheduled_start >= week_start,
-                        Event.scheduled_start <= week_end,
-                    )
-                    .order_by(Event.scheduled_start)  # type: ignore
+                events = fetch_events_in_range(
+                    session, week_start, week_end, ascending=True
                 )
-
-                events = list(session.exec(statement))
 
                 # Week label
                 if week_offset == 0:
@@ -249,16 +223,9 @@ def list_events(
             # --PAST: Only last week
             if past:
                 last_week_start, last_week_end = get_week_bounds(-1)
-                statement = (
-                    select(Event)
-                    .where(
-                        Event.scheduled_start >= last_week_start,
-                        Event.scheduled_start <= last_week_end,
-                    )
-                    .order_by(Event.scheduled_start)  # type: ignore
+                events = fetch_events_in_range(
+                    session, last_week_start, last_week_end, ascending=True
                 )
-
-                events = list(session.exec(statement))
 
                 if not events:
                     console.print("[yellow]No events found for last week.[/yellow]")
@@ -278,17 +245,9 @@ def list_events(
             if future:
                 current_week_start, _ = get_week_bounds(0)
                 _, third_week_end = get_week_bounds(2)
-
-                statement = (
-                    select(Event)
-                    .where(
-                        Event.scheduled_start >= current_week_start,
-                        Event.scheduled_start <= third_week_end,
-                    )
-                    .order_by(Event.scheduled_start)  # type: ignore
+                events = fetch_events_in_range(
+                    session, current_week_start, third_week_end, ascending=True
                 )
-
-                events = list(session.exec(statement))
 
                 if not events:
                     console.print(
@@ -311,33 +270,18 @@ def list_events(
                 current_week_start, current_week_end = get_week_bounds(0)
 
                 # Table 1: Current week
-                current_events = list(
-                    session.exec(
-                        select(Event)
-                        .where(
-                            Event.scheduled_start >= current_week_start,
-                            Event.scheduled_start <= current_week_end,
-                        )
-                        .order_by(Event.scheduled_start)  # type: ignore
-                    )
+                current_events = fetch_events_in_range(
+                    session, current_week_start, current_week_end, ascending=True
                 )
 
                 # Table 2: All past (before current week)
-                past_events = list(
-                    session.exec(
-                        select(Event)
-                        .where(Event.scheduled_start < current_week_start)
-                        .order_by(Event.scheduled_start.desc())  # type: ignore
-                    )
+                past_events = fetch_events_in_range(
+                    session, end=current_week_start, ascending=False
                 )
 
                 # Table 3: All future (after current week)
-                future_events = list(
-                    session.exec(
-                        select(Event)
-                        .where(Event.scheduled_start > current_week_end)
-                        .order_by(Event.scheduled_start)  # type: ignore
-                    )
+                future_events = fetch_events_in_range(
+                    session, start=current_week_end, ascending=True
                 )
 
                 console.print()
@@ -384,27 +328,13 @@ def list_events(
             _, third_week_end = get_week_bounds(2)
 
             # Table 1: Last week
-            last_week_events = list(
-                session.exec(
-                    select(Event)
-                    .where(
-                        Event.scheduled_start >= last_week_start,
-                        Event.scheduled_start <= last_week_end,
-                    )
-                    .order_by(Event.scheduled_start)  # type: ignore
-                )
+            last_week_events = fetch_events_in_range(
+                session, last_week_start, last_week_end, ascending=True
             )
 
             # Table 2: Current + next 2 weeks
-            upcoming_events = list(
-                session.exec(
-                    select(Event)
-                    .where(
-                        Event.scheduled_start >= current_week_start,
-                        Event.scheduled_start <= third_week_end,
-                    )
-                    .order_by(Event.scheduled_start)  # type: ignore
-                )
+            upcoming_events = fetch_events_in_range(
+                session, current_week_start, third_week_end, ascending=True
             )
 
             console.print()
