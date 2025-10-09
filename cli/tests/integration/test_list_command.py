@@ -1,98 +1,80 @@
-"""Characterization tests for list command.
+"""Integration tests for list command."""
 
-Capture MINIMAL necessary behavior before refactoring.
-"""
-
-import sys
-import tempfile
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 
 import pytest
+from sqlmodel import Session, SQLModel, create_engine
+from src.timeblock.main import app
+from src.timeblock.models import Event, EventStatus
 from typer.testing import CliRunner
-
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
 
 @pytest.fixture(scope="function")
-def isolated_db(tmp_path, monkeypatch):
-    """Isolated temporary database."""
-    db_file = tmp_path / "test.db"
-    monkeypatch.setenv("TIMEBLOCK_DB_PATH", str(db_file))
+def isolated_db(monkeypatch):
+    """Create isolated in-memory database for each test."""
+    # Create in-memory engine
+    engine = create_engine(
+        "sqlite:///:memory:", connect_args={"check_same_thread": False}
+    )
+
+    # Mock get_engine to return our test engine
+    monkeypatch.setattr("src.timeblock.database.get_engine", lambda: engine)
+    monkeypatch.setattr("src.timeblock.commands.list.get_engine", lambda: engine)
+
     # Create tables
-    from timeblock.database import create_db_and_tables
+    SQLModel.metadata.create_all(engine)
 
-    create_db_and_tables()
-    return db_file
+    yield engine
+
+    # Cleanup
+    SQLModel.metadata.drop_all(engine)
+    engine.dispose()
 
 
-@pytest.fixture
-def add_sample_events(isolated_db):
-    """Add 3 test events."""
-    from sqlmodel import Session
-    from timeblock.database import get_engine
-    from timeblock.models import Event, EventStatus
+def test_list_command_works(isolated_db):
+    """List command should execute without errors."""
+    runner = CliRunner()
+    result = runner.invoke(app, ["list"])
 
+    assert result.exit_code == 0
+
+
+def test_list_shows_created_events(isolated_db):
+    """List command should show events that were created."""
+    # Create test events directly in database
     now = datetime.now(timezone.utc)
     events = [
         Event(
-            title="Morning Standup",
-            scheduled_start=now + timedelta(days=1, hours=9),
-            scheduled_end=now + timedelta(days=1, hours=9, minutes=30),
+            title="Morning Meeting",
+            scheduled_start=now + timedelta(days=1),
+            scheduled_end=now + timedelta(days=1, hours=1),
             status=EventStatus.PLANNED,
         ),
         Event(
-            title="Code Review",
-            scheduled_start=now + timedelta(days=2, hours=14),
-            scheduled_end=now + timedelta(days=2, hours=15),
-            status=EventStatus.PLANNED,
-        ),
-        Event(
-            title="Gym",
-            scheduled_start=now + timedelta(days=3, hours=18),
-            scheduled_end=now + timedelta(days=3, hours=19),
+            title="Lunch Break",
+            scheduled_start=now + timedelta(days=1, hours=5),
+            scheduled_end=now + timedelta(days=1, hours=6),
             status=EventStatus.PLANNED,
         ),
     ]
-    engine = get_engine()
-    with Session(engine) as session:
+
+    with Session(isolated_db) as session:
         for event in events:
             session.add(event)
         session.commit()
 
-
-def test_list_command_works(add_sample_events):
-    """
-    MINIMAL BEHAVIOR: list command doesn't crash.
-    """
-    from timeblock.main import app
-
+    # Run list command
     runner = CliRunner()
     result = runner.invoke(app, ["list"])
-    # Should not crash
+
     assert result.exit_code == 0
-
-
-def test_list_shows_created_events(add_sample_events):
-    """
-    MINIMAL BEHAVIOR: shows created events.
-    """
-    from timeblock.main import app
-
-    runner = CliRunner()
-    result = runner.invoke(app, ["list"])
-    assert result.exit_code == 0
-    assert "Morning Standup" in result.output
-    assert "Code Review" in result.output
-    assert "Gym" in result.output
+    assert "Morning Meeting" in result.output
+    assert "Lunch Break" in result.output
 
 
 def test_list_empty_db_works(isolated_db):
-    """
-    MINIMAL BEHAVIOR: empty database doesn't crash.
-    """
-    from timeblock.main import app
-
+    """List command should work with empty database."""
     runner = CliRunner()
     result = runner.invoke(app, ["list"])
+
     assert result.exit_code == 0
