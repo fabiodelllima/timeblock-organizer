@@ -14,12 +14,12 @@ STATUS_COLORS = {
 }
 
 
-def create_events_table(title: str, events: list[Event]) -> Table:
+def create_events_table(events: list[Event], title: str) -> Table:
     """Create a formatted table for events.
 
     Args:
-        title: Table title with optional Rich markup
         events: List of Event objects to display
+        title: Table title with optional Rich markup
 
     Returns:
         Rich Table object ready for printing
@@ -58,7 +58,6 @@ def create_events_table(title: str, events: list[Event]) -> Table:
         date_str = event.scheduled_start.strftime("%Y-%m-%d")
 
         # Format time range
-        # Linha 61 - quebrar em 2:
         time_str = (
             f"{event.scheduled_start.strftime('%H:%M')} → "
             f"{event.scheduled_end.strftime('%H:%M')}"
