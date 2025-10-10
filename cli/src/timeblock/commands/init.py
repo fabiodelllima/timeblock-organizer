@@ -5,48 +5,33 @@ from pathlib import Path
 import typer
 from rich.console import Console
 
-from ..database import DB_PATH, create_db_and_tables
+from ..database import create_db_and_tables, get_db_path
 
 console = Console()
 
 
-def init() -> None:
-    """Initialize TimeBlock database.
+def init():
+    """Initialize the database."""
+    db_path = Path(get_db_path())
 
-    Creates SQLite database and all required tables if they don't exist.
-    """
+    if db_path.exists():
+        confirm = typer.confirm(
+            f"Database already exists at {db_path}. Reinitialize?",
+            default=False,
+        )
+        if not confirm:
+            console.print("[yellow]Initialization cancelled.[/yellow]")
+            raise typer.Exit()
+
     try:
-        # Check if database already exists
-        db_path = Path(DB_PATH)  # Converter string para Path
-        if db_path.exists():
-            console.print(
-                f"[yellow]⚠[/yellow]  Database already exists at: {DB_PATH}",
-                style="yellow",
-            )
-
-            # Ask for confirmation to reinitialize
-            if not typer.confirm(
-                "Do you want to reinitialize? This will NOT delete existing data"
-            ):
-                console.print("[dim]Initialization cancelled.[/dim]")
-                raise typer.Abort()
-
-        # Create database and tables
-        console.print("[cyan]Creating database...[/cyan]")
         create_db_and_tables()
-
-        # Success message
         console.print(
-            f"\n[green]✓[/green] Database initialized successfully!",
+            f"[green]✓[/green] Database initialized at {db_path}",
             style="bold green",
         )
-        console.print(f"[dim]Location: {DB_PATH}[/dim]\n")
-
-    except typer.Abort:
-        # User cancelled
-        pass
     except Exception as e:
         console.print(
-            f"\n[red]✗[/red] Error initializing database: {e}", style="bold red"
+            f"[red]✗[/red] Error initializing database: {e}",
+            style="bold red",
         )
         raise typer.Exit(code=1)
