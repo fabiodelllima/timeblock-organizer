@@ -2,16 +2,19 @@
   "python.defaultInterpreterPath": "./cli/venv/bin/python",
   "python.analysis.extraPaths": ["./cli/src"],
   "python.analysis.typeCheckingMode": "basic",
+
   "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-      "source.organizeImports": "explicit"
+      "source.fixAll.ruff": "explicit",
+      "source.organizeImports.ruff": "explicit"
     }
   },
-  "black-formatter.args": ["--line-length", "88"],
+
   "python.testing.pytestEnabled": true,
   "python.testing.pytestArgs": ["tests"],
+
   "terminal.integrated.cwd": "${workspaceFolder}/cli",
   "files.exclude": {
     "**/__pycache__": true,
