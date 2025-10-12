@@ -1,7 +1,5 @@
 """Tests for color validation."""
 
-import pytest
-
 from src.timeblock.utils.validators import is_valid_hex_color
 
 

@@ -1,9 +1,9 @@
 """Integration tests for add command - success cases."""
 
 from sqlmodel import Session, select
+
 from src.timeblock.main import app
 from src.timeblock.models import Event
-from typer.testing import CliRunner
 
 
 class TestAddSuccess:

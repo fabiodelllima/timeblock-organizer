@@ -1,7 +1,8 @@
 """Tests for time parsing validation."""
 
+from datetime import UTC, datetime
+
 import pytest
-from datetime import datetime, timezone
 
 from src.timeblock.utils.validators import parse_time
 
@@ -12,14 +13,14 @@ class TestParseTime:
     @pytest.fixture
     def base_date(self):
         """Base date for parsing tests."""
-        return datetime(2025, 10, 7, tzinfo=timezone.utc)
+        return datetime(2025, 10, 7, tzinfo=UTC)
 
     def test_parse_valid_time(self, base_date):
         """Should parse valid HH:MM format."""
         result = parse_time("14:30", base_date)
         assert result.hour == 14
         assert result.minute == 30
-        assert result.tzinfo == timezone.utc
+        assert result.tzinfo == UTC
 
     def test_parse_midnight(self, base_date):
         """Should parse midnight correctly."""

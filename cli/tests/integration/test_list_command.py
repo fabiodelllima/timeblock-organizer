@@ -1,12 +1,13 @@
 """Integration tests for list command."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from sqlmodel import Session, SQLModel, create_engine
+from typer.testing import CliRunner
+
 from src.timeblock.main import app
 from src.timeblock.models import Event, EventStatus
-from typer.testing import CliRunner
 
 
 @pytest.fixture(scope="function")
@@ -42,7 +43,7 @@ def test_list_command_works(isolated_db):
 def test_list_shows_created_events(isolated_db):
     """List command should show events that were created."""
     # Create test events directly in database
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     events = [
         Event(
             title="Morning Meeting",

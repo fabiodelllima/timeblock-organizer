@@ -2,10 +2,11 @@
 
 import pytest
 from sqlmodel import Session, select
+from typer.testing import CliRunner
+
 from src.timeblock.database import get_engine
 from src.timeblock.main import app
 from src.timeblock.models import Event
-from typer.testing import CliRunner
 
 
 @pytest.fixture
@@ -29,13 +30,13 @@ class TestAddEdgeCases:
             duration = (event.scheduled_end - event.scheduled_start).total_seconds()
             assert duration == 60
 
-    def test_add_event_crossing_midnight(self, isolated_db, runner):
+    def test_add_event_crossing_midnight_success(self, isolated_db, runner):
         """Should handle events that cross midnight."""
         result = runner.invoke(
             app,
             ["add", "Night Shift", "-s", "23:00", "-e", "01:00"],
         )
-        assert result.exit_code == 1
+        assert result.exit_code == 0
 
     def test_add_long_title(self, isolated_db, runner):
         """Should handle long event titles."""

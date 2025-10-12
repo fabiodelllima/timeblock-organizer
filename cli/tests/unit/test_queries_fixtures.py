@@ -1,14 +1,15 @@
 """Shared fixtures for query tests."""
 
+from datetime import UTC, datetime, timedelta
+
 import pytest
-from datetime import datetime, timedelta, timezone
 from sqlmodel import Session, SQLModel, create_engine
 
 from src.timeblock.models import Event, EventStatus
 
 
 @pytest.fixture(scope="function")
-def in_memory_db():
+def test_db():
     """Create in-memory SQLite database for testing."""
     engine = create_engine(
         "sqlite:///:memory:",
@@ -24,11 +25,11 @@ def in_memory_db():
 @pytest.fixture
 def now_time():
     """Fixed datetime for consistent testing."""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 @pytest.fixture
-def sample_events(in_memory_db, now_time):
+def sample_events(test_db, now_time):
     """Populate database with 5 sample events."""
     events = [
         Event(
@@ -63,7 +64,7 @@ def sample_events(in_memory_db, now_time):
         ),
     ]
 
-    with Session(in_memory_db) as session:
+    with Session(test_db) as session:
         for event in events:
             session.add(event)
         session.commit()
