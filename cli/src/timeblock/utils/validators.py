@@ -1,75 +1,135 @@
 """Input validation utilities."""
 
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+import re
 
 
-def parse_time(time_str: str, base_date: datetime) -> datetime:
-    """Parse time string (HH:MM) and combine with base date.
+def parse_time(time_str: str) -> datetime:
+    """Parse time string to datetime with current date.
+    
+    Supports two formats:
+    - HH:MM (e.g., "09:30", "14:00", "00:45")
+    - HHh or HHhMM (e.g., "9h", "14h30", "0h", "0h45")
+    
     Args:
-        time_str: Time in HH:MM format (e.g., "14:30").
-        base_date: Base datetime to combine with.
+        time_str: Time string in one of the supported formats
+        
     Returns:
-        Parsed datetime with time from time_str and date from base_date.
+        datetime object with today's date and specified time (UTC)
+        
     Raises:
-        ValueError: If time format is invalid or values out of range.
+        ValueError: If format is invalid or time values are out of range
+        
     Examples:
-        >>> from datetime import datetime, timezone
-        >>> now = datetime.now(timezone.utc)
-        >>> parse_time("14:30", now)
-        datetime.datetime(2025, 10, 7, 14, 30, 0, 0, tzinfo=datetime.timezone.utc)
+        >>> parse_time("09:30")  # Traditional format
+        >>> parse_time("9h30")   # Brazilian format
+        >>> parse_time("14h")    # Hour only (minutes default to 00)
+        >>> parse_time("0h45")   # After midnight
     """
-    try:
-        hour, minute = map(int, time_str.split(":"))
-        if not (0 <= hour <= 23 and 0 <= minute <= 59):
-            raise ValueError(f"Invalid time: {time_str}")
-        return base_date.replace(hour=hour, minute=minute, second=0, microsecond=0)
-    except (ValueError, AttributeError) as e:
-        raise ValueError(
-            f"Invalid time format: {time_str}. Use HH:MM (e.g., 14:30)"
-        ) from e
+    if not time_str or not isinstance(time_str, str):
+        raise ValueError("Time string cannot be empty")
+    
+    time_str = time_str.strip()
+    hour = None
+    minute = None
+    
+    # Try format: HHh or HHhMM (e.g., "14h", "9h30", "0h45")
+    h_pattern = r'^(\d{1,2})h(\d{1,2})?$'
+    h_match = re.match(h_pattern, time_str)
+    
+    if h_match:
+        hour = int(h_match.group(1))
+        minute = int(h_match.group(2)) if h_match.group(2) else 0
+    
+    # Try format: HH:MM (e.g., "09:30", "14:00")
+    elif ":" in time_str:
+        parts = time_str.split(":")
+        if len(parts) != 2:
+            raise ValueError("Time must be in HH:MM or HHh or HHhMM format")
+        
+        try:
+            hour = int(parts[0])
+            minute = int(parts[1])
+        except ValueError as e:
+            raise ValueError("Time must contain only numbers") from e
+    
+    else:
+        raise ValueError("Time must be in HH:MM or HHh or HHhMM format")
+    
+    # Validate ranges
+    if not (0 <= hour <= 23):
+        raise ValueError("Hour must be between 0 and 23")
+    if not (0 <= minute <= 59):
+        raise ValueError("Minute must be between 0 and 59")
+    
+    # Create datetime with current date
+    now = datetime.now(timezone.utc)
+    return now.replace(hour=hour, minute=minute, second=0, microsecond=0)
 
 
 def is_valid_hex_color(color: str) -> bool:
-    """Validate hex color format.
+    """Validate hexadecimal color code.
+    
     Args:
-        color: Color string to validate.
+        color: Color code (e.g., "#FF5733")
+        
     Returns:
-        True if valid hex color format (#RRGGBB), False otherwise.
+        True if valid hex color, False otherwise
+    """
+    if not color:
+        return False
+    
+    pattern = r'^#[0-9A-Fa-f]{6}$'
+    return bool(re.match(pattern, color))
+
+
+def validate_time_range(start: datetime, end: datetime) -> datetime:
+    """Validate and adjust time range for midnight crossing.
+    
+    Business Rules:
+    1. If end <= start, assumes event crosses midnight (next day)
+    2. Minimum duration: 1 minute
+    3. Maximum duration: < 24 hours (time blocking is for specific tasks)
+    
+    Args:
+        start: Start datetime (with date + time)
+        end: End datetime (with date + time)
+        
+    Returns:
+        Adjusted end datetime (may be +1 day if crossing midnight)
+        
+    Raises:
+        ValueError: If duration is invalid
+        
     Examples:
-        >>> is_valid_hex_color("#3498db")
-        True
-        >>> is_valid_hex_color("#FF5733")
-        True
-        >>> is_valid_hex_color("3498db")
-        False
-        >>> is_valid_hex_color("#ZZZ")
-        False
+        >>> # Same day event
+        >>> start = datetime(2025, 10, 14, 9, 0)
+        >>> end = datetime(2025, 10, 14, 10, 30)
+        >>> validate_time_range(start, end)  # Returns end unchanged
+        
+        >>> # Crosses midnight
+        >>> start = datetime(2025, 10, 14, 23, 0)
+        >>> end = datetime(2025, 10, 14, 2, 0)  # 02:00 same day
+        >>> validate_time_range(start, end)
+        >>> # Returns: datetime(2025, 10, 15, 2, 0)  # Next day!
     """
-    if not color.startswith("#"):
-        return False
-    if len(color) != 7:
-        return False
-    try:
-        int(color[1:], 16)
-        return True
-    except ValueError:
-        return False
-
-
-def validate_time_range(start: datetime, end: datetime) -> None:
-    """Validate time range, handling midnight crossing.
-    If end <= start, assumes event crosses midnight and adds 1 day to end.
-    Returns adjusted end datetime.
-    """
-    # If end is before or equal to start, assume crossing midnight
+    # Detect midnight crossing: if end <= start, must be next day
+    adjusted_end = end
     if end <= start:
-        # This will be handled by the caller (add command)
-        # Just validate that it's a reasonable duration (e.g., < 24 hours)
-        duration = (end.replace(day=end.day + 1) - start).total_seconds()
-        if duration > 86400:  # 24 hours
-            raise ValueError("Event duration cannot exceed 24 hours")
-        # Don't raise error - crossing midnight is valid
-        return
-    # Normal case: end > start
-    if (end - start).total_seconds() < 60:
+        adjusted_end = end + timedelta(days=1)
+    
+    # Calculate duration in seconds
+    duration = (adjusted_end - start).total_seconds()
+    
+    # Minimum duration: 1 minute
+    if duration < 60:
         raise ValueError("Event must be at least 1 minute long")
+    
+    # Maximum duration: < 24 hours
+    if duration >= 86400:
+        raise ValueError(
+            "Event duration cannot be 24 hours or more. "
+            "Time blocking is designed for specific activities, not entire days."
+        )
+    
+    return adjusted_end
