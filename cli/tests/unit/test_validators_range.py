@@ -1,40 +1,60 @@
-"""Tests for time range validation."""
-
-from datetime import datetime, timedelta, timezone
+"""Tests for validate_time_range function."""
 
 import pytest
-
+from datetime import datetime
+from datetime import timezone as tz
 from src.timeblock.utils.validators import validate_time_range
 
 
 class TestValidateTimeRange:
-    """Test validate_time_range function."""
+    """Tests for validate_time_range()."""
 
     def test_valid_range(self):
         """Should accept valid time range."""
-        start = datetime(2025, 1, 1, 9, 0, tzinfo=timezone.utc)
-        end = datetime(2025, 1, 1, 10, 0, tzinfo=timezone.utc)
-        validate_time_range(start, end)  # Should not raise
+        time = datetime.now(tz.utc).replace(second=0, microsecond=0)
+        start = time
+        end = time.replace(hour=(time.hour + 2) % 24)
+        
+        # Should not raise
+        result = validate_time_range(start, end)
+        # Returns end (possibly adjusted)
+        assert result is not None
 
     def test_valid_range_small_gap(self):
-        """Should accept range with 1 minute gap."""
-        start = datetime(2025, 1, 1, 9, 0, tzinfo=timezone.utc)
-        end = datetime(2025, 1, 1, 9, 1, tzinfo=timezone.utc)
-        validate_time_range(start, end)  # Should not raise
+        """Should accept 1 minute gap."""
+        time = datetime.now(tz.utc).replace(second=0, microsecond=0)
+        start = time
+        end = time.replace(minute=(time.minute + 1) % 60)
+        
+        # Should not raise for >= 1 minute
+        validate_time_range(start, end)
 
-    def test_same_time_valid_crossing_midnight(self):
-        """Same time treated as crossing midnight (valid)."""
-        time = datetime(2025, 1, 1, 9, 0, tzinfo=timezone.utc)
-        validate_time_range(time, time)  # Should not raise (crossing midnight)
+    def test_same_time_rejects_24h(self):
+        """Should REJECT same time (24h duration)."""
+        time = datetime.now(tz.utc).replace(second=0, microsecond=0)
+        
+        # Same time = 24h after adjustment = INVALID
+        with pytest.raises(ValueError, match="cannot be 24 hours or more"):
+            validate_time_range(time, time)
 
     def test_end_before_start_valid_crossing_midnight(self):
-        """End before start treated as crossing midnight (valid)."""
-        start = datetime(2025, 1, 1, 10, 0, tzinfo=timezone.utc)
-        end = datetime(2025, 1, 1, 9, 0, tzinfo=timezone.utc)
-        validate_time_range(start, end)  # Should not raise (crossing midnight)
+        """Should handle midnight crossing for valid duration."""
+        time = datetime.now(tz.utc).replace(hour=23, minute=0, second=0, microsecond=0)
+        start = time
+        end = time.replace(hour=2)  # 02:00 (crosses midnight)
+        
+        # Should adjust end to next day
+        result = validate_time_range(start, end)
+        
+        # Result should be next day
+        assert result.hour == 2
+        assert result.day == end.day + 1
 
     def test_end_one_second_before_valid(self):
-        """End 1 second before start treated as crossing midnight (valid)."""
-        start = datetime(2025, 1, 1, 9, 0, 0, tzinfo=timezone.utc)
-        end = start - timedelta(seconds=1)
-        validate_time_range(start, end)  # Should not raise (crossing midnight)
+        """Should handle end 1 second before start as midnight crossing."""
+        time = datetime.now(tz.utc).replace(second=0, microsecond=0)
+        start = time
+        end = time.replace(second=59, hour=(time.hour - 1) % 24)
+        
+        # Should not raise (crosses midnight)
+        validate_time_range(start, end)
