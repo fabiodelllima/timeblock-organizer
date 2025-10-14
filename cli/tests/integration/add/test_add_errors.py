@@ -22,7 +22,7 @@ class TestAddErrors:
             ["add", "Meeting", "-s", "25:00", "-e", "10:00"],
         )
         assert result.exit_code == 1
-        assert "Invalid time format" in result.output
+        assert "Hour must be between 0 and 23" in result.output
 
     def test_add_start_after_end_valid_crossing_midnight(self, isolated_db, runner):
         """Start after end treated as crossing midnight (valid)."""
