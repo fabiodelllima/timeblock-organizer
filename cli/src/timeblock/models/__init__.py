@@ -3,6 +3,7 @@ from .event import ChangeLog, ChangeType, Event, EventStatus, PauseLog, TimeLog
 from .habit import Habit, Recurrence
 from .habit_instance import HabitInstance
 from .routine import Routine
+from .task import Task
 
 __all__ = [
     "Event",
@@ -15,4 +16,5 @@ __all__ = [
     "Habit",
     "Recurrence",
     "HabitInstance",
+    "Task",
 ]
