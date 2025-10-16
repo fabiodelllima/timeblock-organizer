@@ -1,5 +1,6 @@
 """Data models for TimeBlock application."""
 from .event import ChangeLog, ChangeType, Event, EventStatus, PauseLog, TimeLog
+from .habit import Habit, Recurrence
 from .routine import Routine
 
 __all__ = [
@@ -10,4 +11,6 @@ __all__ = [
     "ChangeLog",
     "ChangeType",
     "Routine",
+    "Habit",
+    "Recurrence",
 ]
