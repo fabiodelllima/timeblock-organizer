@@ -14,3 +14,4 @@ class Task(SQLModel, table=True):
     description: str | None = Field(default=None, max_length=1000)
     started_at: datetime | None = None
     color: str | None = Field(default=None, max_length=7)
+    tag_id: int | None = Field(default=None, foreign_key="tag.id")
