@@ -114,7 +114,7 @@ class TimerService:
             pauses = session.exec(
                 select(PauseLog)
                 .where(PauseLog.timelog_id == timelog_id)
-                .where(PauseLog.pause_end == None) # noqa: E711
+                .where(PauseLog.pause_end == None)  # noqa: E711
             ).all()
 
             if not pauses:
@@ -133,4 +133,4 @@ class TimerService:
     def get_active_timer() -> TimeLog | None:
         """Busca timer ativo."""
         with get_engine_context() as engine, Session(engine) as session:
-            return session.exec(select(TimeLog).where(TimeLog.end_time == None)).first() # noqa: E711
+            return session.exec(select(TimeLog).where(TimeLog.end_time == None)).first()  # noqa: E711

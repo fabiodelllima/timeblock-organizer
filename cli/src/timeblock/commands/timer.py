@@ -116,7 +116,6 @@ def start_timer(
 
         # Workflow A: direto com flags
         if schedule or task:
-
             # Buscar detalhes
             if schedule:
                 instance = HabitInstanceService.get_instance(schedule)
