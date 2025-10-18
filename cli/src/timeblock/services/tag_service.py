@@ -1,4 +1,5 @@
 """Service para gerenciar tags."""
+
 from sqlmodel import Session, select
 
 from src.timeblock.database import get_engine_context

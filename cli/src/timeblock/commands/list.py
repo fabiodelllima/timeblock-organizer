@@ -50,14 +50,12 @@ def list_events(
             with Session(engine) as session:
                 if limit_val:
                     # Use limit without date filter, newest first
-                    events = fetch_events_in_range(
-                        session, start=None, end=None, ascending=False
-                    )[:limit_val]
+                    events = fetch_events_in_range(session, start=None, end=None, ascending=False)[
+                        :limit_val
+                    ]
                 else:
                     # Use date range filter, newest first
-                    events = fetch_events_in_range(
-                        session, start=start, end=end, ascending=False
-                    )
+                    events = fetch_events_in_range(session, start=start, end=end, ascending=False)
 
         # Present results
         presenter = ListPresenter(console)

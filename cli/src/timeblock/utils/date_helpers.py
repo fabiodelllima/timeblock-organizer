@@ -44,9 +44,7 @@ def get_month_range(months_offset: int = 0) -> tuple[datetime, datetime]:
     target_month = add_months(now, months_offset)
 
     # Start: first day of month at 00:00:00
-    start_of_month = target_month.replace(
-        day=1, hour=0, minute=0, second=0, microsecond=0
-    )
+    start_of_month = target_month.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
     # End: first day of next month at 00:00:00
     end_of_month = add_months(start_of_month, 1)
@@ -77,9 +75,7 @@ def get_week_range(weeks_offset: int = 0) -> tuple[datetime, datetime]:
     # Calculate start of current week (Monday)
     days_since_monday = now.weekday()
     start_of_current_week = now - timedelta(days=days_since_monday)
-    start_of_current_week = start_of_current_week.replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
+    start_of_current_week = start_of_current_week.replace(hour=0, minute=0, second=0, microsecond=0)
 
     # Apply offset
     start_of_target_week = start_of_current_week + timedelta(weeks=weeks_offset)

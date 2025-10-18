@@ -1,4 +1,5 @@
 """Comandos para gerenciar tags."""
+
 import typer
 from rich.console import Console
 from rich.table import Table
@@ -17,13 +18,13 @@ def create_tag(
     """Cria tag para categorização."""
     try:
         tag = TagService.create_tag(name=name, color=color)
-        
-        console.print(f"\n✓ Tag criada!\n", style="bold green")
+
+        console.print("\n✓ Tag criada!\n", style="bold green")
         console.print(f"ID: {tag.id}")
         if tag.name:
             console.print(f"Nome: [bold]{tag.name}[/bold]")
         console.print(f"Cor: {tag.color}\n")
-        
+
     except ValueError as e:
         console.print(f"✗ Erro: {e}", style="red")
         raise typer.Exit(1)
@@ -33,23 +34,19 @@ def create_tag(
 def list_tags():
     """Lista todas as tags."""
     tags = TagService.list_tags()
-    
+
     if not tags:
         console.print("Nenhuma tag encontrada.", style="yellow")
         return
-    
+
     table = Table(title="Tags")
     table.add_column("ID", style="cyan")
     table.add_column("Nome", style="white")
     table.add_column("Cor", style="yellow")
-    
+
     for t in tags:
-        table.add_row(
-            str(t.id),
-            t.name or "—",
-            t.color
-        )
-    
+        table.add_row(str(t.id), t.name or "—", t.color)
+
     console.print()
     console.print(table)
     console.print()
@@ -68,14 +65,14 @@ def update_tag(
             updates["name"] = name
         if color:
             updates["color"] = color
-        
+
         if not updates:
             console.print("Nenhuma atualização especificada.", style="yellow")
             return
-        
+
         tag = TagService.update_tag(tag_id, **updates)
         console.print(f"✓ Tag {tag.id} atualizada", style="green")
-        
+
     except ValueError as e:
         console.print(f"✗ Erro: {e}", style="red")
         raise typer.Exit(1)
@@ -89,17 +86,17 @@ def delete_tag(
     """Deleta tag."""
     try:
         tag = TagService.get_tag(tag_id)
-        
+
         if not force:
             name_display = f"[bold]{tag.name}[/bold]" if tag.name else f"ID {tag_id}"
             console.print(f"\nDeletar tag {name_display}?")
             if not typer.confirm("Confirma?", default=False):
                 console.print("Cancelado.", style="yellow")
                 return
-        
+
         TagService.delete_tag(tag_id)
-        console.print(f"✓ Tag deletada", style="green")
-        
+        console.print("✓ Tag deletada", style="green")
+
     except ValueError as e:
         console.print(f"✗ Erro: {e}", style="red")
         raise typer.Exit(1)

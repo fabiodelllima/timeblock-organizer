@@ -59,8 +59,7 @@ def create_events_table(events: list[Event], title: str) -> Table:
 
         # Format time range
         time_str = (
-            f"{event.scheduled_start.strftime('%H:%M')} → "
-            f"{event.scheduled_end.strftime('%H:%M')}"
+            f"{event.scheduled_start.strftime('%H:%M')} → {event.scheduled_end.strftime('%H:%M')}"
         )
 
         table.add_row(

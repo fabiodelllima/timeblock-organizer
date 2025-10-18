@@ -27,9 +27,7 @@ class HabitInstanceService:
             current_date = start_date
 
             while current_date <= end_date:
-                if HabitInstanceService._should_create_instance(
-                    habit.recurrence, current_date
-                ):
+                if HabitInstanceService._should_create_instance(habit.recurrence, current_date):
                     # Verificar se já existe
                     existing = session.exec(
                         select(HabitInstance).where(

@@ -15,18 +15,10 @@ console = Console()
 
 def add(
     title: str = typer.Argument(..., help="Event title"),
-    start: str | None = typer.Option(
-        None, "--start", "-s", help="Start time (HH:MM or HHh/HHhMM)"
-    ),
-    end: str | None = typer.Option(
-        None, "--end", "-e", help="End time (HH:MM or HHhMM)"
-    ),
-    color: str | None = typer.Option(
-        None, "--color", "-c", help="Event color (#RRGGBB)"
-    ),
-    description: str | None = typer.Option(
-        None, "--desc", "-d", help="Event description"
-    ),
+    start: str | None = typer.Option(None, "--start", "-s", help="Start time (HH:MM or HHh/HHhMM)"),
+    end: str | None = typer.Option(None, "--end", "-e", help="End time (HH:MM or HHhMM)"),
+    color: str | None = typer.Option(None, "--color", "-c", help="Event color (#RRGGBB)"),
+    description: str | None = typer.Option(None, "--desc", "-d", help="Event description"),
 ) -> None:
     """Add a new event to the schedule."""
     try:
@@ -43,9 +35,7 @@ def add(
             console.print("[yellow]⚠[/yellow] Event crosses midnight (ends next day)")
 
         if color and not is_valid_hex_color(color):
-            console.print(
-                f"[red]✗[/red] Invalid color format: {color}", style="bold red"
-            )
+            console.print(f"[red]✗[/red] Invalid color format: {color}", style="bold red")
             console.print("[dim]Use hex format: #RRGGBB (e.g., #3498db)[/dim]")
             raise typer.Exit(code=1) from None
 

@@ -1,4 +1,5 @@
 """Habit model for recurring events."""
+
 from datetime import time
 from enum import Enum
 

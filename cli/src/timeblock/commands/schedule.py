@@ -1,8 +1,8 @@
 """Comandos para gerenciar agenda de hábitos."""
 
+import json
 from datetime import date
 from datetime import time as dt_time
-import json
 from pathlib import Path
 
 import typer
@@ -30,9 +30,13 @@ def generate_instances(
 
         instances = HabitInstanceService.generate_instances(habit_id, start_date, end_date)
 
-        console.print(f"\n✓ {len(instances)} hábitos gerados para [bold]{habit.title}[/bold]", style="green")
-        console.print(f"  Período: {start_date.strftime('%d/%m/%Y')} a {end_date.strftime('%d/%m/%Y')}\n")
-        
+        console.print(
+            f"\n✓ {len(instances)} hábitos gerados para [bold]{habit.title}[/bold]", style="green"
+        )
+        console.print(
+            f"  Período: {start_date.strftime('%d/%m/%Y')} a {end_date.strftime('%d/%m/%Y')}\n"
+        )
+
     except ValueError as e:
         console.print(f"✗ Erro: {e}", style="red")
         raise typer.Exit(1)
@@ -77,7 +81,7 @@ def list_instances(
             table.add_row(
                 str(inst.id),
                 habit.title,
-                inst.date.strftime('%d/%m/%Y'),
+                inst.date.strftime("%d/%m/%Y"),
                 f"{inst.scheduled_start.strftime('%H:%M')} → {inst.scheduled_end.strftime('%H:%M')}",
                 adjusted,
             )
@@ -85,7 +89,7 @@ def list_instances(
         console.print()
         console.print(table)
         console.print()
-        
+
     except ValueError as e:
         console.print(f"✗ Erro: {e}", style="red")
         raise typer.Exit(1)
@@ -102,18 +106,22 @@ def edit_instance(
         # Buscar instância original
         instance_old = HabitInstanceService.get_instance(instance_id)
         habit = HabitService.get_habit(instance_old.habit_id)
-        
+
         start_time = dt_time.fromisoformat(start)
         end_time = dt_time.fromisoformat(end)
 
         instance = HabitInstanceService.adjust_instance_time(instance_id, start_time, end_time)
-        
+
         # Output detalhado
-        console.print(f"\n✓ Agenda editada com sucesso!\n", style="bold green")
+        console.print("\n✓ Agenda editada com sucesso!\n", style="bold green")
         console.print(f"[bold]{habit.title}[/bold] em {instance.date.strftime('%d/%m/%Y')}")
-        console.print(f"Horário: {instance.scheduled_start.strftime('%H:%M')} → {instance.scheduled_end.strftime('%H:%M')}")
-        console.print(f"(alterado de {instance_old.scheduled_start.strftime('%H:%M')} → {instance_old.scheduled_end.strftime('%H:%M')})\n")
-        
+        console.print(
+            f"Horário: {instance.scheduled_start.strftime('%H:%M')} → {instance.scheduled_end.strftime('%H:%M')}"
+        )
+        console.print(
+            f"(alterado de {instance_old.scheduled_start.strftime('%H:%M')} → {instance_old.scheduled_end.strftime('%H:%M')})\n"
+        )
+
     except ValueError as e:
         console.print(f"✗ Erro: {e}", style="red")
         raise typer.Exit(1)
@@ -125,18 +133,20 @@ def select_instance(instance_id: int = typer.Argument(..., help="ID da instânci
     try:
         instance = HabitInstanceService.get_instance(instance_id)
         habit = HabitService.get_habit(instance.habit_id)
-        
+
         # Salvar contexto em arquivo temporário
         config = {"selected_schedule": instance_id}
         config_path = Path.home() / ".timeblock_context"
         config_path.write_text(json.dumps(config))
-        
+
         # Output
         console.print(f"\n✓ Selecionado: [bold]{habit.title}[/bold]", style="green")
         console.print(f"  Data: {instance.date.strftime('%d/%m/%Y')}")
-        console.print(f"  Horário: {instance.scheduled_start.strftime('%H:%M')} → {instance.scheduled_end.strftime('%H:%M')}\n")
+        console.print(
+            f"  Horário: {instance.scheduled_start.strftime('%H:%M')} → {instance.scheduled_end.strftime('%H:%M')}\n"
+        )
         console.print("Use 'timeblock timer start' para iniciar timer", style="dim")
-        
+
     except ValueError as e:
         console.print(f"✗ Erro: {e}", style="red")
         raise typer.Exit(1)

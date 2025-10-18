@@ -76,9 +76,7 @@ class TimerService:
                 raise ValueError("Timer already stopped")
 
             # Deletar pausas associadas
-            pauses = session.exec(
-                select(PauseLog).where(PauseLog.timelog_id == timelog_id)
-            ).all()
+            pauses = session.exec(select(PauseLog).where(PauseLog.timelog_id == timelog_id)).all()
             for pause in pauses:
                 session.delete(pause)
 
@@ -116,7 +114,7 @@ class TimerService:
             pauses = session.exec(
                 select(PauseLog)
                 .where(PauseLog.timelog_id == timelog_id)
-                .where(PauseLog.pause_end == None)
+                .where(PauseLog.pause_end == None) # noqa: E711
             ).all()
 
             if not pauses:
@@ -125,9 +123,7 @@ class TimerService:
             for pause in pauses:
                 pause.pause_end = datetime.now()
                 pause_duration = (pause.pause_end - pause.pause_start).total_seconds()
-                timelog.paused_duration = (timelog.paused_duration or 0) + int(
-                    pause_duration
-                )
+                timelog.paused_duration = (timelog.paused_duration or 0) + int(pause_duration)
                 session.add(pause)
 
             session.add(timelog)
@@ -137,4 +133,4 @@ class TimerService:
     def get_active_timer() -> TimeLog | None:
         """Busca timer ativo."""
         with get_engine_context() as engine, Session(engine) as session:
-            return session.exec(select(TimeLog).where(TimeLog.end_time == None)).first()
+            return session.exec(select(TimeLog).where(TimeLog.end_time == None)).first() # noqa: E711

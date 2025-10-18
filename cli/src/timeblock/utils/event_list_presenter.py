@@ -27,8 +27,7 @@ class ListPresenter:
         """
         self.console.print(f"[yellow]No events found{filter_desc}.[/yellow]")
         self.console.print(
-            '[dim]Create an event with: timeblock add "Event Title" '
-            "--start 09:00 --end 10:00[/dim]"
+            '[dim]Create an event with: timeblock add "Event Title" --start 09:00 --end 10:00[/dim]'
         )
 
     def show_single_table(self, events: list[Event], title: str):
@@ -69,9 +68,7 @@ class ListPresenter:
         total = len(past_events) + len(present_events) + len(future_events)
         self.console.print(f"[dim]Total: {total} events[/dim]")
 
-    def split_by_time(
-        self, events: list[Event]
-    ) -> tuple[list[Event], list[Event], list[Event]]:
+    def split_by_time(self, events: list[Event]) -> tuple[list[Event], list[Event], list[Event]]:
         """Split events into past, present, and future.
 
         Time periods:
@@ -91,9 +88,7 @@ class ListPresenter:
         # SQLite returns naive datetimes, convert to aware for comparison
         past = [e for e in events if e.scheduled_start.replace(tzinfo=UTC) < week_ago]
 
-        present = [
-            e for e in events if week_ago <= e.scheduled_start.replace(tzinfo=UTC) < now
-        ]
+        present = [e for e in events if week_ago <= e.scheduled_start.replace(tzinfo=UTC) < now]
 
         future = [e for e in events if e.scheduled_start.replace(tzinfo=UTC) >= now]
 

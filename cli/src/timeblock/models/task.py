@@ -1,4 +1,5 @@
 """Task model for one-time events."""
+
 from datetime import datetime
 
 from sqlmodel import Field, SQLModel

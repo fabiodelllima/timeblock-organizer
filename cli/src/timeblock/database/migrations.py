@@ -1,4 +1,5 @@
 """Database migrations for v2.0."""
+
 from pathlib import Path
 
 from sqlmodel import SQLModel, create_engine
@@ -11,7 +12,7 @@ def migrate_v2(db_path: Path | None = None) -> None:
     """Adiciona tabelas v2.0."""
     path = db_path or DATABASE_PATH
     engine = create_engine(f"sqlite:///{path}")
-    
+
     # Criar novas tabelas
     SQLModel.metadata.create_all(
         engine,
@@ -23,7 +24,7 @@ def migrate_v2(db_path: Path | None = None) -> None:
             TimeLog.__table__,
         ],
     )
-    
+
     print("✓ Tabelas v2.0 criadas: Routine, Habit, HabitInstance, Task, TimeLog")
 
 

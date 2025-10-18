@@ -1,4 +1,5 @@
 """Configuration management."""
+
 import os
 from pathlib import Path
 

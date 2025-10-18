@@ -1,4 +1,5 @@
 """Routine model for weekly habit templates."""
+
 from datetime import datetime
 
 from sqlmodel import Field, SQLModel

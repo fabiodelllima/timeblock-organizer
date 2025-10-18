@@ -1,11 +1,14 @@
 """Data models for TimeBlock application."""
+
 from datetime import UTC, datetime
 from enum import Enum
+
 from sqlmodel import Field, SQLModel
 
 
 class EventStatus(str, Enum):
     """Event lifecycle status."""
+
     PLANNED = "planned"
     IN_PROGRESS = "in_progress"
     PAUSED = "paused"
@@ -15,6 +18,7 @@ class EventStatus(str, Enum):
 
 class Event(SQLModel, table=True):
     """Time-blocked event with scheduling information."""
+
     id: int | None = Field(default=None, primary_key=True)
     title: str = Field(max_length=200, index=True)
     description: str | None = Field(default=None, max_length=1000)
@@ -28,6 +32,7 @@ class Event(SQLModel, table=True):
 
 class PauseLog(SQLModel, table=True):
     """Individual pause intervals for time tracking."""
+
     id: int | None = Field(default=None, primary_key=True)
     timelog_id: int = Field(foreign_key="time_log.id", index=True)
     pause_start: datetime
@@ -37,6 +42,7 @@ class PauseLog(SQLModel, table=True):
 
 class ChangeType(str, Enum):
     """Types of changes for audit logging."""
+
     CREATED = "created"
     UPDATED = "updated"
     STATUS_CHANGED = "status_changed"
@@ -46,6 +52,7 @@ class ChangeType(str, Enum):
 
 class ChangeLog(SQLModel, table=True):
     """Audit trail for event modifications."""
+
     id: int | None = Field(default=None, primary_key=True)
     event_id: int = Field(foreign_key="event.id", index=True)
     change_type: ChangeType
