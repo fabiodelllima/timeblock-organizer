@@ -24,7 +24,6 @@ def create_task(
         scheduled_dt = datetime.fromisoformat(scheduled)
         task = TaskService.create_task(title, scheduled_dt, description, color)
 
-        # Output detalhado
         console.print("\n✓ Tarefa criada com sucesso!\n", style="bold green")
         console.print("═" * 40)
         console.print(f"ID: {task.id}")
@@ -103,7 +102,6 @@ def start_task(task_id: int = typer.Argument(..., help="ID da tarefa")):
             )
             return
 
-        # Marcar como iniciada
         task.started_at = datetime.now()
         TaskService.update_task(task_id, started_at=task.started_at)
 
@@ -122,13 +120,11 @@ def check_task(task_id: int = typer.Argument(..., help="ID da tarefa")):
     try:
         task = TaskService.complete_task(task_id)
 
-        # Calcular diferença
         scheduled = task.scheduled_datetime
         completed = task.completed_datetime
         diff = completed - scheduled
         diff_minutes = int(diff.total_seconds() / 60)
 
-        # Output detalhado
         console.print("\n✓ Tarefa concluída!\n", style="bold green")
         console.print(f"[bold]{task.title}[/bold] (ID: {task.id})")
         console.print(f"Programado: {scheduled.strftime('%d/%m/%Y às %H:%M')}")

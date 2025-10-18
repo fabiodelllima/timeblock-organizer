@@ -237,10 +237,7 @@ class TestAdjustInstanceTime:
 
     def test_adjust_instance_time_not_found(self):
         """Retorna None se não existe."""
-        assert (
-            HabitInstanceService.adjust_instance_time(9999, time(8, 0), time(9, 0))
-            is None
-        )
+        assert HabitInstanceService.adjust_instance_time(9999, time(8, 0), time(9, 0)) is None
 
     def test_adjust_instance_time_invalid(self, test_habit):
         """Rejeita start >= end."""
@@ -263,7 +260,7 @@ class TestAdjustInstanceTime:
             routine = Routine(name="Test Routine")
             session.add(routine)
             session.commit()
-            
+
             habit = Habit(
                 routine_id=routine.id,
                 title="Tuesday Habit",
@@ -276,9 +273,11 @@ class TestAdjustInstanceTime:
             session.refresh(habit)
 
         instances = HabitInstanceService.generate_instances(
-            habit.id, date(2025, 10, 13), date(2025, 10, 19)  # Segunda a domingo
+            habit.id,
+            date(2025, 10, 13),
+            date(2025, 10, 19),  # Segunda a domingo
         )
-        
+
         # Apenas terça (14/10) deve ser gerada
         assert len(instances) == 1
         assert instances[0].date == date(2025, 10, 14)
@@ -289,7 +288,7 @@ class TestAdjustInstanceTime:
             routine = Routine(name="Test Routine")
             session.add(routine)
             session.commit()
-            
+
             habit = Habit(
                 routine_id=routine.id,
                 title="Wednesday Habit",
@@ -304,7 +303,7 @@ class TestAdjustInstanceTime:
         instances = HabitInstanceService.generate_instances(
             habit.id, date(2025, 10, 13), date(2025, 10, 19)
         )
-        
+
         assert len(instances) == 1
         assert instances[0].date == date(2025, 10, 15)
 
@@ -314,7 +313,7 @@ class TestAdjustInstanceTime:
             routine = Routine(name="Test Routine")
             session.add(routine)
             session.commit()
-            
+
             habit = Habit(
                 routine_id=routine.id,
                 title="Thursday Habit",
@@ -329,7 +328,7 @@ class TestAdjustInstanceTime:
         instances = HabitInstanceService.generate_instances(
             habit.id, date(2025, 10, 13), date(2025, 10, 19)
         )
-        
+
         assert len(instances) == 1
         assert instances[0].date == date(2025, 10, 16)
 
@@ -339,7 +338,7 @@ class TestAdjustInstanceTime:
             routine = Routine(name="Test Routine")
             session.add(routine)
             session.commit()
-            
+
             habit = Habit(
                 routine_id=routine.id,
                 title="Friday Habit",
@@ -354,7 +353,7 @@ class TestAdjustInstanceTime:
         instances = HabitInstanceService.generate_instances(
             habit.id, date(2025, 10, 13), date(2025, 10, 19)
         )
-        
+
         assert len(instances) == 1
         assert instances[0].date == date(2025, 10, 17)
 
@@ -364,7 +363,7 @@ class TestAdjustInstanceTime:
             routine = Routine(name="Test Routine")
             session.add(routine)
             session.commit()
-            
+
             habit = Habit(
                 routine_id=routine.id,
                 title="Saturday Habit",
@@ -379,7 +378,7 @@ class TestAdjustInstanceTime:
         instances = HabitInstanceService.generate_instances(
             habit.id, date(2025, 10, 13), date(2025, 10, 19)
         )
-        
+
         assert len(instances) == 1
         assert instances[0].date == date(2025, 10, 18)
 
@@ -389,7 +388,7 @@ class TestAdjustInstanceTime:
             routine = Routine(name="Test Routine")
             session.add(routine)
             session.commit()
-            
+
             habit = Habit(
                 routine_id=routine.id,
                 title="Sunday Habit",
@@ -404,6 +403,6 @@ class TestAdjustInstanceTime:
         instances = HabitInstanceService.generate_instances(
             habit.id, date(2025, 10, 13), date(2025, 10, 19)
         )
-        
+
         assert len(instances) == 1
         assert instances[0].date == date(2025, 10, 19)

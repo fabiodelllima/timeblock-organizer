@@ -15,9 +15,7 @@ from src.timeblock.models import Event, EventStatus
 def isolated_db(monkeypatch):
     """Create isolated in-memory database for each test."""
     # Create in-memory engine
-    engine = create_engine(
-        "sqlite:///:memory:", connect_args={"check_same_thread": False}
-    )
+    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
 
     # Create context manager that yields our test engine
     @contextmanager
@@ -28,12 +26,8 @@ def isolated_db(monkeypatch):
             pass  # Don't dispose during test
 
     # Mock get_engine_context to return our test engine
-    monkeypatch.setattr(
-        "src.timeblock.database.get_engine_context", mock_engine_context
-    )
-    monkeypatch.setattr(
-        "src.timeblock.commands.list.get_engine_context", mock_engine_context
-    )
+    monkeypatch.setattr("src.timeblock.database.get_engine_context", mock_engine_context)
+    monkeypatch.setattr("src.timeblock.commands.list.get_engine_context", mock_engine_context)
 
     # Create tables
     SQLModel.metadata.create_all(engine)

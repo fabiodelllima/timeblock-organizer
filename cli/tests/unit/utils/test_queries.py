@@ -107,9 +107,7 @@ class TestFetchEventsInRange:
             results = fetch_events_in_range(session, start=now_time)
 
             assert len(results) == 3
-            assert all(
-                e.scheduled_start.replace(tzinfo=UTC) >= now_time for e in results
-            )
+            assert all(e.scheduled_start.replace(tzinfo=UTC) >= now_time for e in results)
 
     def test_fetch_with_end(self, test_db, sample_events, now_time):
         """Should fetch events up to end date."""
@@ -117,9 +115,7 @@ class TestFetchEventsInRange:
             results = fetch_events_in_range(session, end=now_time)
 
             assert len(results) == 3
-            assert all(
-                e.scheduled_start.replace(tzinfo=UTC) <= now_time for e in results
-            )
+            assert all(e.scheduled_start.replace(tzinfo=UTC) <= now_time for e in results)
 
     def test_fetch_with_range(self, test_db, sample_events, now_time):
         """Should fetch events within date range."""

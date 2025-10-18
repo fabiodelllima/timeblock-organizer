@@ -37,9 +37,7 @@ def mock_engine(monkeypatch, test_engine):
     def mock_get_engine():
         yield test_engine
 
-    monkeypatch.setattr(
-        "src.timeblock.services.habit_service.get_engine_context", mock_get_engine
-    )
+    monkeypatch.setattr("src.timeblock.services.habit_service.get_engine_context", mock_get_engine)
 
 
 class TestCreateHabit:

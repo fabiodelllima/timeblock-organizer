@@ -40,42 +40,30 @@ class TestCreateRoutine:
         mock_session.commit.assert_called_once()
         mock_session.refresh.assert_called_once_with(routine)
 
-    def test_create_routine_strips_whitespace(
-        self, routine_service: RoutineService
-    ) -> None:
+    def test_create_routine_strips_whitespace(self, routine_service: RoutineService) -> None:
         """Testa que espaços em branco são removidos."""
         routine = routine_service.create_routine("  Rotina Noturna  ")
 
         assert routine.name == "Rotina Noturna"
 
-    def test_create_routine_with_empty_name(
-        self, routine_service: RoutineService
-    ) -> None:
+    def test_create_routine_with_empty_name(self, routine_service: RoutineService) -> None:
         """Testa erro ao criar rotina com nome vazio."""
         with pytest.raises(ValueError, match="Nome da rotina não pode ser vazio"):
             routine_service.create_routine("")
 
-    def test_create_routine_with_whitespace_only(
-        self, routine_service: RoutineService
-    ) -> None:
+    def test_create_routine_with_whitespace_only(self, routine_service: RoutineService) -> None:
         """Testa erro ao criar rotina com apenas espaços."""
         with pytest.raises(ValueError, match="Nome da rotina não pode ser vazio"):
             routine_service.create_routine("   ")
 
-    def test_create_routine_with_name_too_long(
-        self, routine_service: RoutineService
-    ) -> None:
+    def test_create_routine_with_name_too_long(self, routine_service: RoutineService) -> None:
         """Testa erro ao criar rotina com nome muito longo."""
         long_name = "a" * 201
 
-        with pytest.raises(
-            ValueError, match="Nome da rotina não pode ter mais de 200 caracteres"
-        ):
+        with pytest.raises(ValueError, match="Nome da rotina não pode ter mais de 200 caracteres"):
             routine_service.create_routine(long_name)
 
-    def test_create_routine_with_max_length_name(
-        self, routine_service: RoutineService
-    ) -> None:
+    def test_create_routine_with_max_length_name(self, routine_service: RoutineService) -> None:
         """Testa criação de rotina com nome no limite máximo."""
         max_name = "a" * 200
 
@@ -88,9 +76,7 @@ class TestCreateRoutine:
 class TestGetRoutine:
     """Testes para get_routine."""
 
-    def test_get_routine_found(
-        self, routine_service: RoutineService, mock_session: Mock
-    ) -> None:
+    def test_get_routine_found(self, routine_service: RoutineService, mock_session: Mock) -> None:
         """Testa busca de rotina existente."""
         routine_id = 1
         expected_routine = Routine(
@@ -138,9 +124,7 @@ class TestListRoutines:
         assert len(routines) == 2
         mock_session.exec.assert_called_once()
 
-    def test_list_routines_all(
-        self, routine_service: RoutineService, mock_session: Mock
-    ) -> None:
+    def test_list_routines_all(self, routine_service: RoutineService, mock_session: Mock) -> None:
         """Testa listagem de todas as rotinas."""
         mock_result = Mock()
         mock_result.all.return_value = [
@@ -154,9 +138,7 @@ class TestListRoutines:
         assert len(routines) == 2
         mock_session.exec.assert_called_once()
 
-    def test_list_routines_empty(
-        self, routine_service: RoutineService, mock_session: Mock
-    ) -> None:
+    def test_list_routines_empty(self, routine_service: RoutineService, mock_session: Mock) -> None:
         """Testa listagem quando não há rotinas."""
         mock_result = Mock()
         mock_result.all.return_value = []

@@ -51,9 +51,7 @@ class TestActivateRoutine:
         routine_id = 999
         mock_session.get.return_value = None
 
-        with pytest.raises(
-            ValueError, match=f"Rotina com ID {routine_id} não encontrada"
-        ):
+        with pytest.raises(ValueError, match=f"Rotina com ID {routine_id} não encontrada"):
             routine_service.activate_routine(routine_id)
 
         mock_session.add.assert_not_called()
@@ -108,9 +106,7 @@ class TestDeactivateRoutine:
         routine_id = 999
         mock_session.get.return_value = None
 
-        with pytest.raises(
-            ValueError, match=f"Rotina com ID {routine_id} não encontrada"
-        ):
+        with pytest.raises(ValueError, match=f"Rotina com ID {routine_id} não encontrada"):
             routine_service.deactivate_routine(routine_id)
 
         mock_session.add.assert_not_called()
@@ -164,9 +160,7 @@ class TestDeleteRoutine:
         routine_id = 999
         mock_session.get.return_value = None
 
-        with pytest.raises(
-            ValueError, match=f"Rotina com ID {routine_id} não encontrada"
-        ):
+        with pytest.raises(ValueError, match=f"Rotina com ID {routine_id} não encontrada"):
             routine_service.delete_routine(routine_id)
 
         mock_session.delete.assert_not_called()

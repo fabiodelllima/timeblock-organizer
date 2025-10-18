@@ -52,9 +52,7 @@ class TestBuildFromArgsPriority:
 
     def test_month_overrides_week_day_weeks(self, builder):
         """month should take precedence over week/day/weeks."""
-        start, end, limit = builder.build_from_args(
-            month="1", week="0", day="0", weeks=2
-        )
+        start, end, limit = builder.build_from_args(month="1", week="0", day="0", weeks=2)
         assert start is not None
         assert end is not None
         assert limit is None

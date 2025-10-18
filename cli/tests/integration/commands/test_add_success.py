@@ -1,6 +1,6 @@
 """Integration tests for add command - success cases."""
 
-from sqlmodel import Session, select, create_engine
+from sqlmodel import Session, create_engine, select
 
 from src.timeblock.main import app
 from src.timeblock.models import Event
@@ -41,9 +41,7 @@ class TestAddSuccess:
         engine = create_engine(f"sqlite:///{isolated_db}")
         with Session(engine) as session:
             event = session.exec(select(Event)).first()
-            description = (
-                event.description if event is not None else "Default description"
-            )
+            description = event.description if event is not None else "Default description"
             assert description == "Daily sync meeting"
 
     def test_add_with_color(self, isolated_db, cli_runner):

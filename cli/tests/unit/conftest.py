@@ -1,7 +1,9 @@
 """Fixtures específicas para unit tests."""
+
+from datetime import date, time
+from unittest.mock import MagicMock, Mock
+
 import pytest
-from unittest.mock import Mock, MagicMock
-from datetime import date, time, datetime
 
 
 @pytest.fixture

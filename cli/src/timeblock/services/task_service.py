@@ -39,41 +39,47 @@ class TaskService:
             return task
 
     @staticmethod
-    def get_task(task_id: int) -> Task | None:
+    def get_task(task_id: int) -> Task:
         """Busca tarefa por ID."""
         with get_engine_context() as engine, Session(engine) as session:
-            return session.get(Task, task_id)
+            task = session.get(Task, task_id)
+            if not task:
+                raise ValueError(f"Task {task_id} not found")
+            return task
 
     @staticmethod
-    def list_tasks(
-        start: datetime | None = None,
-        end: datetime | None = None,
-    ) -> list[Task]:
-        """Lista tarefas com filtro opcional de período."""
+    def list_tasks(start: datetime | None = None, end: datetime | None = None) -> list[Task]:
+        """Lista tarefas."""
         with get_engine_context() as engine, Session(engine) as session:
-            statement = select(Task)
+            query = select(Task)
 
-            if start is not None and end is not None:
-                statement = statement.where(
-                    and_(
-                        Task.scheduled_datetime >= start,
-                        Task.scheduled_datetime <= end,
-                    )
+            if start and end:
+                query = query.where(
+                    and_(Task.scheduled_datetime >= start, Task.scheduled_datetime <= end)
                 )
-            elif start is not None:
-                statement = statement.where(Task.scheduled_datetime >= start)
-            elif end is not None:
-                statement = statement.where(Task.scheduled_datetime <= end)
+            elif start:
+                query = query.where(Task.scheduled_datetime >= start)
+            elif end:
+                query = query.where(Task.scheduled_datetime <= end)
 
-            return list(session.exec(statement).all())
+            query = query.order_by(Task.scheduled_datetime)
+            return list(session.exec(query).all())
 
     @staticmethod
-    def complete_task(task_id: int) -> Task | None:
+    def list_pending_tasks() -> list[Task]:
+        """Lista tarefas pendentes."""
+        with get_engine_context() as engine, Session(engine) as session:
+            query = select(Task).where(Task.completed_datetime.is_(None))
+            query = query.order_by(Task.scheduled_datetime)
+            return list(session.exec(query).all())
+
+    @staticmethod
+    def complete_task(task_id: int) -> Task:
         """Marca tarefa como completa."""
         with get_engine_context() as engine, Session(engine) as session:
             task = session.get(Task, task_id)
             if not task:
-                return None
+                raise ValueError(f"Task {task_id} not found")
 
             task.completed_datetime = datetime.now()
             session.add(task)
@@ -82,12 +88,28 @@ class TaskService:
             return task
 
     @staticmethod
-    def delete_task(task_id: int) -> bool:
-        """Remove tarefa."""
+    def update_task(task_id: int, **kwargs) -> Task:
+        """Atualiza campos da tarefa."""
         with get_engine_context() as engine, Session(engine) as session:
             task = session.get(Task, task_id)
             if not task:
-                return False
+                raise ValueError(f"Task {task_id} not found")
+
+            for key, value in kwargs.items():
+                setattr(task, key, value)
+
+            session.add(task)
+            session.commit()
+            session.refresh(task)
+            return task
+
+    @staticmethod
+    def delete_task(task_id: int) -> None:
+        """Deleta tarefa."""
+        with get_engine_context() as engine, Session(engine) as session:
+            task = session.get(Task, task_id)
+            if not task:
+                raise ValueError(f"Task {task_id} not found")
+
             session.delete(task)
             session.commit()
-            return True

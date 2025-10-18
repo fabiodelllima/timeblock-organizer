@@ -89,9 +89,7 @@ def test_list_handles_database_error(isolated_db, monkeypatch):
     def mock_fetch_error(*args, **kwargs):
         raise Exception("Database connection failed")
 
-    monkeypatch.setattr(
-        "src.timeblock.commands.list.fetch_events_in_range", mock_fetch_error
-    )
+    monkeypatch.setattr("src.timeblock.commands.list.fetch_events_in_range", mock_fetch_error)
 
     result = runner.invoke(app, ["list"])
 
@@ -110,9 +108,7 @@ def test_list_handles_database_error(isolated_db, monkeypatch):
     def mock_fetch_error(*args, **kwargs):
         raise Exception("Database connection failed")
 
-    monkeypatch.setattr(
-        "src.timeblock.commands.list.fetch_events_in_range", mock_fetch_error
-    )
+    monkeypatch.setattr("src.timeblock.commands.list.fetch_events_in_range", mock_fetch_error)
 
     result = runner.invoke(app, ["list"])
 
@@ -131,9 +127,7 @@ def test_list_handles_database_error(isolated_db, monkeypatch):
     def mock_fetch_error(*args, **kwargs):
         raise Exception("Database connection failed")
 
-    monkeypatch.setattr(
-        "src.timeblock.commands.list.fetch_events_in_range", mock_fetch_error
-    )
+    monkeypatch.setattr("src.timeblock.commands.list.fetch_events_in_range", mock_fetch_error)
 
     result = runner.invoke(app, ["list"])
 

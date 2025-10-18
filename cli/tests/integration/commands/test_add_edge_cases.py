@@ -1,7 +1,7 @@
 """Integration tests for add command - edge cases."""
 
 import pytest
-from sqlmodel import Session, select, create_engine
+from sqlmodel import Session, select
 from typer.testing import CliRunner
 
 from src.timeblock.database import get_engine

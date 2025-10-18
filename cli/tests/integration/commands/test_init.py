@@ -80,9 +80,7 @@ def test_init_handles_database_error(isolated_db, monkeypatch):
     def mock_create_error():
         raise Exception("Simulated database error")
 
-    monkeypatch.setattr(
-        "src.timeblock.commands.init.create_db_and_tables", mock_create_error
-    )
+    monkeypatch.setattr("src.timeblock.commands.init.create_db_and_tables", mock_create_error)
 
     result = runner.invoke(app, ["init"])
 
