@@ -89,6 +89,29 @@ def list_tasks(
         raise typer.Exit(1)
 
 
+
+@app.command("start")
+def start_task(task_id: int = typer.Argument(..., help="ID da tarefa")):
+    """Marca tarefa como iniciada."""
+    try:
+        task = TaskService.get_task(task_id)
+        
+        if task.started_at:
+            console.print(f"[yellow][!][/yellow] Tarefa já foi iniciada em {task.started_at.strftime('%d/%m/%Y às %H:%M')}")
+            return
+        
+        # Marcar como iniciada
+        task.started_at = datetime.now()
+        TaskService.update_task(task_id, started_at=task.started_at)
+        
+        console.print(f"\n✓ Tarefa iniciada!\n", style="bold green")
+        console.print(f"[bold]{task.title}[/bold] (ID: {task.id})")
+        console.print(f"Início: {task.started_at.strftime('%d/%m/%Y às %H:%M')}\n")
+        
+    except ValueError as e:
+        console.print(f"✗ Erro: {e}", style="red")
+        raise typer.Exit(1)
+
 @app.command("check")
 def check_task(task_id: int = typer.Argument(..., help="ID da tarefa")):
     """Marca tarefa como completa."""
