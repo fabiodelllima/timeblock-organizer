@@ -13,7 +13,7 @@ console = Console()
 @app.command("create")
 def create_task(
     title: str = typer.Option(..., "--title", "-t", help="Título da tarefa"),
-    scheduled: str = typer.Option(..., "--datetime", "-d", help="Data/hora (YYYY-MM-DD HH:MM)"),
+    scheduled: str = typer.Option(..., "--datetime", "-D", help="Data/hora (YYYY-MM-DD HH:MM)"),
     description: str = typer.Option(None, "--desc", help="Descrição"),
     color: str = typer.Option(None, "--color", "-c", help="Cor"),
 ):

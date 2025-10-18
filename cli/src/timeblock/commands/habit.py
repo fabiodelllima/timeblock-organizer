@@ -111,7 +111,7 @@ def create_habit(
 
 @app.command("list")
 def list_habits(
-    routine: str = typer.Option("active", "--routine", "-r", help="Filtrar: active, all ou ID")
+    routine: str = typer.Option("active", "--routine", "-R", help="Filtrar: active, all ou ID")
 ):
     """Lista hábitos."""
     try:
