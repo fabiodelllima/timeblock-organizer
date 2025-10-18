@@ -12,4 +12,5 @@ class Task(SQLModel, table=True):
     scheduled_datetime: datetime = Field(index=True)
     completed_datetime: datetime | None = None
     description: str | None = Field(default=None, max_length=1000)
+    started_at: datetime | None = None
     color: str | None = Field(default=None, max_length=7)
