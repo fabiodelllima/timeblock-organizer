@@ -1,8 +1,14 @@
-"""Task service."""
+"""Task service - Sprint 2.2 Integration com EventReorderingService."""
+
 from datetime import datetime
+from typing import Optional
+
 from sqlmodel import Session, select
+
 from src.timeblock.database import get_engine_context
+
 from ..models import Task
+from .event_reordering_service import EventReorderingService
 
 
 class TaskService:
@@ -13,7 +19,6 @@ class TaskService:
         title: str,
         scheduled_datetime: datetime,
         description: str | None = None,
-        color: str | None = None,
         tag_id: int | None = None,
     ) -> Task:
         """Create a new task."""
@@ -28,7 +33,6 @@ class TaskService:
                 title=title,
                 scheduled_datetime=scheduled_datetime,
                 description=description,
-                color=color,
                 tag_id=tag_id,
             )
             session.add(task)
@@ -69,15 +73,30 @@ class TaskService:
         title: str | None = None,
         scheduled_datetime: datetime | None = None,
         description: str | None = None,
-        color: str | None = None,
         tag_id: int | None = None,
-        started_at: datetime | None = None,
-    ) -> Task | None:
-        """Update a task. Returns None if not found."""
+    ) -> tuple[Optional[Task], Optional["ReorderingProposal"]]:
+        """Update a task and detect scheduling conflicts.
+        
+        Args:
+            task_id: ID of task to update
+            title: New title (optional)
+            scheduled_datetime: New scheduled datetime (optional)
+            description: New description (optional)
+            tag_id: New tag ID (optional)
+            
+        Returns:
+            Tuple (updated task, reordering proposal or None)
+            
+        Raises:
+            ValueError: If title is invalid
+        """
         with get_engine_context() as engine, Session(engine) as session:
             task = session.get(Task, task_id)
             if not task:
-                return None
+                return None, None
+
+            # Track if scheduled_datetime changed
+            datetime_changed = scheduled_datetime is not None and scheduled_datetime != task.scheduled_datetime
 
             if title is not None:
                 title = title.strip()
@@ -90,17 +109,25 @@ class TaskService:
                 task.scheduled_datetime = scheduled_datetime
             if description is not None:
                 task.description = description
-            if color is not None:
-                task.color = color
             if tag_id is not None:
                 task.tag_id = tag_id
-            if started_at is not None:
-                task.started_at = started_at
 
             session.add(task)
             session.commit()
             session.refresh(task)
-            return task
+            
+            # Detect conflicts if scheduled_datetime changed
+            proposal = None
+            if datetime_changed:
+                conflicts = EventReorderingService.detect_conflicts(
+                    triggered_event_id=task_id,
+                    event_type="task"
+                )
+                
+                if conflicts:
+                    proposal = EventReorderingService.propose_reordering(conflicts)
+            
+            return task, proposal
 
     @staticmethod
     def complete_task(task_id: int) -> Task | None:
