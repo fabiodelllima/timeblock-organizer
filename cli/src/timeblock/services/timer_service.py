@@ -1,11 +1,13 @@
-"""Service para gerenciamento de timers."""
+"""Service para gerenciamento de timers - Sprint 2.3 Integration."""
 
 from datetime import datetime
+from typing import Optional
 
 from sqlmodel import Session, select
 
 from src.timeblock.database import get_engine_context
 from src.timeblock.models import PauseLog, TimeLog
+from .event_reordering_service import EventReorderingService
 
 
 class TimerService:
@@ -16,8 +18,20 @@ class TimerService:
         event_id: int | None = None,
         task_id: int | None = None,
         habit_instance_id: int | None = None,
-    ) -> TimeLog:
-        """Inicia timer."""
+    ) -> tuple[TimeLog, Optional["ReorderingProposal"]]:
+        """Inicia timer e detecta conflitos de ordem.
+        
+        Args:
+            event_id: ID do evento (opcional)
+            task_id: ID da task (opcional)
+            habit_instance_id: ID da instância de hábito (opcional)
+            
+        Returns:
+            Tuple (timelog criado, proposta de reordenamento ou None)
+            
+        Raises:
+            ValueError: Se não exatamente 1 ID fornecido ou timer já ativo
+        """
         ids_provided = sum(
             [
                 event_id is not None,
@@ -43,7 +57,32 @@ class TimerService:
             session.add(timelog)
             session.commit()
             session.refresh(timelog)
-            return timelog
+        
+        # Detectar conflitos após criar timelog
+        proposal = None
+        if task_id:
+            conflicts = EventReorderingService.detect_conflicts(
+                triggered_event_id=task_id,
+                event_type="task"
+            )
+            if conflicts:
+                proposal = EventReorderingService.propose_reordering(conflicts)
+        elif habit_instance_id:
+            conflicts = EventReorderingService.detect_conflicts(
+                triggered_event_id=habit_instance_id,
+                event_type="habit_instance"
+            )
+            if conflicts:
+                proposal = EventReorderingService.propose_reordering(conflicts)
+        elif event_id:
+            conflicts = EventReorderingService.detect_conflicts(
+                triggered_event_id=event_id,
+                event_type="event"
+            )
+            if conflicts:
+                proposal = EventReorderingService.propose_reordering(conflicts)
+        
+        return timelog, proposal
 
     @staticmethod
     def stop_timer(timelog_id: int) -> TimeLog | None:
@@ -75,7 +114,6 @@ class TimerService:
             if timelog.end_time is not None:
                 raise ValueError("Timer already stopped")
 
-            # Deletar pausas associadas
             pauses = session.exec(select(PauseLog).where(PauseLog.timelog_id == timelog_id)).all()
             for pause in pauses:
                 session.delete(pause)
