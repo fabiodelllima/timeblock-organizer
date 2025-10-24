@@ -14,6 +14,7 @@ class EventStatus(str, Enum):
     PAUSED = "paused"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
+    RESCHEDULED = "rescheduled"
 
 
 class Event(SQLModel, table=True):

@@ -5,7 +5,7 @@ from datetime import date, time, timedelta
 from sqlmodel import Session, and_, select
 
 from src.timeblock.database import get_engine_context
-from src.timeblock.models import Habit, HabitInstance, Recurrence
+from src.timeblock.models import Habit, HabitInstance, HabitInstanceStatus, Recurrence
 
 
 class HabitInstanceService:
@@ -124,6 +124,7 @@ class HabitInstanceService:
             instance.scheduled_start = new_start
             instance.scheduled_end = new_end
             instance.manually_adjusted = True
+            instance.user_override = True
 
             session.add(instance)
             session.commit()

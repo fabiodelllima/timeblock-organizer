@@ -2,8 +2,9 @@
 
 from .event import ChangeLog, ChangeType, Event, EventStatus, PauseLog
 from .habit import Habit, Recurrence
-from .habit_instance import HabitInstance
+from .habit_instance import HabitInstance, HabitInstanceStatus
 from .routine import Routine
+from .tag import Tag
 from .task import Task
 from .time_log import TimeLog
 
@@ -18,7 +19,7 @@ __all__ = [
     "Habit",
     "Recurrence",
     "HabitInstance",
+    "HabitInstanceStatus",
     "Tag",
     "Task",
 ]
-from .tag import Tag
