@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta
 from sqlmodel import Session, select, or_
 from src.timeblock.database import get_engine_context
-from src.timeblock.models import Task, HabitInstance, Event
+from src.timeblock.models import Task, HabitInstance, Event, EventStatus
 from .event_reordering_models import (
     Conflict,
     ConflictType,
@@ -69,6 +69,78 @@ class EventReorderingService:
                     )
             
             return conflicts
+
+    @staticmethod
+    def calculate_priorities(conflicts: list[Conflict]) -> dict[tuple[int, str], EventPriority]:
+        """
+        Calculate priority for each event involved in conflicts.
+        
+        Args:
+            conflicts: List of detected conflicts
+            
+        Returns:
+            Dictionary mapping (event_id, event_type) to EventPriority
+        """
+        with get_engine_context() as engine, Session(engine) as session:
+            priorities = {}
+            now = datetime.now()
+            
+            # Collect all unique events
+            events_to_check = set()
+            for conflict in conflicts:
+                events_to_check.add((conflict.triggered_event_id, conflict.triggered_event_type))
+                events_to_check.add((conflict.conflicting_event_id, conflict.conflicting_event_type))
+            
+            # Calculate priority for each event
+            for event_id, event_type in events_to_check:
+                event = EventReorderingService._get_event_by_type(session, event_id, event_type)
+                if not event:
+                    continue
+                
+                priority = EventReorderingService._calculate_event_priority(
+                    event, event_type, now
+                )
+                priorities[(event_id, event_type)] = priority
+            
+            return priorities
+
+    @staticmethod
+    def _calculate_event_priority(
+        event: Task | HabitInstance | Event,
+        event_type: str,
+        now: datetime,
+    ) -> EventPriority:
+        """Calculate priority for a single event."""
+        # CRITICAL: IN_PROGRESS events
+        if hasattr(event, 'status'):
+            if event.status == EventStatus.IN_PROGRESS:
+                return EventPriority.CRITICAL
+        
+        # CRITICAL: Task with deadline < 24h
+        if event_type == "task" and hasattr(event, 'completed_datetime'):
+            if event.completed_datetime:
+                deadline = event.completed_datetime
+                if deadline < now + timedelta(hours=24):
+                    return EventPriority.CRITICAL
+        
+        # HIGH: PAUSED events
+        if hasattr(event, 'status'):
+            if event.status == EventStatus.PAUSED:
+                return EventPriority.HIGH
+        
+        # Get event start time
+        start, _ = EventReorderingService._get_event_times(event, event_type)
+        if not start:
+            return EventPriority.LOW
+        
+        # NORMAL: PLANNED with start < 1h
+        if hasattr(event, 'status'):
+            if event.status == EventStatus.PLANNED:
+                if start < now + timedelta(hours=1):
+                    return EventPriority.NORMAL
+        
+        # LOW: Everything else
+        return EventPriority.LOW
 
     @staticmethod
     def _get_event_by_type(
