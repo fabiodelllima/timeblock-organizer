@@ -1,23 +1,25 @@
-"""Task model com campos para event reordering."""
+"""Task model."""
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship
+
+from .shared import SharedBase
+
+if TYPE_CHECKING:
+    from .tag import Tag
 
 
-class Task(SQLModel, table=True):
-    """Evento único e pontual."""
+class Task(SharedBase, table=True):
+    """Tarefa pontual agendada."""
 
-    id: Optional[int] = Field(default=None, primary_key=True)
-    title: str
+    __tablename__ = "tasks"
+
+    id: int | None = Field(default=None, primary_key=True)
+    title: str = Field(index=True, min_length=1, max_length=200)
     scheduled_datetime: datetime = Field(index=True)
-    completed_datetime: Optional[datetime] = None
-    description: Optional[str] = None
-    
-    # Campos para CLI refinements
-    started_at: Optional[datetime] = None
-    color: Optional[str] = None
-    tag_id: Optional[int] = Field(default=None, foreign_key="tag.id")
-    
+    completed_datetime: datetime | None = Field(default=None)
+    tag_id: int | None = Field(default=None, foreign_key="tags.id")
+
     # Relationships
     tag: Optional["Tag"] = Relationship(back_populates="tasks")

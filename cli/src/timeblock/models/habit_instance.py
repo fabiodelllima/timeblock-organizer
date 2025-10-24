@@ -9,6 +9,7 @@ from sqlmodel import Field, SQLModel
 
 class HabitInstanceStatus(str, Enum):
     """Status de instância de hábito."""
+
     PLANNED = "planned"
     IN_PROGRESS = "in_progress"
     PAUSED = "paused"
@@ -34,14 +35,14 @@ class HabitInstance(SQLModel, table=True):
     @property
     def is_overdue(self) -> bool:
         """Verifica se instância está atrasada.
-        
+
         Retorna True apenas se:
         - Status é PLANNED (ainda não iniciou)
         - Horário agendado já passou
         """
         if self.status != HabitInstanceStatus.PLANNED:
             return False
-        
+
         now = datetime.now()
         scheduled = datetime.combine(self.date, self.scheduled_start)
         return now > scheduled

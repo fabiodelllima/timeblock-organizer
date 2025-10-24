@@ -1,36 +1,29 @@
-"""Habit model for recurring events."""
-from datetime import time
-from enum import Enum
-from typing import Optional
+"""Habit model."""
+from typing import TYPE_CHECKING, Optional
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship
 
+from .habit_instance import HabitInstance
+from .routine import Routine
+from .shared import RecurrenceBase, SharedBase
 
-class Recurrence(str, Enum):
-    """Padrões de recorrência."""
-    MONDAY = "MONDAY"
-    TUESDAY = "TUESDAY"
-    WEDNESDAY = "WEDNESDAY"
-    THURSDAY = "THURSDAY"
-    FRIDAY = "FRIDAY"
-    SATURDAY = "SATURDAY"
-    SUNDAY = "SUNDAY"
-    WEEKDAYS = "WEEKDAYS"
-    WEEKENDS = "WEEKENDS"
-    EVERYDAY = "EVERYDAY"
+if TYPE_CHECKING:
+    from .tag import Tag
 
 
-class Habit(SQLModel, table=True):
-    """Evento recorrente da rotina."""
+class Habit(SharedBase, RecurrenceBase, table=True):
+    """Hábito recorrente vinculado a uma rotina."""
 
-    id: Optional[int] = Field(default=None, primary_key=True)
-    routine_id: int = Field(foreign_key="routine.id")
-    title: str = Field(max_length=200)
-    scheduled_start: time
-    scheduled_end: time
-    recurrence: Recurrence
-    color: Optional[str] = Field(default=None, max_length=7)
-    tag_id: Optional[int] = Field(default=None, foreign_key="tag.id")
-    
+    __tablename__ = "habits"
+
+    id: int | None = Field(default=None, primary_key=True)
+    title: str = Field(index=True, min_length=1, max_length=200)
+    routine_id: int = Field(foreign_key="routines.id")
+    tag_id: int | None = Field(default=None, foreign_key="tags.id")
+
     # Relationships
+    routine: Routine | None = Relationship(back_populates="habits")
+    instances: list[HabitInstance] = Relationship(
+        back_populates="habit", cascade_delete=True
+    )
     tag: Optional["Tag"] = Relationship(back_populates="habits")
