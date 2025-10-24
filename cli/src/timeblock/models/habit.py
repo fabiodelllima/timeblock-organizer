@@ -1,14 +1,13 @@
 """Habit model for recurring events."""
-
 from datetime import time
 from enum import Enum
+from typing import Optional
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 
 class Recurrence(str, Enum):
     """Padrões de recorrência."""
-
     MONDAY = "MONDAY"
     TUESDAY = "TUESDAY"
     WEDNESDAY = "WEDNESDAY"
@@ -24,11 +23,14 @@ class Recurrence(str, Enum):
 class Habit(SQLModel, table=True):
     """Evento recorrente da rotina."""
 
-    id: int | None = Field(default=None, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
     routine_id: int = Field(foreign_key="routine.id")
     title: str = Field(max_length=200)
     scheduled_start: time
     scheduled_end: time
     recurrence: Recurrence
-    color: str | None = Field(default=None, max_length=7)
-    tag_id: int | None = Field(default=None, foreign_key="tag.id")
+    color: Optional[str] = Field(default=None, max_length=7)
+    tag_id: Optional[int] = Field(default=None, foreign_key="tag.id")
+    
+    # Relationships
+    tag: Optional["Tag"] = Relationship(back_populates="habits")
