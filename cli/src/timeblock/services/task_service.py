@@ -1,4 +1,4 @@
-"""Task service - Sprint 2.2 Integration com EventReorderingService."""
+"""Task service com EventReorderingService."""
 
 from datetime import datetime
 from typing import Optional

@@ -332,3 +332,77 @@ class EventReorderingService:
                 proposed_changes=proposed_changes,
                 estimated_duration_shift=int(total_shift),
             )
+
+    @staticmethod
+    def apply_reordering(proposal: ReorderingProposal) -> None:
+        """Applies approved reordering proposal to database.
+        
+        Updates scheduled times for all events in the proposal, sets their status
+        to RESCHEDULED, and marks user_override flag for HabitInstances.
+        
+        Args:
+            proposal: ReorderingProposal with proposed_changes to apply
+            
+        Raises:
+            ValueError: If proposal has no changes to apply
+            RuntimeError: If database transaction fails
+        """
+        from src.timeblock.models.habit_instance import HabitInstanceStatus
+        
+        if not proposal.proposed_changes:
+            raise ValueError("No changes to apply in proposal")
+        
+        with get_engine_context() as engine, Session(engine) as session:
+            try:
+                for change in proposal.proposed_changes:
+                    event = EventReorderingService._get_event_by_type(
+                        session, change.event_id, change.event_type
+                    )
+                    
+                    if not event:
+                        continue
+                    
+                    EventReorderingService._set_event_times(
+                        event, change.event_type, change.proposed_start, change.proposed_end
+                    )
+                    
+                    if hasattr(event, "status"):
+                        if isinstance(event, HabitInstance):
+                            event.status = HabitInstanceStatus.RESCHEDULED
+                        else:
+                            event.status = "rescheduled"
+                    
+                    if isinstance(event, HabitInstance):
+                        event.user_override = True
+                    
+                    session.add(event)
+                
+                session.commit()
+                
+                for change in proposal.proposed_changes:
+                    event = EventReorderingService._get_event_by_type(
+                        session, change.event_id, change.event_type
+                    )
+                    if event:
+                        session.refresh(event)
+                        
+            except Exception as e:
+                session.rollback()
+                raise RuntimeError(f"Failed to apply reordering: {str(e)}") from e
+
+    @staticmethod
+    def _set_event_times(
+        event: Task | HabitInstance | Event,
+        event_type: str,
+        new_start: datetime,
+        new_end: datetime,
+    ) -> None:
+        """Set new start and end times for event."""
+        if event_type == "task":
+            event.scheduled_datetime = new_start
+        elif event_type == "habit_instance":
+            event.scheduled_start = new_start.time()
+            event.scheduled_end = new_end.time()
+        elif event_type == "event":
+            event.scheduled_start = new_start
+            event.scheduled_end = new_end

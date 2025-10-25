@@ -113,7 +113,7 @@ def delete_routine(
         with get_engine_context() as engine, Session(engine) as session:
             routine_service = RoutineService(session)
             habit_service = HabitService(session)
-            
+
             routine = routine_service.get_routine(routine_id)
             habits = habit_service.list_habits(routine_id)
 

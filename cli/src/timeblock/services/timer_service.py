@@ -1,4 +1,4 @@
-"""Service para gerenciamento de timers - Sprint 2.3 Integration."""
+"""Service para gerenciamento de timers."""
 
 from datetime import datetime
 from typing import Optional

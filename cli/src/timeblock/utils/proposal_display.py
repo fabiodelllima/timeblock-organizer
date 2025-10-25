@@ -6,56 +6,38 @@ from rich.prompt import Confirm
 from typing import Optional
 from datetime import datetime
 
-from timeblock.services.event_reordering_models import (
-    ReorderingProposal,
-    ConflictSeverity
-)
+from src.timeblock.services.event_reordering_models import ReorderingProposal
 
 
 def display_proposal(proposal: Optional[ReorderingProposal]) -> None:
-    """
-    Exibe proposta de reordenamento formatada.
-    
-    Args:
-        proposal: Proposta a exibir (None = sem conflitos)
-    """
-    if not proposal:
+    """Exibe proposta de reordenamento formatada."""
+    if not proposal or not proposal.proposed_changes:
         return
-        
-    console = Console()
     
-    # Header
+    console = Console()
     console.print("\n[yellow]⚠ CONFLITO DE AGENDA DETECTADO[/yellow]\n")
     
-    # Tabela de conflitos
-    table = Table(title="Eventos em Conflito")
+    table = Table(title="Reordenamento Proposto")
     table.add_column("Evento", style="cyan")
-    table.add_column("Horário Original", style="white")
+    table.add_column("Horário Atual", style="white")
     table.add_column("Horário Proposto", style="green")
-    table.add_column("Severidade", style="yellow")
+    table.add_column("Shift", style="yellow")
     
-    severity_symbols = {
-        ConflictSeverity.MINOR: "✓",
-        ConflictSeverity.MODERATE: "!",
-        ConflictSeverity.MAJOR: "✗"
-    }
-    
-    for adjustment in proposal.adjustments:
-        symbol = severity_symbols.get(adjustment.conflict.severity, "?")
+    for change in proposal.proposed_changes:
+        shift_min = int((change.proposed_start - change.current_start).total_seconds() / 60)
         
         table.add_row(
-            adjustment.event_name,
-            f"{_format_time(adjustment.original_start)} → {_format_time(adjustment.original_end)}",
-            f"{_format_time(adjustment.proposed_start)} → {_format_time(adjustment.proposed_end)}",
-            f"{symbol} {adjustment.conflict.severity.value}"
+            change.event_title,
+            f"{_format_time(change.current_start)} → {_format_time(change.current_end)}",
+            f"{_format_time(change.proposed_start)} → {_format_time(change.proposed_end)}",
+            f"{shift_min:+d} min"
         )
     
     console.print(table)
     
-    # Estatísticas
     stats = Panel(
-        f"[bold]Total:[/bold] {len(proposal.adjustments)} eventos\n"
-        f"[bold]Janela:[/bold] {_format_time(proposal.time_window_start)} - {_format_time(proposal.time_window_end)}",
+        f"[bold]Eventos afetados:[/bold] {len(proposal.proposed_changes)}\n"
+        f"[bold]Shift total:[/bold] {proposal.estimated_duration_shift:+d} minutos",
         title="Resumo",
         border_style="blue"
     )
@@ -63,18 +45,13 @@ def display_proposal(proposal: Optional[ReorderingProposal]) -> None:
 
 
 def confirm_apply_proposal() -> bool:
-    """
-    Pergunta se usuário quer aplicar proposta.
-    
-    Returns:
-        True se usuário aceitar
-    """
+    """Pergunta se usuário quer aplicar proposta."""
     return Confirm.ask(
-        "\n[bold]Aplicar reordenamento automático?[/bold]",
+        "\n[bold]Aplicar reordenamento?[/bold]",
         default=False
     )
 
 
 def _format_time(dt: datetime) -> str:
-    """Formata datetime para exibição (HH:MM)."""
+    """Formata datetime para HH:MM."""
     return dt.strftime("%H:%M")
