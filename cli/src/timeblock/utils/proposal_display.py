@@ -1,57 +1,51 @@
-"""Helper para exibição de propostas de reordenamento."""
+"""Formatação de propostas de reordenamento."""
+import typer
 from rich.console import Console
 from rich.table import Table
-from rich.panel import Panel
-from rich.prompt import Confirm
-from typing import Optional
-from datetime import datetime
-
 from src.timeblock.services.event_reordering_models import ReorderingProposal
 
 
-def display_proposal(proposal: Optional[ReorderingProposal]) -> None:
-    """Exibe proposta de reordenamento formatada."""
-    if not proposal or not proposal.proposed_changes:
-        return
+def display_proposal(proposal: ReorderingProposal, console: Console):
+    """Exibe proposta formatada."""
     
-    console = Console()
-    console.print("\n[yellow]⚠ CONFLITO DE AGENDA DETECTADO[/yellow]\n")
+    # Conflitos
+    console.print("\n[bold red]⚠ Conflitos Detectados:[/bold red]")
+    conflicts_table = Table(show_header=True)
+    conflicts_table.add_column("Evento 1")
+    conflicts_table.add_column("Evento 2")
+    conflicts_table.add_column("Tipo")
     
-    table = Table(title="Reordenamento Proposto")
-    table.add_column("Evento", style="cyan")
-    table.add_column("Horário Atual", style="white")
-    table.add_column("Horário Proposto", style="green")
-    table.add_column("Shift", style="yellow")
-    
-    for change in proposal.proposed_changes:
-        shift_min = int((change.proposed_start - change.current_start).total_seconds() / 60)
-        
-        table.add_row(
-            change.event_title,
-            f"{_format_time(change.current_start)} → {_format_time(change.current_end)}",
-            f"{_format_time(change.proposed_start)} → {_format_time(change.proposed_end)}",
-            f"{shift_min:+d} min"
+    for conflict in proposal.conflicts:
+        conflicts_table.add_row(
+            f"{conflict.triggered_event_type} #{conflict.triggered_event_id}",
+            f"{conflict.conflicting_event_type} #{conflict.conflicting_event_id}",
+            conflict.conflict_type.value
         )
     
-    console.print(table)
+    console.print(conflicts_table)
     
-    stats = Panel(
-        f"[bold]Eventos afetados:[/bold] {len(proposal.proposed_changes)}\n"
-        f"[bold]Shift total:[/bold] {proposal.estimated_duration_shift:+d} minutos",
-        title="Resumo",
-        border_style="blue"
-    )
-    console.print(stats)
+    # Mudanças propostas
+    console.print("\n[bold yellow]📋 Mudanças Propostas:[/bold yellow]")
+    changes_table = Table(show_header=True)
+    changes_table.add_column("Evento")
+    changes_table.add_column("Horário Atual")
+    changes_table.add_column("Horário Proposto")
+    changes_table.add_column("Prioridade")
+    
+    for change in proposal.proposed_changes:
+        changes_table.add_row(
+            f"{change.event_title}",
+            f"{change.current_start.strftime('%H:%M')} - {change.current_end.strftime('%H:%M')}",
+            f"{change.proposed_start.strftime('%H:%M')} - {change.proposed_end.strftime('%H:%M')}",
+            change.priority.name
+        )
+    
+    console.print(changes_table)
+    
+    # Resumo
+    console.print(f"\n[bold]Atraso estimado:[/bold] {proposal.estimated_duration_shift} minutos")
 
 
 def confirm_apply_proposal() -> bool:
-    """Pergunta se usuário quer aplicar proposta."""
-    return Confirm.ask(
-        "\n[bold]Aplicar reordenamento?[/bold]",
-        default=False
-    )
-
-
-def _format_time(dt: datetime) -> str:
-    """Formata datetime para HH:MM."""
-    return dt.strftime("%H:%M")
+    """Pede confirmação para aplicar proposta."""
+    return typer.confirm("\nAplicar reordenamento?")
