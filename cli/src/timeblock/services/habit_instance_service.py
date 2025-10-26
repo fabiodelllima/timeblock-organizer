@@ -53,10 +53,14 @@ class HabitInstanceService:
         new_end: time | None = None,
     ) -> tuple[Optional[HabitInstance], Optional["ReorderingProposal"]]:
         """Ajusta horário de instância e detecta conflitos."""
+        # Validação
+        if new_start is not None and new_end is not None and new_start >= new_end:
+            raise ValueError("Start time must be before end time")
+        
         with get_engine_context() as engine, Session(engine) as session:
             instance = session.get(HabitInstance, instance_id)
             if not instance:
-                return None, None
+                raise ValueError(f"HabitInstance {instance_id} not found")
 
             time_changed = False
             
@@ -67,6 +71,10 @@ class HabitInstanceService:
             if new_end is not None and new_end != instance.scheduled_end:
                 instance.scheduled_end = new_end
                 time_changed = True
+
+            if time_changed:
+                instance.manually_adjusted = True
+                instance.user_override = True
 
             session.add(instance)
             session.commit()

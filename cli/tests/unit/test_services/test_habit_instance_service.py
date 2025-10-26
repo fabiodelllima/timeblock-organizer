@@ -4,6 +4,7 @@ from datetime import time, date, datetime, timedelta
 from sqlmodel import Session, create_engine, SQLModel
 
 from src.timeblock.models import (
+    HabitInstanceStatus,
     Routine,
     Habit,
     HabitInstance,
@@ -61,7 +62,7 @@ def sample_instance(test_engine):
             date=date.today(),
             scheduled_start=time(7, 0),
             scheduled_end=time(8, 0),
-            status="planned"
+            status=HabitInstanceStatus.PLANNED
         )
         session.add(instance)
         session.commit()
@@ -133,14 +134,14 @@ class TestConflictDetection:
                 date=date.today(),
                 scheduled_start=time(9, 0),
                 scheduled_end=time(10, 0),
-                status="planned"
+                status=HabitInstanceStatus.PLANNED
             )
             inst2 = HabitInstance(
                 habit_id=habit.id,
                 date=date.today() + timedelta(days=1),
                 scheduled_start=time(15, 0),
                 scheduled_end=time(16, 0),
-                status="planned"
+                status=HabitInstanceStatus.PLANNED
             )
             session.add_all([inst1, inst2])
             session.commit()
