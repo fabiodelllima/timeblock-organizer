@@ -6,7 +6,7 @@ from time import sleep
 import pytest
 from sqlmodel import Session, SQLModel, create_engine
 
-from src.timeblock.models import PauseLog, Task, TimeLog
+from src.timeblock.models import PauseLog, Task, TimeLog, Event, Routine, Habit, HabitInstance
 from src.timeblock.services.timer_service import TimerService
 
 
@@ -42,6 +42,7 @@ def mock_engine(monkeypatch, test_engine):
         yield test_engine
 
     monkeypatch.setattr("src.timeblock.services.timer_service.get_engine_context", mock_get_engine)
+    monkeypatch.setattr("src.timeblock.services.event_reordering_service.get_engine_context", mock_get_engine)
 
 
 class TestStartTimer:
@@ -49,16 +50,21 @@ class TestStartTimer:
 
     def test_start_timer_with_task(self, test_task):
         """Inicia timer para task."""
-        timelog = TimerService.start_timer(task_id=test_task.id)
+        timelog, proposal = TimerService.start_timer(task_id=test_task.id)
         assert timelog.id is not None
         assert timelog.task_id == test_task.id
         assert timelog.start_time is not None
         assert timelog.end_time is None
+        assert proposal is None
+
+    def test_start_timer_returns_tuple(self, test_task):
+        """Verifica que retorna tupla."""
+        result = TimerService.start_timer(task_id=test_task.id)
+        assert isinstance(result, tuple)
+        assert len(result) == 2
 
     def test_start_timer_with_event(self, test_engine):
         """Inicia timer para event."""
-        from src.timeblock.models import Event
-
         with Session(test_engine) as session:
             event = Event(
                 title="Event",
@@ -69,8 +75,31 @@ class TestStartTimer:
             session.commit()
             session.refresh(event)
 
-        timelog = TimerService.start_timer(event_id=event.id)
+        timelog, proposal = TimerService.start_timer(event_id=event.id)
         assert timelog.event_id == event.id
+        assert proposal is None
+
+    def test_start_timer_detects_conflict_with_task(self, test_engine):
+        """Detecta conflito ao iniciar timer com task conflitante."""
+        with Session(test_engine) as session:
+            task1 = Task(
+                title="Task 1",
+                scheduled_datetime=datetime.now(),
+            )
+            task2 = Task(
+                title="Task 2",
+                scheduled_datetime=datetime.now() + timedelta(minutes=30),
+            )
+            session.add_all([task1, task2])
+            session.commit()
+            session.refresh(task1)
+            session.refresh(task2)
+
+        timelog, proposal = TimerService.start_timer(task_id=task1.id)
+        
+        assert timelog is not None
+        assert proposal is not None
+        assert len(proposal.conflicts) > 0
 
     def test_start_timer_without_id(self):
         """Rejeita sem ID."""
@@ -104,8 +133,8 @@ class TestStopTimer:
 
     def test_stop_timer_success(self, test_task):
         """Para timer e calcula duração."""
-        timelog = TimerService.start_timer(task_id=test_task.id)
-        sleep(1)  # Pequeno delay
+        timelog, _ = TimerService.start_timer(task_id=test_task.id)
+        sleep(1)
 
         stopped = TimerService.stop_timer(timelog.id)
         assert stopped is not None
@@ -118,7 +147,7 @@ class TestStopTimer:
 
     def test_stop_timer_already_stopped(self, test_task):
         """Rejeita timer já parado."""
-        timelog = TimerService.start_timer(task_id=test_task.id)
+        timelog, _ = TimerService.start_timer(task_id=test_task.id)
         TimerService.stop_timer(timelog.id)
 
         with pytest.raises(ValueError, match="already stopped"):
@@ -126,9 +155,8 @@ class TestStopTimer:
 
     def test_stop_timer_with_pauses(self, test_task, test_engine):
         """Desconta tempo pausado."""
-        timelog = TimerService.start_timer(task_id=test_task.id)
+        timelog, _ = TimerService.start_timer(task_id=test_task.id)
 
-        # Criar pausa manualmente
         with Session(test_engine) as session:
             pause = PauseLog(
                 timelog_id=timelog.id,
@@ -153,7 +181,7 @@ class TestCancelTimer:
 
     def test_cancel_timer_success(self, test_task):
         """Cancela timer."""
-        timelog = TimerService.start_timer(task_id=test_task.id)
+        timelog, _ = TimerService.start_timer(task_id=test_task.id)
 
         assert TimerService.cancel_timer(timelog.id) is True
         assert TimerService.get_active_timer() is None
@@ -164,7 +192,7 @@ class TestCancelTimer:
 
     def test_cancel_timer_already_stopped(self, test_task):
         """Rejeita timer já parado."""
-        timelog = TimerService.start_timer(task_id=test_task.id)
+        timelog, _ = TimerService.start_timer(task_id=test_task.id)
         TimerService.stop_timer(timelog.id)
 
         with pytest.raises(ValueError, match="already stopped"):
@@ -172,7 +200,7 @@ class TestCancelTimer:
 
     def test_cancel_timer_deletes_pauses(self, test_task, test_engine):
         """Deleta pausas associadas."""
-        timelog = TimerService.start_timer(task_id=test_task.id)
+        timelog, _ = TimerService.start_timer(task_id=test_task.id)
         pause = TimerService.pause_timer(timelog.id)
 
         TimerService.cancel_timer(timelog.id)
@@ -186,7 +214,7 @@ class TestPauseTimer:
 
     def test_pause_timer_success(self, test_task):
         """Pausa timer."""
-        timelog = TimerService.start_timer(task_id=test_task.id)
+        timelog, _ = TimerService.start_timer(task_id=test_task.id)
         pause = TimerService.pause_timer(timelog.id)
 
         assert pause.id is not None
@@ -201,7 +229,7 @@ class TestPauseTimer:
 
     def test_pause_timer_already_stopped(self, test_task):
         """Erro se timer já parado."""
-        timelog = TimerService.start_timer(task_id=test_task.id)
+        timelog, _ = TimerService.start_timer(task_id=test_task.id)
         TimerService.stop_timer(timelog.id)
 
         with pytest.raises(ValueError, match="already stopped"):
@@ -213,13 +241,12 @@ class TestResumeTimer:
 
     def test_resume_timer_success(self, test_task):
         """Retoma timer."""
-        timelog = TimerService.start_timer(task_id=test_task.id)
+        timelog, _ = TimerService.start_timer(task_id=test_task.id)
         TimerService.pause_timer(timelog.id)
         sleep(1)
 
         TimerService.resume_timer(timelog.id)
 
-        # Verificar que pausa foi finalizada
         resumed = TimerService.get_active_timer()
         assert resumed.paused_duration > 0
 
@@ -230,7 +257,7 @@ class TestResumeTimer:
 
     def test_resume_timer_no_active_pause(self, test_task):
         """Erro se não há pausa ativa."""
-        timelog = TimerService.start_timer(task_id=test_task.id)
+        timelog, _ = TimerService.start_timer(task_id=test_task.id)
 
         with pytest.raises(ValueError, match="No active pause"):
             TimerService.resume_timer(timelog.id)
@@ -241,7 +268,7 @@ class TestGetActiveTimer:
 
     def test_get_active_timer_found(self, test_task):
         """Encontra timer ativo."""
-        started = TimerService.start_timer(task_id=test_task.id)
+        started, _ = TimerService.start_timer(task_id=test_task.id)
         active = TimerService.get_active_timer()
 
         assert active is not None
@@ -253,7 +280,7 @@ class TestGetActiveTimer:
 
     def test_get_active_timer_after_stop(self, test_task):
         """Retorna None após stop."""
-        timelog = TimerService.start_timer(task_id=test_task.id)
+        timelog, _ = TimerService.start_timer(task_id=test_task.id)
         TimerService.stop_timer(timelog.id)
 
         assert TimerService.get_active_timer() is None
