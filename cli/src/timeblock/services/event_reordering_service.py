@@ -334,61 +334,41 @@ class EventReorderingService:
             )
 
     @staticmethod
-    def apply_reordering(proposal: ReorderingProposal) -> None:
-        """Applies approved reordering proposal to database.
-        
-        Updates scheduled times for all events in the proposal, sets their status
-        to RESCHEDULED, and marks user_override flag for HabitInstances.
+    def apply_reordering(proposal: ReorderingProposal) -> bool:
+        """
+        Aplica mudanças propostas ao banco.
         
         Args:
-            proposal: ReorderingProposal with proposed_changes to apply
+            proposal: Proposta com mudanças
             
-        Raises:
-            ValueError: If proposal has no changes to apply
-            RuntimeError: If database transaction fails
+        Returns:
+            bool: True se aplicado com sucesso
         """
-        from src.timeblock.models.habit_instance import HabitInstanceStatus
-        
         if not proposal.proposed_changes:
-            raise ValueError("No changes to apply in proposal")
-        
+            return False
+            
         with get_engine_context() as engine, Session(engine) as session:
-            try:
-                for change in proposal.proposed_changes:
-                    event = EventReorderingService._get_event_by_type(
-                        session, change.event_id, change.event_type
-                    )
-                    
-                    if not event:
-                        continue
-                    
-                    EventReorderingService._set_event_times(
-                        event, change.event_type, change.proposed_start, change.proposed_end
-                    )
-                    
-                    if hasattr(event, "status"):
-                        if isinstance(event, HabitInstance):
-                            event.status = HabitInstanceStatus.RESCHEDULED
-                        else:
-                            event.status = "rescheduled"
-                    
-                    if isinstance(event, HabitInstance):
-                        event.user_override = True
-                    
-                    session.add(event)
+            for change in proposal.proposed_changes:
+                event = EventReorderingService._get_event_by_type(
+                    session, change.event_id, change.event_type
+                )
                 
-                session.commit()
+                if not event:
+                    continue
                 
-                for change in proposal.proposed_changes:
-                    event = EventReorderingService._get_event_by_type(
-                        session, change.event_id, change.event_type
-                    )
-                    if event:
-                        session.refresh(event)
-                        
-            except Exception as e:
-                session.rollback()
-                raise RuntimeError(f"Failed to apply reordering: {str(e)}") from e
+                # Atualizar horários
+                EventReorderingService._set_event_times(
+                    event, change.event_type, change.proposed_start, change.proposed_end
+                )
+                
+                # Marcar como reordenado automaticamente
+                if hasattr(event, 'user_override'):
+                    event.user_override = False
+                
+                session.add(event)
+            
+            session.commit()
+            return True
 
     @staticmethod
     def _set_event_times(
