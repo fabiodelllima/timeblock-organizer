@@ -25,7 +25,7 @@ def display_proposal(proposal: ReorderingProposal, console: Console):
     console.print(conflicts_table)
     
     # Mudanças propostas
-    console.print("\n[bold yellow]📋 Mudanças Propostas:[/bold yellow]")
+    console.print("\n[bold yellow]>>> MUDANÇAS PROPOSTAS:[/bold yellow]")
     changes_table = Table(show_header=True)
     changes_table.add_column("Evento")
     changes_table.add_column("Horário Atual")

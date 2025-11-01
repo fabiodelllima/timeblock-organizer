@@ -1,0 +1,231 @@
+site_name: TimeBlock Organizer Docs
+site_description: CLI para gerenciar hábitos recorrentes e resolver conflitos de agenda.
+site_author: Fábio de Lima
+site_url: https://github.com/fabiodelllima/timeblock-organizer
+
+repo_name: timeblock-organizer
+repo_url: https://github.com/fabiodelllima/timeblock-organizer
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  language: pt-BR
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - toc.follow
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Modo escuro
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Modo claro
+  font:
+    text: Roboto
+    code: Roboto Mono
+
+nav:
+  - Home: README.md
+
+  - Project Status:
+      - Overview: 10-meta/project-status.md
+      - Master Document: 10-meta/master-integration-document.md
+      - Technical Debt: 10-meta/technical-debt.md
+      - Detailed Roadmap: 10-meta/detailed-roadmap.md
+      - Pending Decisions: 10-meta/pending-decisions.md
+      - Success Metrics: 10-meta/success-metrics.md
+      - Problems Solved: 10-meta/problemas-e-solucoes.md
+
+  - Arquitetura:
+      - Visão Geral: 01-architecture/README.md
+      - 1. Introdução: 01-architecture/01-introduction-goals.md
+      - 2. Restrições: 01-architecture/02-constraints.md
+      - 3. Contexto: 01-architecture/03-context-scope.md
+      - 4. Estratégia: 01-architecture/04-solution-strategy.md
+      - 5. Building Blocks: 01-architecture/05-building-blocks.md
+      - 6. Runtime View: 01-architecture/06-runtime-view.md
+      - 7. Deployment: 01-architecture/07-deployment.md
+      - 8. Crosscutting: 01-architecture/08-crosscutting.md
+      - 9. Decisions Index: 01-architecture/09-decisions-index.md
+      - 10. Quality: 01-architecture/10-quality.md
+      - 11. Risks and Debt: 01-architecture/11-risks-debt.md
+      - 12. Glossary: 01-architecture/12-glossary.md
+      - 13. Análise Arquitetural: 01-architecture/13-architectural-analysis.md
+      - 14. Problemas Identificados: 01-architecture/14-architectural-problems.md
+      - 15. Recomendações: 01-architecture/15-recommendations.md
+
+  - Diagramas:
+      - Visão Geral: 02-diagrams/README.md
+      - C4 Model:
+          - L1 Context: 02-diagrams/c4-model/L1-system-context.md
+          - L2 Containers: 02-diagrams/c4-model/L2-containers.md
+          - L3 Components: 02-diagrams/c4-model/L3-components-core.md
+      - Sequências:
+          - Event Reordering: 02-diagrams/sequences/event-reordering.md
+          - Habit Generation: 02-diagrams/sequences/habit-generation.md
+          - Timer Flow: 02-diagrams/sequences/timer-flow.md
+          - Habit Instantiation: 02-diagrams/sequences/habit-instantiation.md
+      - Estados:
+          - Event States: 02-diagrams/states/event-states.md
+          - Timer States: 02-diagrams/states/timer-states.md
+          - Habit Lifecycle: 02-diagrams/states/habit-lifecycle.md
+          - Task Lifecycle: 02-diagrams/states/task-lifecycle.md
+      - Data:
+          - ER Diagram: 02-diagrams/data/er-diagram.md
+          - Class Diagram: 02-diagrams/data/class-diagram.md
+      - Infrastructure:
+          - Deployment: 02-diagrams/infrastructure/deployment.md
+      - Activity:
+          - Habit Execution: 02-diagrams/activity/habit-execution.md
+          - User Daily Flow: 02-diagrams/activity/user-daily-flow.md
+
+  - Decisões (ADRs):
+      - Índice: 03-decisions/README.md
+      - Template: 03-decisions/template.md
+      - "ADR-001: SQLModel ORM": 03-decisions/001-sqlmodel-orm.md
+      - "ADR-002: Typer CLI": 03-decisions/002-typer-cli.md
+      - "ADR-003: Event Reordering": 03-decisions/003-event-reordering.md
+      - "ADR-004: Habit vs Instance": 03-decisions/004-habit-vs-instance.md
+      - "ADR-005: Resource-First CLI": 03-decisions/005-resource-first-cli.md
+      - "ADR-006: Textual TUI": 03-decisions/006-textual-tui.md
+      - "ADR-007: Service Layer": 03-decisions/007-service-layer.md
+      - "ADR-008: Tuple Returns": 03-decisions/008-tuple-returns.md
+      - "ADR-009: Flags Consolidation": 03-decisions/009-flags-consolidation.md
+      - "ADR-010: Recurrence Model": 03-decisions/010-recurrence-model.md
+      - "ADR-011: Conflict Philosophy": 03-decisions/011-conflict-philosophy.md
+
+  - Especificações:
+      - Visão Geral: 04-specifications/README.md
+      - Business Rules:
+          - "BR001: Habit Scheduling": 04-specifications/business-rules/BR001-habit-scheduling.md
+          - "BR002: Event Conflicts": 04-specifications/business-rules/BR002-event-conflicts.md
+          - "BR003: Reordering Logic": 04-specifications/business-rules/BR003-reordering-logic.md
+          - "BR004: Timer Behavior": 04-specifications/business-rules/BR004-timer-behavior.md
+          - "Regras Completas": 04-specifications/business-rules/COMPLETE-BUSINESS-RULES.md
+      - Algorithms:
+          - Event Reordering: 04-specifications/algorithms/event-reordering.md
+          - Conflict Detection: 04-specifications/algorithms/conflict-detection.md
+      - Protocols:
+          - Validation: 04-specifications/protocols/validation.md
+          - Error Handling: 04-specifications/protocols/error-handling.md
+      - Philosophy:
+          - Conflict Philosophy: 04-specifications/philosophy/conflict-philosophy.md
+
+  - APIs Internas:
+      - Visão Geral: 05-api/README.md
+      - Services:
+          - Event Reordering: 05-api/services/event-reordering.md
+          - Habit Service: 05-api/services/habit-service.md
+          - Timer Service: 05-api/services/timer-service.md
+          - Task Service: 05-api/services/task-service.md
+      - Models:
+          - Event Models: 05-api/models/event-models.md
+          - Habit Models: 05-api/models/habit-models.md
+          - Habit: 05-api/models/habit.md
+          - Habit Instance: 05-api/models/habit-instance.md
+          - Routine: 05-api/models/routine.md
+          - Task: 05-api/models/task.md
+      - CLI:
+          - Commands: 05-api/cli/commands.md
+          - Parsers: 05-api/cli/parsers.md
+      - Database Schema: 05-api/database-schema.md
+
+  - Desenvolvimento:
+      - Guia do Dev: 06-development/README.md
+      - Setup: 06-development/setup.md
+      - Workflow: 06-development/workflow.md
+      - Testing: 06-development/testing.md
+
+  - Testes:
+      - Estratégia: 07-testing/README.md
+      - Plano de Testes: 07-testing/test-plan.md
+      - Fixtures:
+          - Database: 07-testing/fixtures/database.md
+          - Time: 07-testing/fixtures/time.md
+      - Scenarios:
+          - Event Creation: 07-testing/scenarios/event-creation.md
+          - Conflict Detection: 07-testing/scenarios/conflict-detection.md
+
+  - Guias do Usuário:
+      - Portal: 08-user-guides/README.md
+      - Getting Started: 08-user-guides/getting-started.md
+      - Workflows:
+          - Overview: 08-user-guides/workflows/README.md
+          - v1.0 Baseline: 08-user-guides/workflows/v1.0-baseline.md
+      - CLI Reference: 08-user-guides/cli-reference.md
+      - FAQ: 08-user-guides/faq.md
+      - Reference:
+          - RRule Examples: 08-user-guides/reference/rrule-examples.md
+          - Priority Guide: 08-user-guides/reference/priority-guide.md
+
+  - Pesquisa:
+      - Índice: 09-research/README.md
+      - Documentation Methodologies: 09-research/documentation-methodologies.md
+      - Topics:
+          - Scheduling Algorithms: 09-research/topics/scheduling-algorithms.md
+          - Time Management: 09-research/topics/time-management.md
+          - Habit Formation: 09-research/topics/habit-formation.md
+
+  - Meta:
+      - About: 10-meta/README.md
+      - Changelog: 10-meta/changelog.md
+      - Next Chat Prompt: 10-meta/prompt-proximo-chat.md
+      - Templates:
+          - ADR Template: 10-meta/templates/adr-template.md
+          - Issue Template: 10-meta/templates/issue-template.md
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - footnotes
+  - meta
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+plugins:
+  - search:
+      lang:
+        - pt
+        - en
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/fabiodelllima/timeblock-organizer

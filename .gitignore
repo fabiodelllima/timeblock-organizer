@@ -30,3 +30,7 @@ htmlcov/
 # Logs
 *.log
 cli/src/data/
+
+#
+site/
+*.tar.gz
