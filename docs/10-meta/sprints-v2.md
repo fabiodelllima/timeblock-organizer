@@ -1,12 +1,11 @@
 # Sprints v2.0 - Event Reordering
 
-- **Autor:** Fábio de Lima
 - **Data:** Outubro-Novembro 2025
 - **Status:** COMPLETO
 
 ## Resumo Executivo
 
-Implementação completa do sistema Event Reordering em 3 fases, totalizando 9 sprints. Todas as features planejadas foram entregues com 78 testes passando e 90% de cobertura de código.
+Implementação completa do Event Reordering em 3 fases, totalizando 9 sprints. Todas as features planejadas foram entregues com 78 testes passando e 90% de cobertura de código.
 
 ## Sprint 1.1: Models e Database
 
@@ -14,12 +13,13 @@ Implementação completa do sistema Event Reordering em 3 fases, totalizando 9 s
 - **Status:** [OK] CONCLUÍDO
 
 **Entregas:**
-- [X] EventPriority enum (CRITICAL, HIGH, NORMAL, LOW)
-- [X] ConflictType enum (OVERLAP, SEQUENTIAL)
-- [X] Conflict dataclass
-- [X] ProposedChange dataclass
-- [X] ReorderingProposal dataclass
-- [X] Testes: 8/8 passando
+
+- [x] EventPriority enum (CRITICAL, HIGH, NORMAL, LOW)
+- [x] ConflictType enum (OVERLAP, SEQUENTIAL)
+- [x] Conflict dataclass
+- [x] ProposedChange dataclass
+- [x] ReorderingProposal dataclass
+- [x] Testes: 8/8 passando
 
 ## Sprint 1.2: Conflict Detection
 
@@ -27,14 +27,15 @@ Implementação completa do sistema Event Reordering em 3 fases, totalizando 9 s
 - **Status:** [OK] CONCLUÍDO
 
 **Entregas:**
-- [X] Método detect_conflicts()
-- [X] Helper _get_event_by_type()
-- [X] Helper _get_event_times()
-- [X] Helper _get_events_in_range()
-- [X] Helper _has_overlap()
-- [X] Algoritmo de detecção de overlaps temporais
-- [X] Query de eventos do dia
-- [X] Testes: 9/9 passando
+
+- [x] Método detect_conflicts()
+- [x] Helper \_get_event_by_type()
+- [x] Helper \_get_event_times()
+- [x] Helper \_get_events_in_range()
+- [x] Helper \_has_overlap()
+- [x] Algoritmo de detecção de overlaps temporais
+- [x] Query de eventos do dia
+- [x] Testes: 9/9 passando
 
 ## Sprint 1.3: Priority Calculation
 
@@ -42,13 +43,14 @@ Implementação completa do sistema Event Reordering em 3 fases, totalizando 9 s
 - **Status:** [OK] CONCLUÍDO
 
 **Entregas:**
-- [X] Método calculate_priorities()
-- [X] Regras de priorização:
+
+- [x] Método calculate_priorities()
+- [x] Regras de priorização:
   - CRITICAL: IN_PROGRESS ou deadline < 24h
   - HIGH: PAUSED
   - NORMAL: PLANNED com start < 1h
   - LOW: PLANNED com start > 1h
-- [X] Testes: 5/5 passando
+- [x] Testes: 5/5 passando
 
 ## Sprint 1.4: Proposal Generation
 
@@ -56,15 +58,17 @@ Implementação completa do sistema Event Reordering em 3 fases, totalizando 9 s
 - **Status:** [OK] CONCLUÍDO
 
 **Correções Aplicadas:**
-- [X] ProposedChange usa current_start/current_end (não original_start/end)
-- [X] Adicionado campo event_title obrigatório
-- [X] Busca evento antes de criar ProposedChange
+
+- [x] ProposedChange usa current_start/current_end (não original_start/end)
+- [x] Adicionado campo event_title obrigatório
+- [x] Busca evento antes de criar ProposedChange
 
 **Entregas:**
-- [X] Método propose_reordering()
-- [X] Algoritmo de reordenamento sequencial
-- [X] Cálculo de atraso total (estimated_duration_shift)
-- [X] Testes: 3/3 passando
+
+- [x] Método propose_reordering()
+- [x] Algoritmo de reordenamento sequencial
+- [x] Cálculo de atraso total (estimated_duration_shift)
+- [x] Testes: 3/3 passando
 
 ## Sprint 2.1: TaskService Integration
 
@@ -72,11 +76,12 @@ Implementação completa do sistema Event Reordering em 3 fases, totalizando 9 s
 - **Status:** [OK] CONCLUÍDO
 
 **Entregas:**
-- [X] TaskService.update_task() retorna tuple[Task, ReorderingProposal | None]
-- [X] Detecta conflitos quando datetime muda
-- [X] Retorna None quando datetime não muda
-- [X] Testes de integração: 16/16 passando
-- [X] 1 teste skip intencional (integration test complexo)
+
+- [x] TaskService.update_task() retorna tuple[Task, ReorderingProposal | None]
+- [x] Detecta conflitos quando datetime muda
+- [x] Retorna None quando datetime não muda
+- [x] Testes de integração: 16/16 passando
+- [x] 1 teste skip intencional (integration test complexo)
 
 ## Sprint 2.2: HabitInstanceService Integration
 
@@ -84,11 +89,12 @@ Implementação completa do sistema Event Reordering em 3 fases, totalizando 9 s
 - **Status:** [OK] CONCLUÍDO
 
 **Entregas:**
-- [X] HabitInstanceService.adjust_instance_time() retorna tuple
-- [X] Detecta conflitos ao ajustar horário
-- [X] Integração com EventReorderingService
-- [X] Testes: 6/6 passando
-- [X] Cobertura: 43% do service
+
+- [x] HabitInstanceService.adjust_instance_time() retorna tuple
+- [x] Detecta conflitos ao ajustar horário
+- [x] Integração com EventReorderingService
+- [x] Testes: 6/6 passando
+- [x] Cobertura: 43% do service
 
 ## Sprint 2.3: TimerService Integration
 
@@ -96,11 +102,12 @@ Implementação completa do sistema Event Reordering em 3 fases, totalizando 9 s
 - **Status:** [OK] CONCLUÍDO
 
 **Entregas:**
-- [X] TimerService.start_timer() detecta conflitos
-- [X] Retorna tuple[TimeLog, ReorderingProposal | None]
-- [X] Validação de overlaps ao iniciar timer
-- [X] Testes: 24/24 passando
-- [X] Cobertura: 96% do service
+
+- [x] TimerService.start_timer() detecta conflitos
+- [x] Retorna tuple[TimeLog, ReorderingProposal | None]
+- [x] Validação de overlaps ao iniciar timer
+- [x] Testes: 24/24 passando
+- [x] Cobertura: 96% do service
 
 ## Sprint 2.4: CLI Preview Command
 
@@ -108,13 +115,14 @@ Implementação completa do sistema Event Reordering em 3 fases, totalizando 9 s
 - **Status:** [OK] CONCLUÍDO
 
 **Entregas:**
-- [X] Comando reschedule preview
-- [X] Display formatado com Rich:
+
+- [x] Comando reschedule preview
+- [x] Display formatado com Rich:
   - Tabela de conflitos detectados
   - Tabela de mudanças propostas
   - Atraso total estimado
-- [X] Arquivo proposal_display.py criado
-- [X] Testes: 3/3 passando
+- [x] Arquivo proposal_display.py criado
+- [x] Testes: 3/3 passando
 
 ## Sprint 3.1: Apply Reordering
 
@@ -122,10 +130,11 @@ Implementação completa do sistema Event Reordering em 3 fases, totalizando 9 s
 - **Status:** [OK] CONCLUÍDO
 
 **Entregas:**
-- [X] Método apply_reordering() implementado
-- [X] Atualiza timestamps no banco de dados
-- [X] Suporta Task e HabitInstance
-- [X] Testes: 4/4 passando
+
+- [x] Método apply_reordering() implementado
+- [x] Atualiza timestamps no banco de dados
+- [x] Suporta Task e HabitInstance
+- [x] Testes: 4/4 passando
   - test_apply_empty_proposal
   - test_apply_updates_task_time
   - test_apply_updates_habit_instance_time
@@ -137,10 +146,11 @@ Implementação completa do sistema Event Reordering em 3 fases, totalizando 9 s
 - **Status:** [OK] CONCLUÍDO
 
 **Entregas:**
-- [X] Confirmação interativa após preview
-- [X] Flag --auto-approve para automação
-- [X] Integração com comando reschedule
-- [X] Mensagens de sucesso/cancelamento
+
+- [x] Confirmação interativa após preview
+- [x] Flag --auto-approve para automação
+- [x] Integração com comando reschedule
+- [x] Mensagens de sucesso/cancelamento
 
 ---
 
@@ -151,6 +161,7 @@ Implementação completa do sistema Event Reordering em 3 fases, totalizando 9 s
 **Duração Total:** ~27h (planejado: 28h)
 **Testes:** 78 passando, 0 falhando
 **Cobertura:**
+
 ```terminal
 event_reordering_models.py      100%
 event_reordering_service.py      90%
@@ -158,14 +169,16 @@ reschedule command               64%
 ```
 
 **Arquivos Criados:**
+
 - src/timeblock/services/event_reordering_models.py
 - src/timeblock/services/event_reordering_service.py
 - src/timeblock/commands/reschedule.py
 - src/timeblock/utils/proposal_display.py
-- tests/unit/test_services/test_event_reordering_*.py (5 arquivos)
+- tests/unit/test*services/test_event_reordering*\*.py (5 arquivos)
 - tests/unit/test_commands/test_reschedule.py
 
 **Linhas de Código:**
+
 - Produção: ~400 linhas
 - Testes: ~800 linhas
 - Ratio 1:2 (excelente)
