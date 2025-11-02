@@ -1,36 +1,196 @@
 # TimeBlock Organizer
 
-> Gerenciador de tempo baseado em time blocking para terminal
+> Sistema desenvolvido para gerenciamento de tempo via CLI com reordenamento automático de eventos
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/fabiodelllima/timeblock-organizer/releases/tag/v1.0.0)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/fabiodelllima/timeblock-organizer/releases/tag/v1.1.0)
 [![Python](https://img.shields.io/badge/python-3.13+-green.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-141%20passing-success.svg)](tests/)
-[![Coverage](https://img.shields.io/badge/coverage-99%25-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-219%20passing-success.svg)](tests/)
+[![Coverage](https://img.shields.io/badge/coverage-50%25-yellow.svg)](tests/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## Visão Geral
 
-TimeBlock Organizer é uma ferramenta CLI (Command Line Interface) para gerenciamento de tempo usando a técnica de time blocking. Organize seus eventos em blocos de tempo, visualize sua agenda, e mantenha o controle da sua produtividade diretamente do terminal.
+TimeBlock Organizer é uma ferramenta CLI para gerenciamento de tempo usando time blocking e princípios de Atomic Habits. Detecta conflitos automaticamente e propõe reordenamento inteligente de eventos baseado em prioridades.
 
-**v1.0.0** oferece funcionalidades essenciais de criação e listagem de eventos com validações robustas e suporte a múltiplos formatos de hora.
+**Diferencial:** Sistema adaptativo que reorganiza sua agenda automaticamente quando surgem conflitos, respeitando prioridades e minimizando interrupções.
 
-## Funcionalidades
+## Funcionalidades Principais
+
+### Sistema de Reordenamento Automático (v1.1.0)
+
+Detecção inteligente de conflitos com reorganização automática:
+
+- **Detecção Automática:** Identifica sobreposições ao criar ou modificar eventos
+- **Cálculo de Prioridades:** CRITICAL, HIGH, NORMAL, LOW baseado em status e prazos
+- **Reordenamento Inteligente:** Move eventos de baixa prioridade, mantém críticos fixos
+- **Confirmação Interativa:** Preview completo antes de aplicar mudanças
+
+```bash
+# Exemplo: Mover tarefa para horário conflitante
+$ timeblock task update 5 --scheduled-datetime "2025-11-01 10:00"
+
+[AVISO] 2 conflitos detectados
+
+Conflitos:
++----------------+-----------------+------------+
+| Evento         | Horário         | Prioridade |
++----------------+-----------------+------------+
+| Deep Work      | 10:00 - 12:00   | LOW        |
+| Code Review    | 11:00 - 11:30   | NORMAL     |
++----------------+-----------------+------------+
+
+Aplicar reordenamento? [Y/n]: y
+[OK] Reordenamento aplicado!
+```
 
 ### Comandos Disponíveis
 
-- **`init`**: Inicializa o banco de dados SQLite
-- **`add`**: Cria novos eventos com validações automáticas
-- **`list`**: Lista eventos com filtros flexíveis por data
+**Gerenciamento Básico:**
 
-### Recursos Principais
+- `init` - Inicializa banco de dados SQLite
+- `add` - Cria eventos com validações automáticas
+- `list` - Lista eventos com filtros por data
 
-- Múltiplos formatos de hora suportados (HH:MM, HHh, HHhMM)
-- Detecção automática de eventos que cruzam meia-noite
-- Validação de conflitos de horário
-- Validação de duração (mínima e máxima)
-- Categorização por cores
-- Visualização em tabelas formatadas com Rich
-- Persistência em SQLite
+**Hábitos e Rotinas:**
+
+- `routine create/list/activate` - Gerencia rotinas recorrentes
+- `habit create/list/update` - Cria e gerencia hábitos
+- `schedule generate` - Gera instâncias de hábitos
+
+**Tarefas e Timer:**
+
+- `task create/list/complete` - Gerencia tarefas únicas
+- `timer start/stop/status` - Rastreia tempo real
+
+**Event Reordering:**
+
+- `reschedule <id>` - Detecta e aplica reordenamento
+- `reschedule preview <id>` - Apenas visualiza proposta
+
+**Relatórios:**
+
+- `report daily/weekly/habit` - Análises e estatísticas
+
+### Recursos Técnicos
+
+- Suporte a múltiplos formatos de hora (HH:MM, HHh, HHhMM)
+- Detecção de eventos que cruzam meia-noite
+- Validação robusta de conflitos e durações
+- Persistência em SQLite local-first
+- Interface Rich para tabelas formatadas
+- 219 testes automatizados (50% cobertura)
+
+## Arquitetura
+
+### Contexto do Sistema
+
+```mermaid
+graph TB
+    User([Usuário<br/>Gerencia tempo e hábitos])
+    TimeBlock[TimeBlock Organizer<br/>CLI para hábitos e agenda]
+    Calendar[Calendário Externo<br/>Google Calendar, Outlook]
+    Notification[Sistema de Notificações<br/>OS Native]
+
+    User -->|Usa CLI/TUI| TimeBlock
+    TimeBlock -.->|Sync futuro| Calendar
+    TimeBlock -->|Envia lembretes| Notification
+
+    style TimeBlock fill:#1168bd,stroke:#0b4884,color:#fff
+    style Calendar fill:#999,stroke:#666,color:#fff
+    style Notification fill:#999,stroke:#666,color:#fff
+    style User fill:#08427b,stroke:#052e56,color:#fff
+```
+
+### Modelo de Dados
+
+```mermaid
+erDiagram
+    Habit ||--o{ HabitInstance : generates
+    Routine ||--o{ Habit : contains
+
+    Habit {
+        int id PK
+        string name
+        time scheduled_start
+        int duration_minutes
+        string recurrence_rule
+    }
+
+    HabitInstance {
+        int id PK
+        int habit_id FK
+        date date
+        time scheduled_start
+        string status
+        bool user_override
+    }
+
+    Task {
+        int id PK
+        string title
+        datetime scheduled_datetime
+        datetime deadline
+        string status
+    }
+
+    TimeLog {
+        int id PK
+        datetime start_time
+        datetime end_time
+        int task_id FK
+    }
+```
+
+### Fluxo de Event Reordering
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant CLI
+    participant Service as EventReorderingService
+    participant Detector as ConflictDetector
+    participant Generator as ProposalGenerator
+
+    User->>CLI: reschedule preview <id>
+    CLI->>Service: detect_conflicts(event_id)
+    Service->>Detector: get_overlapping_events()
+    Detector-->>Service: conflicting_events
+
+    Service->>Service: calculate_priorities()
+    Service->>Generator: propose_reordering()
+    Generator-->>Service: ReorderingProposal
+
+    Service-->>CLI: proposal
+    CLI->>User: Display preview table
+
+    User->>CLI: confirm "y"
+    CLI->>Service: apply_reordering(proposal)
+    Service-->>CLI: success
+    CLI->>User: [OK] Aplicado!
+```
+
+### Estados de Hábito
+
+```mermaid
+stateDiagram-v2
+    [*] --> PLANNED
+    PLANNED --> IN_PROGRESS: start timer
+    PLANNED --> SKIPPED: skip
+    PLANNED --> OVERDUE: past deadline
+
+    IN_PROGRESS --> COMPLETED: complete
+    IN_PROGRESS --> PAUSED: pause
+    IN_PROGRESS --> SKIPPED: skip
+
+    PAUSED --> IN_PROGRESS: resume
+    PAUSED --> SKIPPED: skip
+
+    OVERDUE --> COMPLETED: complete late
+    OVERDUE --> SKIPPED: skip
+
+    COMPLETED --> [*]
+    SKIPPED --> [*]
+```
 
 ## Instalação
 
@@ -59,352 +219,207 @@ venv\Scripts\activate
 pip install -e .
 
 # Inicialize o banco de dados
-python -m src.timeblock.main init
-```
-
-## Uso
-
-### Inicializar Banco de Dados
-
-```bash
 timeblock init
 ```
 
-Cria o banco de dados SQLite em `data/timeblock.db`. Se já existir, pergunta se deseja reinicializar.
+## Guia Rápido
 
-### Adicionar Eventos
-
-#### Formato Padrão (HH:MM)
+### 1. Criar Rotina Matinal
 
 ```bash
-timeblock add "Reunião de equipe" -s 09:00 -e 10:30
-timeblock add "Almoço" -s 12:00 -e 13:00 --desc "Restaurante XYZ"
+# Criar rotina
+timeblock routine create "Rotina Matinal"
+
+# Adicionar hábitos
+timeblock habit create "Meditação" --duration 15 --time 07:00
+timeblock habit create "Exercício" --duration 30 --time 07:20
+timeblock habit create "Café da manhã" --duration 20 --time 08:00
+
+# Gerar instâncias para a semana
+timeblock schedule generate --days 7
 ```
 
-#### Formato Coloquial (HHh e HHhMM)
+### 2. Gerenciar Tarefas
 
 ```bash
+# Criar tarefa
+timeblock task create "Reunião Cliente" \
+  --scheduled-datetime "2025-11-05 14:00" \
+  --duration 60
+
+# Listar tarefas
+timeblock task list
+
+# Completar tarefa
+timeblock task complete 1
+```
+
+### 3. Usar Timer
+
+```bash
+# Iniciar timer para tarefa
+timeblock timer start --task-id 5
+
+# Pausar
+timeblock timer pause
+
+# Retomar
+timeblock timer resume
+
+# Parar
+timeblock timer stop
+```
+
+### 4. Reordenamento Automático
+
+```bash
+# Visualizar proposta sem aplicar
+timeblock reschedule preview 10
+
+# Aplicar com confirmação
+timeblock reschedule 10
+
+# Aplicar automaticamente
+timeblock reschedule 10 --auto-approve
+```
+
+### 5. Relatórios
+
+```bash
+# Relatório diário
+timeblock report daily
+
+# Relatório semanal
+timeblock report weekly
+
+# Relatório de hábito específico
+timeblock report habit --id 3
+```
+
+## Exemplos de Uso
+
+### Formato Coloquial de Hora
+
+```bash
+# Formato brasileiro natural
 timeblock add "Academia" -s 7h -e 8h30
 timeblock add "Estudar Python" -s 14h -e 16h
 timeblock add "Café" -s 15h30 -e 16h
 ```
 
-#### Com Parâmetros Opcionais
+### Eventos Recorrentes
 
 ```bash
-timeblock add "Projeto X" \
-  --start 14h \
-  --end 17h \
-  --date 2025-10-20 \
-  --desc "Sprint planning e desenvolvimento" \
-  --color blue
+# Criar hábito diário
+timeblock habit create "Leitura" \
+  --time 21:00 \
+  --duration 30 \
+  --recurrence "DAILY"
+
+# Criar hábito semanal
+timeblock habit create "Revisão Semanal" \
+  --time 18:00 \
+  --duration 60 \
+  --recurrence "WEEKLY"
 ```
 
-#### Evento que Cruza Meia-Noite
+## Desenvolvimento
+
+### Estrutura do Projeto
+
+```terminal
+timeblock-organizer/
+├── cli/
+│   ├── src/timeblock/
+│   │   ├── commands/          # Comandos CLI
+│   │   ├── models/            # Modelos SQLModel
+│   │   ├── services/          # Lógica de negócio
+│   │   ├── utils/             # Utilitários
+│   │   └── main.py            # Entry point
+│   └── tests/                 # Testes unitários e integração
+├── docs/                      # Documentação completa
+│   ├── 01-architecture/       # Arquitetura arc42
+│   ├── 02-diagrams/           # Diagramas Mermaid
+│   ├── 03-decisions/          # ADRs
+│   ├── 04-specifications/     # Especificações
+│   └── 10-meta/               # Meta documentação
+└── README.md
+```
+
+### Executar Testes
 
 ```bash
-timeblock add "Plantão noturno" -s 23h -e 2h
-# ⚠ Event crosses midnight (ends next day)
-# ✓ Event created successfully!
-```
+cd cli
 
-### Listar Eventos
+# Todos os testes
+pytest
 
-#### Ver Eventos de Hoje
-
-```bash
-timeblock list
-# ou
-timeblock list --day 0
-```
-
-#### Ver Eventos de Datas Específicas
-
-```bash
-# Amanhã
-timeblock list --day 1
-
-# Ontem
-timeblock list --day -1
-
-# Próxima segunda-feira
-timeblock list --day monday
-
-# Data específica
-timeblock list --date 2025-10-25
-```
-
-#### Ver Semana Inteira
-
-```bash
-# Semana atual (próximos 7 dias)
-timeblock list --week 0
-
-# Próxima semana
-timeblock list --week 1
-
-# Semana passada
-timeblock list --week -1
-```
-
-#### Ver Mês
-
-```bash
-# Mês atual
-timeblock list --month 0
-
-# Próximo mês
-timeblock list --month 1
-```
-
-### Parâmetros dos Comandos
-
-#### `add` - Criar Evento
-
-| Parâmetro     | Obrigatório | Formato          | Descrição           |
-| ------------- | ----------- | ---------------- | ------------------- |
-| `title`       | Sim         | string           | Título do evento    |
-| `-s, --start` | Sim         | HH:MM ou HHh[MM] | Hora de início      |
-| `-e, --end`   | Sim         | HH:MM ou HHh[MM] | Hora de término     |
-| `-d, --date`  | Não         | YYYY-MM-DD       | Data (padrão: hoje) |
-| `--desc`      | Não         | string           | Descrição detalhada |
-| `--color`     | Não         | nome/hex         | Cor do evento       |
-
-#### `list` - Listar Eventos
-
-| Parâmetro | Tipo       | Descrição                                                                |
-| --------- | ---------- | ------------------------------------------------------------------------ |
-| `--day`   | int/string | Dia relativo (0=hoje, 1=amanhã, -1=ontem) ou nome (monday, tuesday, etc) |
-| `--week`  | int        | Semana relativa (0=atual, 1=próxima, -1=anterior)                        |
-| `--month` | int        | Mês relativo (0=atual, 1=próximo, -1=anterior)                           |
-| `--date`  | string     | Data específica YYYY-MM-DD                                               |
-
-## Formatos de Hora
-
-O sistema aceita três formatos de hora:
-
-### 1. Formato Padrão (HH:MM)
-
-```bash
-09:00    # 9 da manhã
-14:30    # 2:30 da tarde
-23:45    # 11:45 da noite
-```
-
-### 2. Formato Coloquial Hora Inteira (HHh)
-
-```bash
-9h       # 9 da manhã
-14h      # 2 da tarde
-23h      # 11 da noite
-```
-
-### 3. Formato Coloquial com Minutos (HHhMM)
-
-```bash
-9h30     # 9:30 da manhã
-14h15    # 2:15 da tarde
-23h45    # 11:45 da noite
-```
-
-Todos os formatos são intercambiáveis:
-
-```bash
-timeblock add "Evento" -s 9h -e 10:30      # Misturado
-timeblock add "Evento" -s 09:00 -e 10h30   # Misturado
-timeblock add "Evento" -s 9h30 -e 11h      # Coloquial
-```
-
-## Validações
-
-### Duração
-
-- **Mínima**: Eventos devem ter duração maior que 0
-- **Máxima**: Eventos não podem ter 24h ou mais
-
-```bash
-timeblock add "Curto" -s 10h -e 10h
-# ✗ Event duration cannot be 24 hours or more
-
-timeblock add "Longo" -s 10h -e 9h59
-# ✓ Event created (23h59min)
-```
-
-### Conflitos
-
-O sistema detecta e alerta sobre conflitos de horário:
-
-```bash
-timeblock add "Reunião A" -s 14h -e 15h
-timeblock add "Reunião B" -s 14h30 -e 16h
-# ⚠ Warning: Conflicts with existing event "Reunião A"
-# ✓ Event created successfully!
-```
-
-### Cruzamento de Meia-Noite
-
-Eventos que cruzam meia-noite são permitidos e sinalizados:
-
-```bash
-timeblock add "Virada" -s 23h -e 2h
-# ⚠ Event crosses midnight (ends next day)
-# ✓ Event created successfully!
-# Duration: 3.0h
-```
-
-## Exemplos de Uso
-
-### Rotina Diária
-
-```bash
-# Manhã
-timeblock add "Acordar e exercícios" -s 7h -e 8h
-timeblock add "Café da manhã" -s 8h -e 8h30
-timeblock add "Trabalho focado" -s 9h -e 12h
-
-# Tarde
-timeblock add "Almoço" -s 12h -e 13h
-timeblock add "Reuniões" -s 13h -e 15h
-timeblock add "Trabalho focado" -s 15h -e 17h
-
-# Noite
-timeblock add "Jantar" -s 19h -e 20h
-timeblock add "Estudos" -s 20h -e 22h
-
-# Ver agenda do dia
-timeblock list
-```
-
-### Planejamento Semanal
-
-```bash
-# Segunda-feira
-timeblock add "Reunião de equipe" -s 9h -e 10h --date 2025-10-21
-timeblock add "Sprint planning" -s 10h -e 12h --date 2025-10-21
-
-# Terça-feira
-timeblock add "Code review" -s 14h -e 15h --date 2025-10-22
-timeblock add "Pair programming" -s 15h -e 17h --date 2025-10-22
-
-# Ver semana
-timeblock list --week 0
-```
-
-### Evento com Descrição Detalhada
-
-```bash
-timeblock add "Workshop Python Avançado" \
-  -s 14h \
-  -e 18h \
-  --date 2025-10-25 \
-  --desc "Tópicos: decorators, context managers, metaclasses. Local: Sala 201. Trazer laptop." \
-  --color purple
-```
-
-## Visualização de Saída
-
-### Listagem de Eventos
-
-```
-                                           This Week
- ID    Date        Title                 Time           Duration     Status          Color
- 1     2025-10-16  Reunião de equipe     09:00 → 10:30      1.5h    planned            -
- 2     2025-10-16  Almoço                12:00 → 13:00      1.0h    planned            -
- 3     2025-10-16  Projeto X             14:00 → 17:00      3.0h    planned          blue
-
-                                          Next 2 Weeks
- ID    Date        Title                 Time           Duration     Status          Color
- 4     2025-10-21  Workshop Python       14:00 → 18:00      4.0h    planned         purple
-
-Total: 4 events
-```
-
-### Avisos e Confirmações
-
-```
-✓ Event created successfully!
-ID: 5
-Academia
-07:00 → 08:30 (1.5h)
-
-⚠ Event crosses midnight (ends next day)
-✓ Event created successfully!
-ID: 6
-Plantão noturno
-23:00 → 02:00 (3.0h)
-
-✗ Event duration cannot be 24 hours or more. Time blocking is designed for specific activities, not entire days.
-```
-
-## Estrutura do Projeto
-
-```
-cli/
-├── src/timeblock/
-│   ├── models/              # Modelos de dados (Event, EventColor, EventStatus)
-│   ├── database/            # Engine SQLite e configuração
-│   ├── commands/            # Comandos CLI (init, add, list)
-│   └── utils/               # Validadores, formatadores, helpers
-├── tests/                   # Suite de testes (141 testes)
-├── data/                    # Banco de dados SQLite
-├── pyproject.toml           # Configuração do projeto
-└── requirements.txt         # Dependências
-```
-
-## Tecnologias
-
-- **Python 3.13**: Linguagem principal
-- **SQLModel**: ORM type-safe (SQLAlchemy + Pydantic)
-- **Rich**: Formatação e tabelas no terminal
-- **Typer**: Framework CLI moderno
-- **Ruff**: Linter e formatter
-- **SQLite**: Banco de dados local
-- **pytest**: Framework de testes
-
-## Testes
-
-```bash
-# Rodar todos os testes
-pytest -v
-
-# Com relatório de cobertura
-pytest --cov=src/timeblock --cov-report=html
+# Com cobertura
+pytest --cov=src/timeblock --cov-report=term-missing
 
 # Testes específicos
-pytest tests/unit/
-pytest tests/integration/
+pytest tests/unit/test_services/test_event_reordering*.py -v
 
-# Ver relatório HTML
-open htmlcov/index.html
+# Testes de integração
+pytest tests/integration/ -v
 ```
 
-### Estatísticas
+### Qualidade de Código
 
-- **141 testes** passando
-- **99% cobertura** de código
-- Testes unitários e de integração
-- Fixtures reutilizáveis
-- Testes de caracterização para refatorações seguras
+```bash
+# Linting
+ruff check src/
+
+# Type checking
+mypy src/
+
+# Formatação
+ruff format src/
+```
 
 ## Roadmap
 
-### v1.0.0 (Atual)
+### v1.2.0 - Refatoração HabitAtom (Próximo)
 
-- [x] Inicialização de banco de dados
-- [x] Criar eventos com validações
-- [x] Listar eventos com filtros
-- [x] Múltiplos formatos de hora
-- [x] Detecção de conflitos
+- Renomear HabitInstance → HabitAtom
+- Reforçar filosofia Atomic Habits
+- Melhorar testes como documentação viva
+- ETA: 2 semanas
 
-### v2.0.0 (Planejado)
+### v1.3.0 - Living Documentation (Médio Prazo)
 
-- [ ] Sistema de Habits recorrentes
-- [ ] Reordenação adaptativa de eventos
-- [ ] Interface Textual (TUI rica)
-- [ ] Timer para tracking de tempo real
-- [ ] Relatórios e análise de padrões
-- [ ] Import/export via Markdown
-- [ ] Comandos: update, delete, routine
+- BDD com Gherkin
+- Testes como especificação
+- Documentação auto-gerada
+
+### v2.0.0 - Sistema Completo (Futuro)
+
+- Interface TUI (Textual)
+- Sincronização com calendários externos
+- Notificações nativas
+- Analytics avançados
+- IA para sugestões
+
+## Documentação
+
+- [Documentação Completa](docs/)
+- [Guia de Arquitetura](docs/01-architecture/)
+- [Decisões Técnicas (ADRs)](docs/03-decisions/)
+- [Especificações](docs/04-specifications/)
+- [CHANGELOG](CHANGELOG.md)
+
+## Filosofia
+
+TimeBlock é baseado em "Atomic Habits" de James Clear:
+
+> "Você não se eleva ao nível das suas metas. Você cai ao nível dos seus sistemas."
+
+O sistema foca em:
+
+- **Consistência sobre intensidade:** Pequenos hábitos diários
+- **Recompensa imediata:** Feedback visual instantâneo
+- **Redução de fricção:** CLI rápida e intuitiva
+- **Identidade:** Construir quem você quer ser
 
 ## Licença
 
@@ -412,6 +427,5 @@ MIT License - veja [LICENSE](LICENSE) para detalhes.
 
 ---
 
-**Autor**: Fábio de Lima  
-**v1.0.0** - Outubro 2025  
-Primeira versão estável do TimeBlock Organizer CLI
+- **Status:** v1.1.0 - Event Reordering completo (01 Nov 2025)
+- **Próximo Release:** v1.2.0 - Refatoração HabitAtom (ETA: 15 Nov 2025)
