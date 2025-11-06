@@ -20,6 +20,13 @@
 - [ADR-013: Offline-First Schema Migration](../03-decisions/013-offline-first-schema.md)
 - [ADR-014: Connect Command UX Flow](../03-decisions/014-sync-ux-flow.md)
 
+## ADRs HabitAtom Refactor
+
+- [ADR-015: HabitInstance Naming](../03-decisions/015-habitinstance-naming.md)
+- [ADR-016: Alembic Timing](../03-decisions/016-alembic-timing.md)
+- [ADR-017: Environment Strategy](../03-decisions/017-environment-strategy.md)
+- [ADR-018: Language Standards](../03-decisions/018-language-standards.md)
+
 ## Índice por Categoria
 
 ### Models e Dados
@@ -28,6 +35,7 @@
 - ADR-004 (Habit vs Instance)
 - ADR-010 (Recurrence Model)
 - ADR-013 (Offline-First Schema)
+- ADR-015 (HabitInstance Naming)
 
 ### CLI e UX
 
@@ -50,9 +58,16 @@
 - ADR-013 (Schema Migration)
 - ADR-014 (UX Flow)
 
+### DevOps e Qualidade
+
+- ADR-016 (Alembic Timing)
+- ADR-017 (Environment Strategy)
+- ADR-018 (Language Standards)
+
 ## Status das Decisões
 
 | ADR     | Status   | Versão |
 | ------- | -------- | ------ |
 | 001-011 | Accepted | v1.x   |
 | 012-014 | Accepted | v2.0   |
+| 015-018 | Accepted | v1.2   |
