@@ -2,21 +2,36 @@
 
 > Sistema desenvolvido para gerenciamento de tempo via CLI com reordenamento automático de eventos
 
-[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/fabiodelllima/timeblock-organizer/releases/tag/v1.1.0)
+[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](https://github.com/fabiodelllima/timeblock-organizer/releases/tag/v1.2.0)
 [![Python](https://img.shields.io/badge/python-3.13+-green.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-219%20passing-success.svg)](tests/)
-[![Coverage](https://img.shields.io/badge/coverage-50%25-yellow.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-57%20passing-success.svg)](tests/)
+[![Coverage](https://img.shields.io/badge/coverage-80%25-brightgreen.svg)](tests/)
+[![CI](https://img.shields.io/badge/CI-setup%20pending-yellow.svg)](.github/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Docs](https://img.shields.io/badge/docs-complete-success.svg)](docs/)
 
 ## Visão Geral
 
-TimeBlock Organizer é uma ferramenta CLI para gerenciamento de tempo usando time blocking e princípios de Atomic Habits. Detecta conflitos automaticamente e propõe reordenamento inteligente de eventos baseado em prioridades.
+TimeBlock Organizer é uma ferramenta CLI para gerenciamento de tempo usando time blocking e detectação automática de conflitos e sugere reordenamento de eventos baseado em prioridades.
 
 **Diferencial:** Sistema adaptativo que reorganiza sua agenda automaticamente quando surgem conflitos, respeitando prioridades e minimizando interrupções.
 
+**Roadmap v2.0:** Sincronização offline-first entre Linux e Android (Termux) - [Ver Roadmap](docs/10-meta/ROADMAP.md)
+
+## Status do Projeto
+
+- **Versão Atual:** v1.2.0 (Produção)
+- **Próxima Release:** v2.0.0-alpha (Mar 2026)
+- **Features em Desenvolvimento:**
+  - Queue-Based Sync (ADR-012)
+  - Offline-First Schema (ADR-013)
+  - Connect Command (ADR-014)
+  - 26 E2E Tests
+- **Documentação:** [Architecture](docs/02-architecture/ARCHITECTURE.md) | [Philosophy](docs/01-guides/PHILOSOPHY.md) | [ADRs](docs/03-decisions/)
+
 ## Funcionalidades Principais
 
-### Sistema de Reordenamento Automático (v1.1.0)
+### Sistema de Reordenamento Automático (v1.2.0)
 
 Detecção inteligente de conflitos com reorganização automática:
 
@@ -231,9 +246,8 @@ timeblock init
 timeblock routine create "Rotina Matinal"
 
 # Adicionar hábitos
-timeblock habit create "Meditação" --duration 15 --time 07:00
-timeblock habit create "Exercício" --duration 30 --time 07:20
-timeblock habit create "Café da manhã" --duration 20 --time 08:00
+timeblock habit create "Despertar" --duration 15 --time 07:00
+timeblock habit create "Café da Manhã" --duration 30 --time 07:20
 
 # Gerar instâncias para a semana
 timeblock schedule generate --days 7
@@ -304,7 +318,7 @@ timeblock report habit --id 3
 # Formato brasileiro natural
 timeblock add "Academia" -s 7h -e 8h30
 timeblock add "Estudar Python" -s 14h -e 16h
-timeblock add "Café" -s 15h30 -e 16h
+timeblock add "Café da Tarde" -s 15h30 -e 16h
 ```
 
 ### Eventos Recorrentes
@@ -427,5 +441,5 @@ MIT License - veja [LICENSE](LICENSE) para detalhes.
 
 ---
 
-- **Status:** v1.1.0 - Event Reordering completo (01 Nov 2025)
-- **Próximo Release:** v1.2.0 - Refatoração HabitAtom (ETA: 15 Nov 2025)
+- **Status:** v1.2.0 - Event Reordering completo (01 Nov 2025)
+- **Próximo Release:** v1.3.0 - Refatoração HabitAtom (ETA: 15 Nov 2025)
