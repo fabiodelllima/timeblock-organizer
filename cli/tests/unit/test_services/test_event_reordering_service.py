@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pytest
 from sqlmodel import Session, SQLModel, create_engine
 
-from src.timeblock.models import Event, Habit, HabitInstance, Routine, Tag, Task, TimeLog
+from src.timeblock.models import HabitInstance, Task
 from src.timeblock.services.event_reordering_service import EventReorderingService
 
 
@@ -31,7 +31,7 @@ class TestDetectConflicts:
     def test_no_conflicts(self, mock_context, test_engine, session):
         """No conflicts when events don't overlap."""
         mock_context.return_value.__enter__.return_value = test_engine
-        
+
         task = Task(title="Task 1", scheduled_datetime=datetime(2025, 10, 24, 10, 0))
         session.add(task)
         session.commit()
@@ -51,7 +51,7 @@ class TestDetectConflicts:
     def test_task_overlaps_with_task(self, mock_context, test_engine, session):
         """Detects conflict between two overlapping tasks."""
         mock_context.return_value.__enter__.return_value = test_engine
-        
+
         task1 = Task(title="Task 1", scheduled_datetime=datetime(2025, 10, 24, 10, 0))
         task2 = Task(title="Task 2", scheduled_datetime=datetime(2025, 10, 24, 10, 30))
         session.add(task1)
