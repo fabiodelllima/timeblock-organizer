@@ -1,15 +1,14 @@
-"""Task service com EventReorderingService."""
+"""Task service com detecção de conflitos."""
 
 from datetime import datetime
-from typing import Optional
 
 from sqlmodel import Session, select
 
 from src.timeblock.database import get_engine_context
 
 from ..models import Task
+from .event_reordering_models import Conflict
 from .event_reordering_service import EventReorderingService
-from .event_reordering_models import ReorderingProposal
 
 
 class TaskService:
@@ -77,15 +76,30 @@ class TaskService:
         scheduled_datetime: datetime | None = None,
         description: str | None = None,
         tag_id: int | None = None,
-    ) -> tuple[Optional[Task], Optional[ReorderingProposal]]:
-        """Update a task and detect scheduling conflicts."""
+    ) -> tuple[Task | None, list[Conflict] | None]:
+        """
+        Atualiza task existente.
+
+        Se horário for alterado, detecta conflitos e retorna informações.
+        Não aplica nenhuma resolução automática.
+
+        Args:
+            task_id: ID da task a atualizar
+            title: Novo título (opcional)
+            scheduled_datetime: Novo horário (opcional)
+            description: Nova descrição (opcional)
+            tag_id: Nova tag (opcional)
+
+        Returns:
+            Tupla (task atualizada, lista de conflitos se horário mudou)
+        """
         with get_engine_context() as engine, Session(engine) as session:
             task = session.get(Task, task_id)
             if not task:
                 return None, None
 
             datetime_changed = (
-                scheduled_datetime is not None 
+                scheduled_datetime is not None
                 and scheduled_datetime != task.scheduled_datetime
             )
 
@@ -107,14 +121,12 @@ class TaskService:
             session.commit()
             session.refresh(task)
 
-        # Check conflicts if time changed
-        proposal = None
+        # Detecta conflitos se horário mudou, mas não propõe resolução
+        conflicts = None
         if datetime_changed:
             conflicts = EventReorderingService.detect_conflicts(task_id, "task")
-            if conflicts:
-                proposal = EventReorderingService.propose_reordering(conflicts)
 
-        return task, proposal
+        return task, conflicts
 
     @staticmethod
     def complete_task(task_id: int) -> Task | None:

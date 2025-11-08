@@ -2,8 +2,7 @@
 from datetime import date as date_type
 from datetime import datetime, time
 from enum import Enum
-from typing import Optional
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -32,8 +31,6 @@ class HabitInstance(SQLModel, table=True):
     scheduled_start: time
     scheduled_end: time
     status: HabitInstanceStatus = Field(default=HabitInstanceStatus.PLANNED)
-    manually_adjusted: bool = Field(default=False)
-    user_override: bool = Field(default=False)
 
     # Relationships
     habit: Optional["Habit"] = Relationship(back_populates="instances")
@@ -43,6 +40,7 @@ class HabitInstance(SQLModel, table=True):
         """Verifica se instância está atrasada."""
         if self.status != HabitInstanceStatus.PLANNED:
             return False
+
         now = datetime.now()
         scheduled = datetime.combine(self.date, self.scheduled_start)
         return now > scheduled

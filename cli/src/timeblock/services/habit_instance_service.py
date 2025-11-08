@@ -1,13 +1,14 @@
 """Service para gerenciamento de instâncias de hábitos."""
 
-from datetime import date, datetime, time, timedelta
-from typing import Optional
+from datetime import date, time, timedelta
 
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from src.timeblock.database import get_engine_context
 from src.timeblock.models import Habit, HabitInstance, Recurrence
 from src.timeblock.utils.logger import get_logger
+
+from .event_reordering_models import Conflict
 from .event_reordering_service import EventReorderingService
 
 logger = get_logger(__name__)
@@ -25,7 +26,7 @@ class HabitInstanceService:
             f"Gerando instâncias para habit_id={habit_id}, "
             f"período={start_date} até {end_date}"
         )
-        
+
         with get_engine_context() as engine, Session(engine) as session:
             habit = session.get(Habit, habit_id)
             if not habit:
@@ -53,7 +54,7 @@ class HabitInstanceService:
             session.commit()
             for instance in instances:
                 session.refresh(instance)
-            
+
             logger.info(
                 f"Criadas {len(instances)} instâncias para habit_id={habit_id}"
             )
@@ -64,13 +65,26 @@ class HabitInstanceService:
         instance_id: int,
         new_start: time | None = None,
         new_end: time | None = None,
-    ) -> tuple[Optional[HabitInstance], Optional["ReorderingProposal"]]:
-        """Ajusta horário de instância e detecta conflitos."""
+    ) -> tuple[HabitInstance | None, list[Conflict] | None]:
+        """
+        Ajusta horário de instância específica.
+
+        Apenas esta instância é modificada. O Habit na Routine permanece inalterado.
+        Retorna conflitos detectados mas não aplica nenhuma resolução automática.
+
+        Args:
+            instance_id: ID da instância a ajustar
+            new_start: Novo horário de início (opcional)
+            new_end: Novo horário de fim (opcional)
+
+        Returns:
+            Tupla (instância atualizada, lista de conflitos detectados ou None)
+        """
         logger.debug(
             f"Ajustando horário instance_id={instance_id}, "
             f"new_start={new_start}, new_end={new_end}"
         )
-        
+
         # Validação
         if new_start is not None and new_end is not None and new_start >= new_end:
             logger.warning(
@@ -78,7 +92,7 @@ class HabitInstanceService:
                 f"start={new_start} >= end={new_end}"
             )
             raise ValueError("Start time must be before end time")
-        
+
         with get_engine_context() as engine, Session(engine) as session:
             instance = session.get(HabitInstance, instance_id)
             if not instance:
@@ -86,18 +100,16 @@ class HabitInstanceService:
                 raise ValueError(f"HabitInstance {instance_id} not found")
 
             time_changed = False
-            
+
             if new_start is not None and new_start != instance.scheduled_start:
                 instance.scheduled_start = new_start
                 time_changed = True
-            
+
             if new_end is not None and new_end != instance.scheduled_end:
                 instance.scheduled_end = new_end
                 time_changed = True
 
             if time_changed:
-                instance.manually_adjusted = True
-                instance.user_override = True
                 logger.info(
                     f"Horário ajustado para instance_id={instance_id}, "
                     f"novo horário={instance.scheduled_start}-{instance.scheduled_end}"
@@ -106,28 +118,28 @@ class HabitInstanceService:
             session.add(instance)
             session.commit()
             session.refresh(instance)
-        
-        proposal = None
+
+        # Detecta conflitos mas não propõe resolução automática
+        conflicts = None
         if time_changed:
             conflicts = EventReorderingService.detect_conflicts(
                 triggered_event_id=instance_id,
                 event_type="habit_instance"
             )
-            
+
             if conflicts:
                 logger.warning(
                     f"Conflitos detectados para instance_id={instance_id}: "
                     f"{len(conflicts)} conflito(s)"
                 )
-                proposal = EventReorderingService.propose_reordering(conflicts)
-        
-        return instance, proposal
+
+        return instance, conflicts
 
     @staticmethod
     def mark_completed(instance_id: int) -> HabitInstance | None:
         """Marca instância como completa."""
         logger.debug(f"Marcando como completa: instance_id={instance_id}")
-        
+
         with get_engine_context() as engine, Session(engine) as session:
             instance = session.get(HabitInstance, instance_id)
             if not instance:
@@ -141,7 +153,7 @@ class HabitInstanceService:
             session.add(instance)
             session.commit()
             session.refresh(instance)
-            
+
             logger.info(f"Instância completada: instance_id={instance_id}")
             return instance
 
@@ -149,7 +161,7 @@ class HabitInstanceService:
     def mark_skipped(instance_id: int) -> HabitInstance | None:
         """Marca instância como pulada."""
         logger.debug(f"Marcando como pulada: instance_id={instance_id}")
-        
+
         with get_engine_context() as engine, Session(engine) as session:
             instance = session.get(HabitInstance, instance_id)
             if not instance:
@@ -163,7 +175,7 @@ class HabitInstanceService:
             session.add(instance)
             session.commit()
             session.refresh(instance)
-            
+
             logger.info(f"Instância pulada: instance_id={instance_id}")
             return instance
 
@@ -171,7 +183,7 @@ class HabitInstanceService:
     def _should_create_for_date(recurrence: Recurrence, target_date: date) -> bool:
         """Determina se deve criar instância para data."""
         weekday = target_date.weekday()
-        
+
         if recurrence == Recurrence.EVERYDAY:
             return True
         elif recurrence == Recurrence.WEEKDAYS:
@@ -192,5 +204,5 @@ class HabitInstanceService:
             return weekday == 5
         elif recurrence == Recurrence.SUNDAY:
             return weekday == 6
-        
+
         return False

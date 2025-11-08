@@ -1,23 +1,17 @@
-"""Service for event reordering and conflict detection."""
+"""Serviço para detecção de conflitos de eventos."""
 
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from sqlmodel import Session, or_, select
 
 from src.timeblock.database import get_engine_context
-from src.timeblock.models import Event, EventStatus, HabitInstance, Task
+from src.timeblock.models import Event, HabitInstance, Task
 
-from .event_reordering_models import (
-    Conflict,
-    ConflictType,
-    EventPriority,
-    ProposedChange,
-    ReorderingProposal,
-)
+from .event_reordering_models import Conflict, ConflictType
 
 
 class EventReorderingService:
-    """Service for detecting and resolving event conflicts."""
+    """Serviço para detecção de conflitos de eventos."""
 
     @staticmethod
     def detect_conflicts(
@@ -25,14 +19,17 @@ class EventReorderingService:
         event_type: str,
     ) -> list[Conflict]:
         """
-        Detect conflicts with other events caused by triggered event.
+        Detecta conflitos com outros eventos causados pelo evento disparador.
+
+        Este método apenas detecta e retorna informações de conflito.
+        NÃO modifica nenhum dado no banco de dados.
 
         Args:
-            triggered_event_id: ID of event that triggered reordering
-            event_type: Type of triggered event ("task", "habit_instance", "event")
+            triggered_event_id: ID do evento que disparou a verificação
+            event_type: Tipo do evento disparador ("task", "habit_instance", "event")
 
         Returns:
-            List of conflicts found
+            Lista de conflitos encontrados. Lista vazia se não houver conflitos.
         """
         with get_engine_context() as engine, Session(engine) as session:
             triggered = EventReorderingService._get_event_by_type(
@@ -75,82 +72,86 @@ class EventReorderingService:
             return conflicts
 
     @staticmethod
-    def calculate_priorities(conflicts: list[Conflict]) -> dict[tuple[int, str], EventPriority]:
+    def get_conflicts_for_day(target_date: date) -> list[Conflict]:
         """
-        Calculate priority for each event involved in conflicts.
+        Obtém todos os conflitos detectados em um dia específico.
+
+        Útil para visualização geral dos conflitos da agenda do dia.
 
         Args:
-            conflicts: List of detected conflicts
+            target_date: Data para verificar conflitos
 
         Returns:
-            Dictionary mapping (event_id, event_type) to EventPriority
+            Lista de todos os conflitos do dia
         """
         with get_engine_context() as engine, Session(engine) as session:
-            priorities = {}
-            now = datetime.now()
+            all_conflicts = []
 
-            # Collect all unique events
-            events_to_check = set()
-            for conflict in conflicts:
-                events_to_check.add((conflict.triggered_event_id, conflict.triggered_event_type))
-                events_to_check.add(
-                    (conflict.conflicting_event_id, conflict.conflicting_event_type)
+            # Busca todos os eventos do dia
+            day_start = datetime.combine(target_date, datetime.min.time())
+            day_end = datetime.combine(target_date, datetime.max.time())
+
+            # Busca todas as tasks do dia
+            task_stmt = select(Task).where(
+                Task.scheduled_datetime.between(day_start, day_end)
+            )
+            tasks = list(session.exec(task_stmt).all())
+
+            # Busca todas as instâncias de hábitos do dia
+            habit_stmt = select(HabitInstance).where(HabitInstance.date == target_date)
+            habits = list(session.exec(habit_stmt).all())
+
+            # Busca todos os eventos do dia
+            event_stmt = select(Event).where(
+                or_(
+                    Event.scheduled_start.between(day_start, day_end),
+                    Event.scheduled_end.between(day_start, day_end),
+                    (Event.scheduled_start <= day_start) & (Event.scheduled_end >= day_end),
                 )
+            )
+            events = list(session.exec(event_stmt).all())
 
-            # Calculate priority for each event
-            for event_id, event_type in events_to_check:
-                event = EventReorderingService._get_event_by_type(session, event_id, event_type)
-                if not event:
-                    continue
+            # Verifica cada task contra os outros
+            for task in tasks:
+                task_conflicts = EventReorderingService.detect_conflicts(task.id, "task")
+                all_conflicts.extend(task_conflicts)
 
-                priority = EventReorderingService._calculate_event_priority(event, event_type, now)
-                priorities[(event_id, event_type)] = priority
+            # Verifica cada instância de hábito contra os outros
+            for habit in habits:
+                habit_conflicts = EventReorderingService.detect_conflicts(
+                    habit.id, "habit_instance"
+                )
+                all_conflicts.extend(habit_conflicts)
 
-            return priorities
+            # Verifica cada evento contra os outros
+            for event in events:
+                event_conflicts = EventReorderingService.detect_conflicts(event.id, "event")
+                all_conflicts.extend(event_conflicts)
 
-    @staticmethod
-    def _calculate_event_priority(
-        event: Task | HabitInstance | Event,
-        event_type: str,
-        now: datetime,
-    ) -> EventPriority:
-        """Calculate priority for a single event."""
-        # CRITICAL: IN_PROGRESS events
-        if hasattr(event, "status"):
-            if event.status == EventStatus.IN_PROGRESS:
-                return EventPriority.CRITICAL
+            # Remove conflitos duplicados (A vs B e B vs A)
+            unique_conflicts = []
+            seen_pairs = set()
 
-        # CRITICAL: Task with deadline < 24h
-        if event_type == "task" and hasattr(event, "completed_datetime"):
-            if event.completed_datetime:
-                deadline = event.completed_datetime
-                if deadline < now + timedelta(hours=24):
-                    return EventPriority.CRITICAL
+            for conflict in all_conflicts:
+                pair = tuple(
+                    sorted(
+                        [
+                            (conflict.triggered_event_id, conflict.triggered_event_type),
+                            (conflict.conflicting_event_id, conflict.conflicting_event_type),
+                        ]
+                    )
+                )
+                if pair not in seen_pairs:
+                    seen_pairs.add(pair)
+                    unique_conflicts.append(conflict)
 
-        # HIGH: PAUSED events
-        if hasattr(event, "status"):
-            if event.status == EventStatus.PAUSED:
-                return EventPriority.HIGH
-
-        # Get event start time
-        start, _ = EventReorderingService._get_event_times(event, event_type)
-        if not start:
-            return EventPriority.LOW
-
-        # NORMAL: PLANNED with start < 1h
-        if hasattr(event, "status"):
-            if event.status == EventStatus.PLANNED:
-                if start < now + timedelta(hours=1):
-                    return EventPriority.NORMAL
-
-        # LOW: Everything else
-        return EventPriority.LOW
+            return unique_conflicts
 
     @staticmethod
     def _get_event_by_type(
         session: Session, event_id: int, event_type: str
     ) -> Task | HabitInstance | Event | None:
-        """Get event by type."""
+        """Busca evento por tipo."""
         if event_type == "task":
             return session.get(Task, event_id)
         elif event_type == "habit_instance":
@@ -163,9 +164,10 @@ class EventReorderingService:
     def _get_event_times(
         event: Task | HabitInstance | Event, event_type: str
     ) -> tuple[datetime | None, datetime | None]:
-        """Get start and end times for event."""
+        """Obtém horários de início e fim do evento."""
         if event_type == "task":
             if event.scheduled_datetime:
+                # Assume duração de 1 hora para tasks
                 return event.scheduled_datetime, event.scheduled_datetime + timedelta(hours=1)
         elif event_type == "habit_instance":
             if event.scheduled_start and event.scheduled_end:
@@ -185,10 +187,10 @@ class EventReorderingService:
         exclude_id: int,
         exclude_type: str,
     ) -> list[tuple[Task | HabitInstance | Event, str]]:
-        """Get all events that may conflict in time range."""
+        """Busca todos os eventos que podem conflitar no intervalo de tempo."""
         events = []
 
-        # Get tasks
+        # Busca tasks
         task_stmt = select(Task).where(
             Task.scheduled_datetime.between(start - timedelta(hours=1), end + timedelta(hours=1))
         )
@@ -197,7 +199,7 @@ class EventReorderingService:
         for task in session.exec(task_stmt).all():
             events.append((task, "task"))
 
-        # Get habit instances
+        # Busca instâncias de hábitos
         date = start.date()
         habit_stmt = select(HabitInstance).where(HabitInstance.date == date)
         if exclude_type == "habit_instance":
@@ -205,7 +207,7 @@ class EventReorderingService:
         for habit in session.exec(habit_stmt).all():
             events.append((habit, "habit_instance"))
 
-        # Get events
+        # Busca eventos
         event_stmt = select(Event).where(
             or_(
                 Event.scheduled_start.between(start, end),
@@ -222,167 +224,5 @@ class EventReorderingService:
 
     @staticmethod
     def _has_overlap(start1: datetime, end1: datetime, start2: datetime, end2: datetime) -> bool:
-        """Check if two time ranges overlap."""
+        """Verifica se dois intervalos de tempo se sobrepõem."""
         return start1 < end2 and start2 < end1
-
-    @staticmethod
-    def propose_reordering(conflicts: list[Conflict]) -> ReorderingProposal:
-        """
-        Propose reordering solution for conflicts.
-
-        Args:
-            conflicts: List of detected conflicts
-
-        Returns:
-            ReorderingProposal with suggested changes
-        """
-        if not conflicts:
-            return ReorderingProposal(
-                conflicts=[],
-                proposed_changes=[],
-                estimated_duration_shift=0,
-            )
-
-        with get_engine_context() as engine, Session(engine) as session:
-            # Calculate priorities
-            priorities = EventReorderingService.calculate_priorities(conflicts)
-
-            # Collect all events to reorder
-            events_data = []
-            for (event_id, event_type), priority in priorities.items():
-                event = EventReorderingService._get_event_by_type(session, event_id, event_type)
-                if not event:
-                    continue
-                start, end = EventReorderingService._get_event_times(event, event_type)
-                if not start or not end:
-                    continue
-
-                # Get event title
-                if event_type == "habit_instance":
-                    event_title = event.habit.title if event.habit else f"Habit Instance {event_id}"
-                else:  # task or event
-                    event_title = event.title if hasattr(event, "title") else f"Event {event_id}"
-
-                events_data.append(
-                    {
-                        "event_id": event_id,
-                        "event_type": event_type,
-                        "event": event,
-                        "event_title": event_title,
-                        "priority": priority,
-                        "current_start": start,
-                        "current_end": end,
-                        "duration": (end - start).total_seconds() / 60,  # minutes
-                    }
-                )
-
-            # Sort by priority (CRITICAL first), then by start time
-            events_data.sort(key=lambda x: (x["priority"].value, x["current_start"]))
-
-            # Calculate new times sequentially
-            proposed_changes = []
-            current_time = None
-
-            for event_data in events_data:
-                # HIGH and CRITICAL priorities don't move
-                if event_data["priority"] in (EventPriority.CRITICAL, EventPriority.HIGH):
-                    current_time = event_data["current_end"]
-                    continue
-
-                # NORMAL and LOW priorities get reordered after CRITICAL/HIGH
-                if current_time is None:
-                    # First event after critical/high - use its original time
-                    current_time = event_data["current_start"]
-
-                new_start = current_time
-                new_end = current_time + timedelta(minutes=event_data["duration"])
-
-                # Only add change if times actually changed
-                if new_start != event_data["current_start"] or new_end != event_data["current_end"]:
-                    # Calculate time shift for reason
-                    shift_minutes = int(
-                        (new_start - event_data["current_start"]).total_seconds() / 60
-                    )
-                    reason = f"Reordered due to {event_data['priority'].name} priority (shifted {shift_minutes:+d} min)"
-
-                    proposed_changes.append(
-                        ProposedChange(
-                            event_id=event_data["event_id"],
-                            event_type=event_data["event_type"],
-                            event_title=event_data["event_title"],
-                            current_start=event_data["current_start"],
-                            current_end=event_data["current_end"],
-                            proposed_start=new_start,
-                            proposed_end=new_end,
-                            priority=event_data["priority"],
-                            reason=reason,
-                        )
-                    )
-
-                current_time = new_end
-
-            # Calculate total duration shift
-            total_shift = sum(
-                (change.proposed_end - change.current_end).total_seconds() / 60
-                for change in proposed_changes
-            )
-
-            return ReorderingProposal(
-                conflicts=conflicts,
-                proposed_changes=proposed_changes,
-                estimated_duration_shift=int(total_shift),
-            )
-
-    @staticmethod
-    def apply_reordering(proposal: ReorderingProposal) -> bool:
-        """
-        Aplica mudanças propostas ao banco.
-        
-        Args:
-            proposal: Proposta com mudanças
-            
-        Returns:
-            bool: True se aplicado com sucesso
-        """
-        if not proposal.proposed_changes:
-            return False
-            
-        with get_engine_context() as engine, Session(engine) as session:
-            for change in proposal.proposed_changes:
-                event = EventReorderingService._get_event_by_type(
-                    session, change.event_id, change.event_type
-                )
-                
-                if not event:
-                    continue
-                
-                # Atualizar horários
-                EventReorderingService._set_event_times(
-                    event, change.event_type, change.proposed_start, change.proposed_end
-                )
-                
-                # Marcar como reordenado automaticamente
-                if hasattr(event, 'user_override'):
-                    event.user_override = False
-                
-                session.add(event)
-            
-            session.commit()
-            return True
-
-    @staticmethod
-    def _set_event_times(
-        event: Task | HabitInstance | Event,
-        event_type: str,
-        new_start: datetime,
-        new_end: datetime,
-    ) -> None:
-        """Set new start and end times for event."""
-        if event_type == "task":
-            event.scheduled_datetime = new_start
-        elif event_type == "habit_instance":
-            event.scheduled_start = new_start.time()
-            event.scheduled_end = new_end.time()
-        elif event_type == "event":
-            event.scheduled_start = new_start
-            event.scheduled_end = new_end

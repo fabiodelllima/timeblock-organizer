@@ -7,8 +7,7 @@ from rich.console import Console
 from rich.table import Table
 
 from src.timeblock.services.task_service import TaskService
-from src.timeblock.services.event_reordering_service import EventReorderingService
-from src.timeblock.utils.proposal_display import display_proposal, confirm_apply_proposal
+from src.timeblock.utils.conflict_display import display_conflicts
 
 app = typer.Typer(help="Gerenciar tarefas")
 console = Console()
@@ -26,7 +25,7 @@ def create_task(
         scheduled_dt = datetime.fromisoformat(scheduled)
         task = TaskService.create_task(title, scheduled_dt, description, color)
 
-        console.print("\n✓ Tarefa criada com sucesso!\n", style="bold green")
+        console.print("\n[green]✓ Tarefa criada com sucesso![/green]\n")
         console.print("═" * 40)
         console.print(f"ID: {task.id}")
         console.print(f"Título: [bold]{task.title}[/bold]")
@@ -39,7 +38,7 @@ def create_task(
         console.print()
 
     except ValueError as e:
-        console.print(f"✗ Erro: {e}", style="red")
+        console.print(f"[red]✗ Erro: {e}[/red]")
         raise typer.Exit(1)
 
 
@@ -65,7 +64,7 @@ def list_tasks(
                 title = "Tarefas"
 
         if not tasks:
-            console.print("Nenhuma tarefa encontrada.", style="yellow")
+            console.print("[yellow]Nenhuma tarefa encontrada.[/yellow]")
             return
 
         table = Table(title=title)
@@ -88,31 +87,7 @@ def list_tasks(
         console.print()
 
     except ValueError as e:
-        console.print(f"✗ Erro: {e}", style="red")
-        raise typer.Exit(1)
-
-
-@app.command("start")
-def start_task(task_id: int = typer.Argument(..., help="ID da tarefa")):
-    """Marca tarefa como iniciada."""
-    try:
-        task = TaskService.get_task(task_id)
-
-        if task.started_at:
-            console.print(
-                f"[yellow][!][/yellow] Tarefa já foi iniciada em {task.started_at.strftime('%d/%m/%Y às %H:%M')}"
-            )
-            return
-
-        task.started_at = datetime.now()
-        TaskService.update_task(task_id, started_at=task.started_at)
-
-        console.print("\n✓ Tarefa iniciada!\n", style="bold green")
-        console.print(f"[bold]{task.title}[/bold] (ID: {task.id})")
-        console.print(f"Início: {task.started_at.strftime('%d/%m/%Y às %H:%M')}\n")
-
-    except ValueError as e:
-        console.print(f"✗ Erro: {e}", style="red")
+        console.print(f"[red]✗ Erro: {e}[/red]")
         raise typer.Exit(1)
 
 
@@ -127,7 +102,7 @@ def check_task(task_id: int = typer.Argument(..., help="ID da tarefa")):
         diff = completed - scheduled
         diff_minutes = int(diff.total_seconds() / 60)
 
-        console.print("\n✓ Tarefa concluída!\n", style="bold green")
+        console.print("\n[green]✓ Tarefa concluída![/green]\n")
         console.print(f"[bold]{task.title}[/bold] (ID: {task.id})")
         console.print(f"Programado: {scheduled.strftime('%d/%m/%Y às %H:%M')}")
         console.print(f"Concluído: {completed.strftime('%d/%m/%Y às %H:%M')}")
@@ -141,7 +116,7 @@ def check_task(task_id: int = typer.Argument(..., help="ID da tarefa")):
         console.print()
 
     except ValueError as e:
-        console.print(f"✗ Erro: {e}", style="red")
+        console.print(f"[red]✗ Erro: {e}[/red]")
         raise typer.Exit(1)
 
 
@@ -156,27 +131,17 @@ def update_task(
     try:
         # Parse scheduled datetime if provided
         scheduled_dt = datetime.fromisoformat(scheduled) if scheduled else None
-        
-        # Update task and get reordering proposal
-        task, proposal = TaskService.update_task(
+
+        # Update task and get conflicts
+        task, conflicts = TaskService.update_task(
             task_id,
             title=title,
             scheduled_datetime=scheduled_dt,
             description=description,
         )
-        
-        # Display reordering proposal if conflicts detected
-        if proposal:
-            display_proposal(proposal)
-            
-            if confirm_apply_proposal():
-                EventReorderingService.apply_reordering(proposal)
-                console.print("\n✓ Reordenamento aplicado com sucesso!\n", style="bold green")
-            else:
-                console.print("\n[yellow]Reordenamento cancelado. Tarefa atualizada mas agenda não foi reorganizada.[/yellow]\n")
-        
+
         # Display updated task info
-        console.print("✓ Tarefa atualizada com sucesso!\n", style="bold green")
+        console.print("\n[green]✓ Tarefa atualizada com sucesso![/green]\n")
         console.print("═" * 40)
         console.print(f"ID: {task.id}")
         console.print(f"Título: [bold]{task.title}[/bold]")
@@ -186,8 +151,13 @@ def update_task(
         console.print("═" * 40)
         console.print()
 
+        # Display conflicts if any
+        if conflicts:
+            console.print("[yellow]⚠ Atenção: A atualização resultou em conflitos:[/yellow]")
+            display_conflicts(conflicts, console)
+
     except ValueError as e:
-        console.print(f"✗ Erro: {e}", style="red")
+        console.print(f"[red]✗ Erro: {e}[/red]")
         raise typer.Exit(1)
 
 
@@ -203,14 +173,14 @@ def delete_task(
         if not force:
             console.print(f"\nDeletar tarefa: [bold]{task.title}[/bold] (ID: {task_id})?")
             if not typer.confirm("Confirma?", default=False):
-                console.print("Cancelado.", style="yellow")
+                console.print("[yellow]Cancelado.[/yellow]")
                 return
 
         TaskService.delete_task(task_id)
         console.print(
-            f"✓ Tarefa deletada: [bold]{task.title}[/bold] (ID: {task_id})", style="green"
+            f"[green]✓ Tarefa deletada: [bold]{task.title}[/bold] (ID: {task_id})[/green]"
         )
 
     except ValueError as e:
-        console.print(f"✗ Erro: {e}", style="red")
+        console.print(f"[red]✗ Erro: {e}[/red]")
         raise typer.Exit(1)

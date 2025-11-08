@@ -13,6 +13,7 @@ from src.timeblock.models import Recurrence
 from src.timeblock.services.habit_instance_service import HabitInstanceService
 from src.timeblock.services.habit_service import HabitService
 from src.timeblock.services.routine_service import RoutineService
+from src.timeblock.utils.conflict_display import display_conflicts
 
 app = typer.Typer(help="Gerenciar hábitos")
 console = Console()
@@ -231,31 +232,31 @@ def adjust_instance(
     start: str = typer.Option(..., "--start", "-s", help="Nova hora início (HH:MM)"),
     end: str = typer.Option(..., "--end", "-e", help="Nova hora fim (HH:MM)"),
 ):
-    """Ajusta horário de instância específica de hábito."""
+    """
+    Ajusta horário de instância específica de hábito.
+
+    Este comando modifica apenas a instância especificada. O hábito na rotina
+    e outras instâncias permanecem inalterados.
+    """
     try:
-        from datetime import time as dt_time
-        from src.timeblock.services.habit_instance_service import HabitInstanceService
-        from src.timeblock.services.event_reordering_service import EventReorderingService
-        from src.timeblock.utils.proposal_display import display_proposal, confirm_apply_proposal
-        
         new_start = dt_time.fromisoformat(start)
         new_end = dt_time.fromisoformat(end)
-        
-        instance, proposal = HabitInstanceService.adjust_instance_time(
+
+        instance, conflicts = HabitInstanceService.adjust_instance_time(
             instance_id, new_start, new_end
         )
-        
-        if proposal:
-            display_proposal(proposal)
-            
-            if confirm_apply_proposal():
-                EventReorderingService.apply_reordering(proposal)
-                console.print("\n✓ Reordenamento aplicado!\n", style="bold green")
-            else:
-                console.print("\n[yellow]Reordenamento cancelado. Instância ajustada mas agenda não reorganizada.[/yellow]\n")
-        
-        console.print(f"✓ Instância {instance_id} ajustada: {new_start} - {new_end}", style="green")
-        
+
+        console.print(
+            f"[green]✓ Instância {instance_id} ajustada: {new_start} - {new_end}[/green]"
+        )
+
+        # Exibir conflitos se houver
+        if conflicts:
+            console.print(
+                "\n[yellow]⚠ Atenção: O ajuste resultou em conflitos:[/yellow]"
+            )
+            display_conflicts(conflicts, console)
+
     except ValueError as e:
         console.print(f"[red]✗ Erro: {e}[/red]")
         raise typer.Exit(1)
