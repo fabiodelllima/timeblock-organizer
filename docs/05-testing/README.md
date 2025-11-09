@@ -14,9 +14,9 @@ Todos os testes validam Regras de Negócio documentadas em `docs/04-specificatio
 
 | Regra        | Classes de Teste                           |
 | ------------ | ------------------------------------------ |
-| RN-EVENT-001 | `TestRNEvent001DeteccaoConflitosTemporais` |
-| RN-EVENT-002 | `TestRNEvent002ApresentacaoConflitos`      |
-| RN-EVENT-007 | `TestRNEvent007InteracaoTimerComplete`     |
+| BR-EVENT-001 | `TestBREvent001DeteccaoConflitosTemporais` |
+| BR-EVENT-002 | `TestBREvent002ApresentacaoConflitos`      |
+| BR-EVENT-007 | `TestBREvent007InteracaoTimerComplete`     |
 
 ### Habit Instance
 
@@ -26,8 +26,8 @@ Todos os testes validam Regras de Negócio documentadas em `docs/04-specificatio
 
 | Regra        | Classes de Teste                       |
 | ------------ | -------------------------------------- |
-| RN-HABIT-001 | `TestRNHabit001GeracaoInstancias`      |
-| RN-HABIT-004 | `TestRNHabit004AjusteHorarioInstancia` |
+| BR-HABIT-001 | `TestBRHabit001GeracaoInstancias`      |
+| BR-HABIT-004 | `TestBRHabit004AjusteHorarioInstancia` |
 
 ### Task
 
@@ -37,7 +37,7 @@ Todos os testes validam Regras de Negócio documentadas em `docs/04-specificatio
 
 | Regra       | Classes de Teste                       |
 | ----------- | -------------------------------------- |
-| RN-TASK-001 | `TestRNTask001AtualizacaoComConflitos` |
+| BR-TASK-001 | `TestBRTask001AtualizacaoComConflitos` |
 
 ## Executando Testes
 
@@ -49,7 +49,7 @@ pytest cli/tests/
 pytest cli/tests/unit/test_services/test_event_reordering_service.py -v
 
 # Por regra específica
-pytest cli/tests/unit/test_services/test_event_reordering_service.py::TestRNEvent001DeteccaoConflitosTemporais -v
+pytest cli/tests/unit/test_services/test_event_reordering_service.py::TestBREvent001DeteccaoConflitosTemporais -v
 
 # Com cobertura
 pytest --cov=src/timeblock --cov-report=html

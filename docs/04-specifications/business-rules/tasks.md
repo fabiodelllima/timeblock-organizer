@@ -22,7 +22,7 @@ Nesta versão do TimeBlock, Tasks mantêm propositalmente uma implementação si
 
 ## Regras de Negócio
 
-### RN-TASK-001: Criação de Tasks
+### BR-TASK-001: Criação de Tasks
 
 **Descrição:** O usuário cria uma Task especificando informações básicas sobre a atividade a ser realizada.
 
@@ -43,7 +43,7 @@ Nesta versão do TimeBlock, Tasks mantêm propositalmente uma implementação si
 
 Um usuário precisa enviar um relatório até sexta-feira às 17h. Cria uma Task com título "Enviar relatório Q4", data sexta-feira 8 de novembro, horário 16h (uma hora antes do deadline para ter margem). Opcionalmente adiciona descrição "Compilar dados de vendas e enviar para gerência" e tag "trabalho".
 
-### RN-TASK-002: Agendamento Temporal
+### BR-TASK-002: Agendamento Temporal
 
 **Descrição:** Tasks possuem um horário planejado de execução que é usado para organização temporal na agenda e detecção de conflitos.
 
@@ -59,7 +59,7 @@ O horário planejado determina onde a task aparece na visualização da agenda d
 
 Tasks participam da detecção de conflitos temporais junto com HabitInstances e Events. Se uma task está planejada para 14h às 15h e há um hábito também planejado para 14h30, o sistema detecta e apresenta o conflito ao usuário conforme regras definidas no documento de Event Reordering.
 
-### RN-TASK-003: Marcação como Completa
+### BR-TASK-003: Marcação como Completa
 
 **Descrição:** O usuário marca uma Task como completa quando termina de executá-la. Esta é a forma principal de interação com tasks nesta versão do sistema.
 
@@ -81,7 +81,7 @@ timeblock task list --status planned
 timeblock task complete 42
 ```
 
-### RN-TASK-004: Status de Tasks
+### BR-TASK-004: Status de Tasks
 
 **Descrição:** Tasks possuem status que indica seu estado atual no ciclo de vida.
 
@@ -93,7 +93,7 @@ O status "planned" indica que a task foi criada mas ainda não foi executada. Es
 
 Tasks normalmente transitam diretamente de "planned" para "completed" quando o usuário marca como concluída. Alternativamente, podem transitar de "planned" para "cancelled" se o usuário decidir que a task não é mais necessária ou relevante.
 
-### RN-TASK-005: Visualização e Listagem
+### BR-TASK-005: Visualização e Listagem
 
 **Descrição:** O usuário pode visualizar tasks através de diferentes filtros e agrupamentos.
 
@@ -124,7 +124,7 @@ timeblock task list --week
 timeblock task list --all
 ```
 
-### RN-TASK-006: Atualização de Tasks
+### BR-TASK-006: Atualização de Tasks
 
 **Descrição:** O usuário pode atualizar informações de uma Task enquanto ela ainda está pendente. Diferentemente de HabitInstances, uma Task pode ter seu horário ajustado múltiplas vezes antes de ser concluída.
 
@@ -145,7 +145,7 @@ Quando o usuário atualiza uma task, especialmente se altera horário ou data, o
 
 Tasks já marcadas como completed ou cancelled não podem ser editadas. Esta restrição preserva a integridade do histórico. Se o usuário precisa reativar uma task, deve criar uma nova task com as informações desejadas.
 
-### RN-TASK-007: Cancelamento de Tasks
+### BR-TASK-007: Cancelamento de Tasks
 
 **Descrição:** O usuário pode cancelar uma Task que não será mais executada.
 
@@ -161,7 +161,7 @@ Tasks devem ser canceladas quando deixam de ser necessárias ou relevantes. Exem
 
 Deletar deve ser usado apenas para tasks criadas por engano absoluto e que nunca tiveram qualquer validade. Por exemplo, uma task criada no dia errado ou com informações completamente incorretas que não têm valor para histórico.
 
-### RN-TASK-008: Relação com Agenda
+### BR-TASK-008: Relação com Agenda
 
 **Descrição:** Tasks integram-se à visualização geral da agenda do usuário junto com HabitInstances e Events.
 
@@ -173,7 +173,7 @@ Quando o usuário visualiza sua agenda para um dia específico, deve ver todos o
 
 Para segunda-feira 4 de novembro, a agenda pode mostrar seis horas da manhã com meditação vinte minutos, sete horas com academia sessenta minutos, nove horas com reunião de equipe noventa minutos, onze horas com task enviar relatório sessenta minutos, quatorze horas com estudar inglês quarenta e cinco minutos, dezoito horas com jantar em família.
 
-### RN-TASK-009: Simplicidade Mantida
+### BR-TASK-009: Simplicidade Mantida
 
 **Descrição:** Esta regra documenta explicitamente funcionalidades que NÃO estão implementadas nesta versão.
 
@@ -210,7 +210,7 @@ class Task(SQLModel, table=True):
     tag: Optional[Tag] = Relationship(back_populates="tasks")
 ```
 
-**Nota sobre Timer:** O modelo não possui campos relacionados a timer tracking como `started_at` ou relação com `TimeLog`. Esta ausência é intencional conforme RN-TASK-009.
+**Nota sobre Timer:** O modelo não possui campos relacionados a timer tracking como `started_at` ou relação com `TimeLog`. Esta ausência é intencional conforme BR-TASK-009.
 
 ### Serviços
 
