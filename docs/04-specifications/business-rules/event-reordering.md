@@ -26,7 +26,7 @@ A rotina definida pelo usuário representa o cenário ideal de execução dos h�
 
 ## Regras de Negócio
 
-### RN-EVENT-001: Detecção de Conflitos Temporais
+### BR-EVENT-001: Detecção de Conflitos Temporais
 
 **Descrição:** O sistema detecta quando dois ou mais eventos se sobrepõem no tempo, independentemente do tipo de evento.
 
@@ -47,7 +47,7 @@ A rotina definida pelo usuário representa o cenário ideal de execução dos h�
 **Implementação Esperada:**
 O método `EventReorderingService.detect_conflicts()` retorna uma lista de conflitos detectados. Cada conflito contém informações sobre os eventos envolvidos, seus horários e o tipo de sobreposição. Este método não modifica nenhum dado no banco, apenas realiza consultas e retorna informações.
 
-### RN-EVENT-002: Apresentação de Conflitos
+### BR-EVENT-002: Apresentação de Conflitos
 
 **Descrição:** Quando conflitos são detectados, o sistema apresenta estas informações ao usuário de forma clara e estruturada.
 
@@ -66,25 +66,25 @@ O método `EventReorderingService.detect_conflicts()` retorna uma lista de confl
 
 **Comportamento:** Após apresentar os conflitos, o sistema aguarda instrução do usuário. Não há sugestões automáticas de reordenamento neste momento. O usuário decide como proceder baseado nas informações apresentadas.
 
-### RN-EVENT-003: Resolução de Conflitos Controlada pelo Usuário
+### BR-EVENT-003: Resolução de Conflitos Controlada pelo Usuário
 
 **Descrição:** A resolução de conflitos é sempre iniciada e controlada pelo usuário. O sistema pode apresentar opções, mas nunca aplica mudanças sem confirmação explícita.
 
 **Fluxo de Resolução:**
 
-Primeiro, o usuário visualiza os conflitos conforme RN-EVENT-002. Em seguida, o usuário pode escolher entre diversas ações. Ele pode ajustar manualmente o horário de um dos eventos através dos comandos específicos de cada tipo de evento. Alternativamente, pode marcar um dos eventos como skip, indicando que não será executado naquele dia. Outra opção é executar um dos eventos fora do horário ideal e registrar via timer ou complete. Por fim, o usuário pode simplesmente manter os conflitos e decidir no momento da execução qual evento terá prioridade.
+Primeiro, o usuário visualiza os conflitos conforme BR-EVENT-002. Em seguida, o usuário pode escolher entre diversas ações. Ele pode ajustar manualmente o horário de um dos eventos através dos comandos específicos de cada tipo de evento. Alternativamente, pode marcar um dos eventos como skip, indicando que não será executado naquele dia. Outra opção é executar um dos eventos fora do horário ideal e registrar via timer ou complete. Por fim, o usuário pode simplesmente manter os conflitos e decidir no momento da execução qual evento terá prioridade.
 
 **Importante:** O sistema nunca deve apresentar um conflito e automaticamente aplicar uma resolução sem que o usuário tenha explicitamente confirmado a ação desejada. Mesmo operações aparentemente óbvias requerem confirmação do usuário.
 
-### RN-EVENT-004: Sugestões de Reordenamento (Futuro)
+### BR-EVENT-004: Sugestões de Reordenamento (Futuro)
 
 **Descrição:** Esta regra está planejada para versão futura e atualmente não deve ser implementada.
 
 **Comportamento Futuro Planejado:** Em versões futuras, quando o usuário solicitar explicitamente, o sistema poderá sugerir possíveis reordenamentos que eliminam conflitos. Estas sugestões serão baseadas em análise de padrões históricos do usuário, prioridades definidas e disponibilidade de horários alternativos.
 
-**Estado Atual:** Por enquanto, o sistema apenas detecta e apresenta conflitos conforme RN-EVENT-001 e RN-EVENT-002. Não há lógica de sugestão de reordenamento implementada. Qualquer código que implemente sugestões automáticas deve ser removido ou desabilitado.
+**Estado Atual:** Por enquanto, o sistema apenas detecta e apresenta conflitos conforme BR-EVENT-001 e BR-EVENT-002. Não há lógica de sugestão de reordenamento implementada. Qualquer código que implemente sugestões automáticas deve ser removido ou desabilitado.
 
-### RN-EVENT-005: Escopo Temporal de Detecção
+### BR-EVENT-005: Escopo Temporal de Detecção
 
 **Descrição:** O sistema detecta conflitos dentro do escopo de um dia completo, do início da madrugada (00:00) até o fim do dia (23:59).
 
@@ -92,7 +92,7 @@ Primeiro, o usuário visualiza os conflitos conforme RN-EVENT-002. Em seguida, o
 
 **Comportamento:** Ao detectar conflitos para um evento específico, o sistema busca todos os outros eventos do mesmo dia e verifica sobreposições temporais apenas dentro deste escopo diário.
 
-### RN-EVENT-006: Persistência de Conflitos
+### BR-EVENT-006: Persistência de Conflitos
 
 **Descrição:** Conflitos não são persistidos no banco de dados como entidades separadas. São calculados dinamicamente sempre que necessário.
 
@@ -100,7 +100,7 @@ Primeiro, o usuário visualiza os conflitos conforme RN-EVENT-002. Em seguida, o
 
 **Implementação:** O EventReorderingService calcula conflitos sob demanda através de queries que buscam eventos do mesmo dia e verificam sobreposições temporais.
 
-### RN-EVENT-007: Interação com Timer e Complete
+### BR-EVENT-007: Interação com Timer e Complete
 
 **Descrição:** Quando o usuário inicia um timer para um habit ou marca uma task como complete, e existem conflitos no horário atual, o sistema apresenta os conflitos mas não impede a ação.
 

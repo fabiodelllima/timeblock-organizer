@@ -33,8 +33,8 @@
 **Exemplo:**
 
 ```python
-def test_rn_event_001_detecta_sobreposicao_total(self):
-    """RN-EVENT-001: Sistema detecta sobreposição total."""
+def test_br_event_001_detecta_sobreposicao_total(self):
+    """BR-EVENT-001: Sistema detecta sobreposição total."""
     # Mock do banco de dados
     # Testa apenas a lógica de detecção
 ```
@@ -56,8 +56,8 @@ def test_rn_event_001_detecta_sobreposicao_total(self):
 **Exemplo:**
 
 ```python
-def test_rn_event_001_fluxo_completo_deteccao_conflitos(self):
-    """RN-EVENT-001: Fluxo completo de detecção de conflitos."""
+def test_br_event_001_fluxo_completo_deteccao_conflitos(self):
+    """BR-EVENT-001: Fluxo completo de detecção de conflitos."""
     # Banco real em memória
     # Testa Service → Model → DB → retorno
 ```
@@ -79,8 +79,8 @@ def test_rn_event_001_fluxo_completo_deteccao_conflitos(self):
 **Exemplo:**
 
 ```python
-def test_rn_event_002_usuario_visualiza_conflitos_via_cli(self):
-    """RN-EVENT-002: Usuário executa comando e vê conflitos."""
+def test_br_event_002_usuario_visualiza_conflitos_via_cli(self):
+    """BR-EVENT-002: Usuário executa comando e vê conflitos."""
     # Executa: timeblock reschedule conflicts --date 2025-11-08
     # Valida output formatado no terminal
 ```
@@ -125,21 +125,21 @@ def test_rn_event_002_usuario_visualiza_conflitos_via_cli(self):
 Testes DEVEM seguir o padrão:
 
 ```python
-class TestRN<DOMINIO><NUMERO><NomeRegra>:
-    """RN-<DOMINIO>-<NUMERO>: Descrição da Regra."""
+class TestBR<DOMINIO><NUMERO><NomeRegra>:
+    """BR-<DOMINIO>-<NUMERO>: Descrição da Regra."""
 
-    def test_rn_<dominio>_<numero>_<cenario_especifico>(self):
-        """RN-<DOMINIO>-<NUMERO>: Validação de cenário específico."""
+    def test_br_<dominio>_<numero>_<cenario_especifico>(self):
+        """BR-<DOMINIO>-<NUMERO>: Validação de cenário específico."""
 ```
 
 **Exemplo:**
 
 ```python
-class TestRNEvent001DeteccaoConflitosTemporais:
-    """RN-EVENT-001: Detecção de Conflitos Temporais."""
+class TestBREvent001DeteccaoConflitosTemporais:
+    """BR-EVENT-001: Detecção de Conflitos Temporais."""
 
-    def test_rn_event_001_detecta_sobreposicao_total(self):
-        """RN-EVENT-001: Sistema detecta sobreposição total."""
+    def test_br_event_001_detecta_sobreposicao_total(self):
+        """BR-EVENT-001: Sistema detecta sobreposição total."""
 ```
 
 ### Cobertura por Tipo de Teste
@@ -185,7 +185,7 @@ pytest --cov=src/timeblock --cov-report=term-missing
 ### 1. Rastreabilidade
 
 - Todo teste referencia explicitamente a RN que valida
-- Docstring do teste cita o ID da regra: `"""RN-EVENT-001: ..."""`
+- Docstring do teste cita o ID da regra: `"""BR-EVENT-001: ..."""`
 - Nome da classe e método incluem identificador da regra
 
 ### 2. Completude

@@ -72,14 +72,12 @@ def sample_instance(test_engine):
 
 class TestAdjustInstanceTimeBasic:
     def test_adjust_time_successfully(self, sample_instance):
-        updated, proposal = HabitInstanceService.adjust_instance_time(
+        updated, conflicts = HabitInstanceService.adjust_instance_time(
             sample_instance.id, time(9, 0), time(10, 0)
         )
         assert updated.scheduled_start == time(9, 0)
         assert updated.scheduled_end == time(10, 0)
-        assert updated.manually_adjusted is True
-        assert updated.user_override is True
-        assert proposal is None
+        assert conflicts == []
 
     def test_adjust_time_invalid(self, sample_instance):
         with pytest.raises(ValueError):
@@ -104,12 +102,11 @@ class TestConflictDetection:
         now = datetime.combine(date.today(), time(9, 30))
         TaskService.create_task("Reunião", now, 60)
 
-        updated, proposal = HabitInstanceService.adjust_instance_time(
+        updated, conflicts = HabitInstanceService.adjust_instance_time(
             sample_instance.id, time(9, 0), time(10, 30)
         )
 
-        assert proposal is not None
-        assert len(proposal.conflicts) > 0
+        assert len(conflicts) > 0
 
     def test_no_conflict_different_day(self, test_engine):
         with Session(test_engine) as session:
@@ -147,7 +144,7 @@ class TestConflictDetection:
             session.commit()
             session.refresh(inst2)
 
-        updated, proposal = HabitInstanceService.adjust_instance_time(
+        updated, conflicts = HabitInstanceService.adjust_instance_time(
             inst2.id, time(9, 0), time(10, 0)
         )
-        assert proposal is None
+        assert conflicts == []

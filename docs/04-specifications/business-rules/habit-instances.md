@@ -26,7 +26,7 @@ O objetivo do TimeBlock é ajudar o usuário a aproximar a realidade do ideal. O
 
 ## Regras de Negócio
 
-### RN-HABIT-001: Criação de Habits em Routines
+### BR-HABIT-001: Criação de Habits em Routines
 
 **Descrição:** O usuário cria Habits dentro de Routines especificando explicitamente dias da semana e horários para cada hábito.
 
@@ -43,7 +43,7 @@ Um usuário pode criar hábito "Academia" que ocorre segundas, quartas e sextas 
 
 **Comportamento:** Após a criação do Habit na Routine, o sistema está pronto para gerar instâncias, mas não gera automaticamente até que o usuário execute o comando de geração ou especifique período durante a criação.
 
-### RN-HABIT-002: Geração de Instâncias
+### BR-HABIT-002: Geração de Instâncias
 
 **Descrição:** Após criar um Habit em uma Routine, o sistema gera HabitInstances baseado em um período especificado pelo usuário.
 
@@ -67,7 +67,7 @@ Um usuário cria hábito "Academia" para segundas, quartas e sextas às 7h. Ao g
 
 **Importante:** A geração respeita exatamente os dias da semana definidos pelo usuário. Se o usuário especificou apenas segunda, quarta e sexta, instâncias não serão criadas para terça, quinta, sábado ou domingo, independentemente do período escolhido.
 
-### RN-HABIT-003: Identificação de Instâncias
+### BR-HABIT-003: Identificação de Instâncias
 
 **Descrição:** Cada HabitInstance possui um identificador único (ID) que permite operações específicas sobre aquela ocorrência particular do hábito.
 
@@ -75,7 +75,7 @@ Um usuário cria hábito "Academia" para segundas, quartas e sextas às 7h. Ao g
 
 **Diferenciação:** Múltiplas instâncias do mesmo hábito em dias diferentes possuem IDs diferentes. Por exemplo, "Academia" de segunda-feira dia 4 tem ID 42, enquanto "Academia" de quarta-feira dia 6 tem ID 43. Isto permite que o usuário ajuste cada dia independentemente.
 
-### RN-HABIT-004: Ajuste de Horário de Instância
+### BR-HABIT-004: Ajuste de Horário de Instância
 
 **Descrição:** O usuário pode ajustar o horário de uma HabitInstance específica através de seu ID. Este ajuste afeta apenas aquela instância, não o Habit na Routine nem outras instâncias futuras.
 
@@ -104,7 +104,7 @@ O usuário tem "Academia" planejada para 7h todas as segundas, quartas e sextas.
 
 **Mudanças Permanentes:** Se o usuário percebe que o horário ideal precisa ser alterado permanentemente, ele deve editar o Habit na Routine, não as instâncias individuais. Esta separação clara mantém a Routine como fonte de verdade do plano ideal.
 
-### RN-HABIT-005: Tracking de Execução
+### BR-HABIT-005: Tracking de Execução
 
 **Descrição:** O sistema registra quando e como cada HabitInstance foi executada, independentemente do horário em que a execução ocorreu.
 
@@ -124,7 +124,7 @@ O sistema rastreia duas dimensões distintas. A primeira é consistência, que m
 
 Para o hábito "Academia" na última semana, o usuário poderia ver que teve 100% de consistência (executou todos os dias planejados) mas apenas 66% de pontualidade (apenas 2 de 3 dias foram no horário ideal). Esta informação ajuda o usuário a entender seus padrões e ajustar expectativas ou rotinas conforme necessário.
 
-### RN-HABIT-006: Skip vs Complete
+### BR-HABIT-006: Skip vs Complete
 
 **Descrição:** O sistema diferencia entre não executar um hábito (skip) e executá-lo fora do horário planejado (complete late).
 
@@ -134,7 +134,7 @@ Para o hábito "Academia" na última semana, o usuário poderia ver que teve 100
 
 **Ausência de Registro:** Se o usuário não registra nada sobre uma instância (nem skip, nem complete), o sistema considera como falha não intencional. Diferente do skip consciente, esta situação pode indicar esquecimento ou falta de engajamento, e é tratada diferentemente nas métricas e visualizações.
 
-### RN-HABIT-007: Relação com Routine
+### BR-HABIT-007: Relação com Routine
 
 **Descrição:** A Routine é a fonte de verdade para o plano ideal. HabitInstances referenciam o Habit na Routine mas não modificam este plano.
 
@@ -146,7 +146,7 @@ O usuário tem "Meditar" às 6h definido na Routine e 50 instâncias geradas par
 
 **Deletar Habit:** Se o usuário deleta um Habit da Routine, todas as HabitInstances futuras daquele hábito são também deletadas. Instâncias passadas já executadas são mantidas para preservar histórico de tracking.
 
-### RN-HABIT-008: Geração Adicional de Instâncias
+### BR-HABIT-008: Geração Adicional de Instâncias
 
 **Descrição:** O usuário pode gerar instâncias adicionais a qualquer momento se perceber que as instâncias atuais estão terminando.
 

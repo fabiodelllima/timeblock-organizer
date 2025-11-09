@@ -50,12 +50,12 @@ class TestStartTimer:
 
     def test_start_timer_with_task(self, test_task):
         """Inicia timer para task."""
-        timelog, proposal = TimerService.start_timer(task_id=test_task.id)
+        timelog, conflicts = TimerService.start_timer(task_id=test_task.id)
         assert timelog.id is not None
         assert timelog.task_id == test_task.id
         assert timelog.start_time is not None
         assert timelog.end_time is None
-        assert proposal is None
+        assert conflicts == []
 
     def test_start_timer_returns_tuple(self, test_task):
         """Verifica que retorna tupla."""
@@ -75,9 +75,9 @@ class TestStartTimer:
             session.commit()
             session.refresh(event)
 
-        timelog, proposal = TimerService.start_timer(event_id=event.id)
+        timelog, conflicts = TimerService.start_timer(event_id=event.id)
         assert timelog.event_id == event.id
-        assert proposal is None
+        assert conflicts == []
 
     def test_start_timer_detects_conflict_with_task(self, test_engine):
         """Detecta conflito ao iniciar timer com task conflitante."""
@@ -95,11 +95,10 @@ class TestStartTimer:
             session.refresh(task1)
             session.refresh(task2)
 
-        timelog, proposal = TimerService.start_timer(task_id=task1.id)
+        timelog, conflicts = TimerService.start_timer(task_id=task1.id)
         
         assert timelog is not None
-        assert proposal is not None
-        assert len(proposal.conflicts) > 0
+        assert len(conflicts) > 0
 
     def test_start_timer_without_id(self):
         """Rejeita sem ID."""
