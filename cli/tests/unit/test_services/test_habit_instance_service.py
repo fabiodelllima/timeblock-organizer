@@ -1,17 +1,14 @@
 """Testes para HabitInstanceService."""
+from datetime import date, datetime, time, timedelta
+
 import pytest
-from datetime import time, date, datetime, timedelta
-from sqlmodel import Session, create_engine, SQLModel
+from sqlmodel import Session, SQLModel, create_engine
 
 from src.timeblock.models import (
-    HabitInstanceStatus,
-    Routine,
     Habit,
     HabitInstance,
-    Task,
-    Event,
-    TimeLog,
-    Tag
+    HabitInstanceStatus,
+    Routine,
 )
 from src.timeblock.services.habit_instance_service import HabitInstanceService
 from src.timeblock.services.task_service import TaskService
@@ -27,11 +24,11 @@ def test_engine():
 @pytest.fixture(autouse=True)
 def mock_engine(monkeypatch, test_engine):
     from contextlib import contextmanager
-    
+
     @contextmanager
     def mock_get_engine():
         yield test_engine
-    
+
     # Mock em todos os services que usam get_engine_context
     monkeypatch.setattr("src.timeblock.services.habit_instance_service.get_engine_context", mock_get_engine)
     monkeypatch.setattr("src.timeblock.services.task_service.get_engine_context", mock_get_engine)
@@ -45,7 +42,7 @@ def sample_instance(test_engine):
         session.add(routine)
         session.commit()
         session.refresh(routine)
-        
+
         habit = Habit(
             routine_id=routine.id,
             title="Test Habit",
@@ -56,7 +53,7 @@ def sample_instance(test_engine):
         session.add(habit)
         session.commit()
         session.refresh(habit)
-        
+
         instance = HabitInstance(
             habit_id=habit.id,
             date=date.today(),
@@ -114,7 +111,7 @@ class TestConflictDetection:
             session.add(routine)
             session.commit()
             session.refresh(routine)
-            
+
             habit = Habit(
                 routine_id=routine.id,
                 title="Test Habit",
@@ -125,7 +122,7 @@ class TestConflictDetection:
             session.add(habit)
             session.commit()
             session.refresh(habit)
-            
+
             inst1 = HabitInstance(
                 habit_id=habit.id,
                 date=date.today(),

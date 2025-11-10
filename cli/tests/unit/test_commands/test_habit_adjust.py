@@ -1,8 +1,10 @@
 """Testes para comando habit adjust."""
+from datetime import date, time
+
 import pytest
-from datetime import time, date
-from sqlmodel import Session, create_engine, SQLModel
-from src.timeblock.models import Routine, Habit, HabitInstance
+from sqlmodel import Session, SQLModel, create_engine
+
+from src.timeblock.models import Habit, HabitInstance, Routine
 from src.timeblock.services.habit_instance_service import HabitInstanceService
 
 
@@ -16,11 +18,11 @@ def test_engine():
 @pytest.fixture(autouse=True)
 def mock_engine(monkeypatch, test_engine):
     from contextlib import contextmanager
-    
+
     @contextmanager
     def mock_get_engine():
         yield test_engine
-    
+
     monkeypatch.setattr("src.timeblock.services.habit_instance_service.get_engine_context", mock_get_engine)
     monkeypatch.setattr("src.timeblock.services.event_reordering_service.get_engine_context", mock_get_engine)
 
@@ -32,7 +34,7 @@ def sample_instance(test_engine):
         session.add(routine)
         session.commit()
         session.refresh(routine)
-        
+
         habit = Habit(
             routine_id=routine.id,
             title="Morning Run",
@@ -43,7 +45,7 @@ def sample_instance(test_engine):
         session.add(habit)
         session.commit()
         session.refresh(habit)
-        
+
         instance = HabitInstance(
             habit_id=habit.id,
             date=date.today(),
@@ -70,7 +72,7 @@ def test_adjust_updates_time(test_engine, sample_instance):
     instance, _ = HabitInstanceService.adjust_instance_time(
         sample_instance.id, time(8, 0), time(9, 0)
     )
-    
+
     with Session(test_engine) as session:
         updated = session.get(HabitInstance, sample_instance.id)
         assert updated.scheduled_start == time(8, 0)

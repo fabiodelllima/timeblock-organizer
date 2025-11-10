@@ -7,9 +7,9 @@ from pathlib import Path
 import pytest
 from sqlmodel import Session, SQLModel, create_engine
 
-from src.timeblock.models import Habit, HabitInstance, Recurrence, Routine
+from src.timeblock.models import Habit, Recurrence, Routine
 from src.timeblock.services.habit_instance_service import HabitInstanceService
-from src.timeblock.utils.logger import setup_logger, disable_logging, enable_logging
+from src.timeblock.utils.logger import disable_logging, enable_logging, setup_logger
 
 
 @pytest.fixture
@@ -25,11 +25,11 @@ def test_engine():
 def mock_engine(monkeypatch, test_engine):
     """Mock get_engine_context para usar banco de teste."""
     from contextlib import contextmanager
-    
+
     @contextmanager
     def mock_get_engine():
         yield test_engine
-    
+
     monkeypatch.setattr(
         "src.timeblock.services.habit_instance_service.get_engine_context",
         mock_get_engine
@@ -44,7 +44,7 @@ def habit(test_engine):
         session.add(routine)
         session.commit()
         session.refresh(routine)
-        
+
         habit = Habit(
             routine_id=routine.id,
             title="Test Habit",
@@ -60,7 +60,7 @@ def habit(test_engine):
 
 class TestServiceLogging:
     """Testa logs gerados pelos services."""
-    
+
     def test_generate_instances_logs(self, habit):
         """Verifica logs ao gerar instâncias.
         
@@ -70,7 +70,7 @@ class TestServiceLogging:
         """
         with tempfile.TemporaryDirectory() as tmpdir:
             log_file = Path(tmpdir) / "service.log"
-            
+
             # Preparação: Configura logging para arquivo
             setup_logger(
                 "src.timeblock.services.habit_instance_service",
@@ -78,20 +78,20 @@ class TestServiceLogging:
                 log_file=log_file,
                 console=False
             )
-            
+
             # Ação: Gera instâncias
             start = date.today()
             end = start + timedelta(days=6)
             instances = HabitInstanceService.generate_instances(
                 habit.id, start, end
             )
-            
+
             # Verificação: Logs contêm informações esperadas
             content = log_file.read_text()
             assert "Gerando instâncias" in content
             assert f"habit_id={habit.id}" in content
             assert "Criadas 7 instâncias" in content
-    
+
     def test_mark_completed_logs(self, habit):
         """Verifica logs ao completar instância.
         
@@ -101,28 +101,28 @@ class TestServiceLogging:
         """
         with tempfile.TemporaryDirectory() as tmpdir:
             log_file = Path(tmpdir) / "service.log"
-            
+
             # Preparação: Cria instância e configura logging
             instances = HabitInstanceService.generate_instances(
                 habit.id, date.today(), date.today()
             )
             instance_id = instances[0].id
-            
+
             setup_logger(
                 "src.timeblock.services.habit_instance_service",
                 level="INFO",
                 log_file=log_file,
                 console=False
             )
-            
+
             # Ação: Completa instância
             HabitInstanceService.mark_completed(instance_id)
-            
+
             # Verificação: Log de sucesso
             content = log_file.read_text()
             assert "Instância completada" in content
             assert f"instance_id={instance_id}" in content
-    
+
     def test_error_logs(self):
         """Verifica logs de erro ao tentar operação inválida.
         
@@ -132,7 +132,7 @@ class TestServiceLogging:
         """
         with tempfile.TemporaryDirectory() as tmpdir:
             log_file = Path(tmpdir) / "service.log"
-            
+
             # Preparação: Configura logging
             setup_logger(
                 "src.timeblock.services.habit_instance_service",
@@ -140,18 +140,18 @@ class TestServiceLogging:
                 log_file=log_file,
                 console=False
             )
-            
+
             # Ação: Tenta gerar para hábito inexistente
             with pytest.raises(ValueError):
                 HabitInstanceService.generate_instances(
                     99999, date.today(), date.today()
                 )
-            
+
             # Verificação: Log de erro
             content = log_file.read_text()
             assert "Hábito não encontrado" in content
             assert "habit_id=99999" in content
-    
+
     def test_warning_logs(self, habit):
         """Verifica logs de warning em operações suspeitas.
         
@@ -161,7 +161,7 @@ class TestServiceLogging:
         """
         with tempfile.TemporaryDirectory() as tmpdir:
             log_file = Path(tmpdir) / "service.log"
-            
+
             # Preparação: Configura logging
             setup_logger(
                 "src.timeblock.services.habit_instance_service",
@@ -169,10 +169,10 @@ class TestServiceLogging:
                 log_file=log_file,
                 console=False
             )
-            
+
             # Ação: Tenta completar instância inexistente
             result = HabitInstanceService.mark_completed(99999)
-            
+
             # Verificação: Retorna None e loga warning
             assert result is None
             content = log_file.read_text()
@@ -182,7 +182,7 @@ class TestServiceLogging:
 
 class TestLoggingInTests:
     """Testa comportamento de logging durante testes."""
-    
+
     def test_logs_disabled_by_default_in_tests(self, habit):
         """Logs não aparecem no console durante testes normais.
         
@@ -194,14 +194,14 @@ class TestLoggingInTests:
         """
         # Ação: Desabilita logging
         disable_logging()
-        
+
         # Executa operação (sem logs no console)
         instances = HabitInstanceService.generate_instances(
             habit.id, date.today(), date.today()
         )
-        
+
         # Verificação: Operação funcionou
         assert len(instances) == 1
-        
+
         # Limpeza: Reabilita
         enable_logging()

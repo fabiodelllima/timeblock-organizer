@@ -1,17 +1,9 @@
 """Fixtures para testes de integração."""
-from datetime import datetime
 import pytest
 from sqlalchemy.orm import Session
 from sqlmodel import SQLModel, create_engine
 
 # Importar todos os modelos para SQLModel.metadata
-from src.timeblock.models.routine import Routine
-from src.timeblock.models.habit import Habit
-from src.timeblock.models.habit_instance import HabitInstance
-from src.timeblock.models.task import Task
-from src.timeblock.models.time_log import TimeLog
-from src.timeblock.models.tag import Tag
-from src.timeblock.models.event import Event
 
 
 @pytest.fixture(scope="function")

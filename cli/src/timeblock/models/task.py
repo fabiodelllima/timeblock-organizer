@@ -1,7 +1,6 @@
 """Task model."""
 from datetime import datetime
-from typing import TYPE_CHECKING
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 

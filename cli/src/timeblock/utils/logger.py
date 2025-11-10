@@ -9,15 +9,14 @@ Este módulo fornece logging padronizado com:
 
 import logging
 import sys
-from pathlib import Path
 from logging.handlers import RotatingFileHandler
-from typing import Optional
+from pathlib import Path
 
 
 def setup_logger(
     name: str,
     level: str = "INFO",
-    log_file: Optional[Path] = None,
+    log_file: Path | None = None,
     max_bytes: int = 10_000_000,
     backup_count: int = 5,
     console: bool = True
@@ -44,28 +43,28 @@ def setup_logger(
     # Cria ou obtém logger
     logger = logging.getLogger(name)
     logger.setLevel(getattr(logging, level.upper()))
-    
+
     # Remove handlers existentes (evita duplicação)
     logger.handlers.clear()
-    
+
     # Formato estruturado: [timestamp] [level] [module] message
     formatter = logging.Formatter(
         fmt="[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S"
     )
-    
+
     # Handler para console (stderr)
     if console:
         console_handler = logging.StreamHandler(sys.stderr)
         console_handler.setLevel(getattr(logging, level.upper()))
         console_handler.setFormatter(formatter)
         logger.addHandler(console_handler)
-    
+
     # Handler para arquivo com rotação
     if log_file:
         # Garante que diretório existe
         log_file.parent.mkdir(parents=True, exist_ok=True)
-        
+
         file_handler = RotatingFileHandler(
             filename=log_file,
             maxBytes=max_bytes,
@@ -75,10 +74,10 @@ def setup_logger(
         file_handler.setLevel(getattr(logging, level.upper()))
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
-    
+
     # Evita propagação para root logger
     logger.propagate = False
-    
+
     return logger
 
 
@@ -95,11 +94,11 @@ def get_logger(name: str) -> logging.Logger:
         Se logger não existir, cria com nível INFO e console only.
     """
     logger = logging.getLogger(name)
-    
+
     # Se logger não tem handlers, configura padrão
     if not logger.handlers:
         return setup_logger(name, level="INFO", console=True)
-    
+
     return logger
 
 

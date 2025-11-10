@@ -1,8 +1,7 @@
 """Habit model."""
 from datetime import time
-from typing import Optional
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 

@@ -1,6 +1,5 @@
 """Tag model for categorizing tasks and habits."""
 from typing import TYPE_CHECKING
-from typing import Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 

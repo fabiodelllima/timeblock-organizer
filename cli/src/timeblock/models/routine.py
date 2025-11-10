@@ -1,6 +1,5 @@
 """Routine model for weekly habit templates."""
 from datetime import datetime
-from typing import Optional
 from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel

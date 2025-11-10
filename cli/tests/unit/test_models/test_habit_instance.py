@@ -1,6 +1,6 @@
 """Tests for HabitInstance model."""
 
-from datetime import date, datetime, time
+from datetime import date, time
 
 import pytest
 from sqlmodel import Session, SQLModel, create_engine

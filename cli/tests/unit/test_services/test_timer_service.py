@@ -6,7 +6,7 @@ from time import sleep
 import pytest
 from sqlmodel import Session, SQLModel, create_engine
 
-from src.timeblock.models import PauseLog, Task, TimeLog, Event, Routine, Habit, HabitInstance
+from src.timeblock.models import Event, PauseLog, Task, TimeLog
 from src.timeblock.services.timer_service import TimerService
 
 
@@ -96,7 +96,7 @@ class TestStartTimer:
             session.refresh(task2)
 
         timelog, conflicts = TimerService.start_timer(task_id=task1.id)
-        
+
         assert timelog is not None
         assert len(conflicts) > 0
 

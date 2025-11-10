@@ -2,6 +2,7 @@
 
 import pytest
 from typer.testing import CliRunner
+
 from src.timeblock.main import app
 
 
@@ -32,7 +33,7 @@ class TestHabitCreate:
             "-s", "06:00",
             "-e", "07:00"
         ])
-        
+
         assert result.exit_code == 0
 
     def test_create_weekdays(self, runner, isolated_db, routine_id):
@@ -44,7 +45,7 @@ class TestHabitCreate:
             "-s", "05:00",
             "-e", "05:30"
         ])
-        
+
         assert result.exit_code == 0
 
     def test_create_with_color(self, runner, isolated_db, routine_id):
@@ -57,7 +58,7 @@ class TestHabitCreate:
             "-e", "19:30",
             "-c", "#FF5733"
         ])
-        
+
         assert result.exit_code == 0
 
     def test_create_invalid_routine(self, runner, isolated_db):
@@ -70,7 +71,7 @@ class TestHabitCreate:
             "-s", "10:00",
             "-e", "11:00"
         ])
-        
+
         # Deve falhar porque rotina 999 não existe
         assert result.exit_code != 0
 
@@ -80,7 +81,7 @@ class TestHabitList:
 
     def test_list_empty(self, runner, isolated_db, routine_id):
         result = runner.invoke(app, ["habit", "list", "--routine", routine_id])
-        
+
         assert result.exit_code == 0
 
     def test_list_with_habits(self, runner, isolated_db, routine_id):
@@ -94,9 +95,9 @@ class TestHabitList:
             "--routine", routine_id,
             "-t", "Habit 2", "-r", "FRIDAY", "-s", "18:00", "-e", "19:00"
         ])
-        
+
         result = runner.invoke(app, ["habit", "list", "--routine", routine_id])
-        
+
         assert result.exit_code == 0
         assert "Habit 1" in result.stdout
         assert "Habit 2" in result.stdout
@@ -111,14 +112,14 @@ class TestHabitDelete:
             "--routine", routine_id,
             "-t", "Delete Me", "-r", "TUESDAY", "-s", "06:00", "-e", "07:00"
         ])
-        
+
         import re
         id_line = [line for line in create_result.stdout.split("\n") if "ID:" in line][0]
         clean = re.sub(r'\x1b\[[0-9;]*m', '', id_line)
         habit_id = clean.split(":")[1].strip()
-        
+
         result = runner.invoke(app, ["habit", "delete", habit_id, "--force"])
-        
+
         assert result.exit_code == 0
 
     def test_delete_cancel(self, runner, isolated_db, routine_id):
@@ -127,12 +128,12 @@ class TestHabitDelete:
             "--routine", routine_id,
             "-t", "Keep Me", "-r", "WEDNESDAY", "-s", "06:00", "-e", "07:00"
         ])
-        
+
         import re
         id_line = [line for line in create_result.stdout.split("\n") if "ID:" in line][0]
         clean = re.sub(r'\x1b\[[0-9;]*m', '', id_line)
         habit_id = clean.split(":")[1].strip()
-        
+
         result = runner.invoke(app, ["habit", "delete", habit_id], input="n\n")
-        
+
         assert result.exit_code == 0

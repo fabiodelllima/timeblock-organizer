@@ -1,6 +1,18 @@
 """Entry point do TimeBlock Organizer CLI."""
 import typer
-from src.timeblock.commands import add, habit, init, report, routine, schedule, tag, task, timer, reschedule
+
+from src.timeblock.commands import (
+    add,
+    habit,
+    init,
+    report,
+    reschedule,
+    routine,
+    schedule,
+    tag,
+    task,
+    timer,
+)
 from src.timeblock.commands import list as list_cmd
 
 app = typer.Typer(

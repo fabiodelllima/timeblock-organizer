@@ -5,17 +5,12 @@ Estes testes aumentam cobertura de 43% para 83%+ testando:
 - Método mark_completed()
 - Método mark_skipped()
 """
-import pytest
-from datetime import time, date, datetime, timedelta
-from sqlmodel import Session, create_engine, SQLModel
+from datetime import date, time, timedelta
 
-from src.timeblock.models import (
-    HabitInstanceStatus,
-    Routine,
-    Habit,
-    HabitInstance,
-    Recurrence
-)
+import pytest
+from sqlmodel import Session, SQLModel, create_engine
+
+from src.timeblock.models import Habit, HabitInstanceStatus, Recurrence, Routine
 from src.timeblock.services.habit_instance_service import HabitInstanceService
 
 
@@ -32,11 +27,11 @@ def test_engine():
 def mock_engine(monkeypatch, test_engine):
     """Mock get_engine_context para usar banco de teste."""
     from contextlib import contextmanager
-    
+
     @contextmanager
     def mock_get_engine():
         yield test_engine
-    
+
     monkeypatch.setattr(
         "src.timeblock.services.habit_instance_service.get_engine_context",
         mock_get_engine
@@ -51,7 +46,7 @@ def everyday_habit(test_engine):
         session.add(routine)
         session.commit()
         session.refresh(routine)
-        
+
         habit = Habit(
             routine_id=routine.id,
             title="Exercício Matinal",
@@ -73,7 +68,7 @@ def weekdays_habit(test_engine):
         session.add(routine)
         session.commit()
         session.refresh(routine)
-        
+
         habit = Habit(
             routine_id=routine.id,
             title="Revisão do Trabalho",
@@ -89,7 +84,7 @@ def weekdays_habit(test_engine):
 
 class TestGenerateInstances:
     """Testa método generate_instances() - GAP CRÍTICO DE COBERTURA."""
-    
+
     def test_generate_everyday_habit(self, everyday_habit):
         """Gera instâncias para hábito EVERYDAY durante 7 dias.
         
@@ -102,26 +97,26 @@ class TestGenerateInstances:
         # Preparação: Define intervalo de datas
         start = date.today()
         end = start + timedelta(days=6)  # 7 dias total
-        
+
         # Ação: Gera instâncias
         instances = HabitInstanceService.generate_instances(
             everyday_habit.id, start, end
         )
-        
+
         # Verificação: Deve criar 7 instâncias (uma por dia)
         assert len(instances) == 7
-        
+
         # Verificação: Cada instância tem data correta
         expected_dates = [start + timedelta(days=i) for i in range(7)]
         actual_dates = [inst.date for inst in instances]
         assert actual_dates == expected_dates
-        
+
         # Verificação: Todas têm horários corretos
         for inst in instances:
             assert inst.scheduled_start == time(7, 0)
             assert inst.scheduled_end == time(8, 0)
             assert inst.status == HabitInstanceStatus.PLANNED
-    
+
     def test_generate_weekdays_only(self, weekdays_habit):
         """Gera instâncias para hábito WEEKDAYS - pula fins de semana.
         
@@ -137,20 +132,20 @@ class TestGenerateInstances:
         days_until_monday = (7 - today.weekday()) % 7
         monday = today + timedelta(days=days_until_monday)
         sunday = monday + timedelta(days=6)
-        
+
         # Ação: Gera para semana completa
         instances = HabitInstanceService.generate_instances(
             weekdays_habit.id, monday, sunday
         )
-        
+
         # Verificação: Apenas 5 instâncias (Seg-Sex)
         assert len(instances) == 5
-        
+
         # Verificação: Sem sábado ou domingo
         for inst in instances:
             weekday = inst.date.weekday()
             assert weekday < 5, f"Instância no fim de semana: {inst.date}"
-    
+
     def test_generate_habit_not_found(self):
         """Gerar instâncias para hábito inexistente levanta erro.
         
@@ -166,7 +161,7 @@ class TestGenerateInstances:
                 date.today(),
                 date.today() + timedelta(days=7)
             )
-    
+
     def test_generate_single_day(self, everyday_habit):
         """Gera instâncias para período de um único dia.
         
@@ -178,12 +173,12 @@ class TestGenerateInstances:
         """
         # Preparação: Mesma data para início e fim
         target_date = date.today()
-        
+
         # Ação: Gera para dia único
         instances = HabitInstanceService.generate_instances(
             everyday_habit.id, target_date, target_date
         )
-        
+
         # Verificação: Exatamente uma instância
         assert len(instances) == 1
         assert instances[0].date == target_date
@@ -191,7 +186,7 @@ class TestGenerateInstances:
 
 class TestMarkCompleted:
     """Testa método mark_completed() - GAP DE COBERTURA."""
-    
+
     def test_mark_completed_success(self, test_engine, everyday_habit):
         """Marca instância como completada com sucesso.
         
@@ -206,14 +201,14 @@ class TestMarkCompleted:
             everyday_habit.id, date.today(), date.today()
         )
         instance_id = instances[0].id
-        
+
         # Ação: Marca como completa
         updated = HabitInstanceService.mark_completed(instance_id)
-        
+
         # Verificação: Status atualizado
         assert updated is not None
         assert updated.status == HabitInstanceStatus.COMPLETED
-    
+
     def test_mark_completed_nonexistent(self):
         """Marcar instância inexistente retorna None.
         
@@ -226,14 +221,14 @@ class TestMarkCompleted:
         """
         # Ação: Tenta marcar inexistente
         result = HabitInstanceService.mark_completed(99999)
-        
+
         # Verificação: Retorna None
         assert result is None
 
 
 class TestMarkSkipped:
     """Testa método mark_skipped() - GAP DE COBERTURA."""
-    
+
     def test_mark_skipped_success(self, test_engine, everyday_habit):
         """Marca instância como pulada com sucesso.
         
@@ -249,14 +244,14 @@ class TestMarkSkipped:
             everyday_habit.id, date.today(), date.today()
         )
         instance_id = instances[0].id
-        
+
         # Ação: Marca como pulada
         updated = HabitInstanceService.mark_skipped(instance_id)
-        
+
         # Verificação: Status atualizado
         assert updated is not None
         assert updated.status == HabitInstanceStatus.SKIPPED
-    
+
     def test_mark_skipped_nonexistent(self):
         """Marcar instância inexistente retorna None.
         
@@ -268,6 +263,6 @@ class TestMarkSkipped:
         """
         # Ação: Tenta marcar inexistente
         result = HabitInstanceService.mark_skipped(99999)
-        
+
         # Verificação: Retorna None
         assert result is None

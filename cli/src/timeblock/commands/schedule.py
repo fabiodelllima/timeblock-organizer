@@ -9,10 +9,10 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from src.timeblock.services.event_reordering_service import EventReorderingService
 from src.timeblock.services.habit_instance_service import HabitInstanceService
 from src.timeblock.services.habit_service import HabitService
-from src.timeblock.services.event_reordering_service import EventReorderingService
-from src.timeblock.utils.proposal_display import display_proposal, confirm_apply_proposal
+from src.timeblock.utils.proposal_display import confirm_apply_proposal, display_proposal
 
 app = typer.Typer(help="Gerenciar agenda de hábitos")
 console = Console()
@@ -120,7 +120,7 @@ def edit_instance(
         # Display reordering proposal if conflicts detected
         if proposal:
             display_proposal(proposal)
-            
+
             if confirm_apply_proposal():
                 EventReorderingService.apply_reordering(proposal)
                 console.print("\n[OK] Reordenamento aplicado com sucesso!\n", style="bold green")

@@ -1,9 +1,10 @@
 """Teste para propriedade is_overdue de HabitInstance."""
 
 from datetime import date, time
+
 import pytest
 from freezegun import freeze_time
-from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel import SQLModel, create_engine
 
 from src.timeblock.models import HabitInstance, HabitInstanceStatus
 
@@ -26,7 +27,7 @@ class TestHabitInstanceOverdue:
     
     Deve retornar False para qualquer outro status.
     """
-    
+
     def test_overdue_when_planned_and_past_time(self):
         """
         CENÁRIO: HabitInstance planejado com horário passado
@@ -45,14 +46,14 @@ class TestHabitInstanceOverdue:
             manually_adjusted=False,
             user_override=False
         )
-        
+
         # Act - Congelar tempo às 9h
         with freeze_time("2025-10-25 09:00:00"):
             result = instance.is_overdue
-        
+
         # Assert
         assert result is True, "Instância PLANNED após horário deve ser overdue"
-    
+
     def test_not_overdue_when_planned_and_future_time(self):
         """
         CENÁRIO: HabitInstance planejado com horário futuro
@@ -71,14 +72,14 @@ class TestHabitInstanceOverdue:
             manually_adjusted=False,
             user_override=False
         )
-        
+
         # Act
         with freeze_time("2025-10-25 09:00:00"):
             result = instance.is_overdue
-        
+
         # Assert
         assert result is False, "Instância PLANNED no futuro não é overdue"
-    
+
     def test_not_overdue_when_in_progress(self):
         """
         CENÁRIO: HabitInstance em progresso
@@ -97,14 +98,14 @@ class TestHabitInstanceOverdue:
             manually_adjusted=False,
             user_override=False
         )
-        
+
         # Act - Mesmo após o horário
         with freeze_time("2025-10-25 10:00:00"):
             result = instance.is_overdue
-        
+
         # Assert
         assert result is False, "IN_PROGRESS nunca é overdue"
-    
+
     def test_not_overdue_when_completed(self):
         """
         CENÁRIO: HabitInstance completado
@@ -123,14 +124,14 @@ class TestHabitInstanceOverdue:
             manually_adjusted=False,
             user_override=False
         )
-        
+
         # Act
         with freeze_time("2025-10-25 20:00:00"):
             result = instance.is_overdue
-        
+
         # Assert
         assert result is False, "COMPLETED nunca é overdue"
-    
+
     def test_not_overdue_when_skipped(self):
         """
         CENÁRIO: HabitInstance pulado
@@ -149,14 +150,14 @@ class TestHabitInstanceOverdue:
             manually_adjusted=False,
             user_override=False
         )
-        
+
         # Act
         with freeze_time("2025-10-25 20:00:00"):
             result = instance.is_overdue
-        
+
         # Assert
         assert result is False, "SKIPPED nunca é overdue"
-    
+
     def test_overdue_one_minute_after(self):
         """
         CENÁRIO: Um minuto após o horário
@@ -175,10 +176,10 @@ class TestHabitInstanceOverdue:
             manually_adjusted=False,
             user_override=False
         )
-        
+
         # Act
         with freeze_time("2025-10-25 14:01:00"):
             result = instance.is_overdue
-        
+
         # Assert
         assert result is True, "1 minuto após já é overdue"
