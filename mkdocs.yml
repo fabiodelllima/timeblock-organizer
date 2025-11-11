@@ -52,6 +52,7 @@ nav:
 
   - Arquitetura:
       - Visão Geral: 01-architecture/README.md
+      - Overview Arquitetural: 01-architecture/00-architecture-overview.md
       - 1. Introdução: 01-architecture/01-introduction-goals.md
       - 2. Restrições: 01-architecture/02-constraints.md
       - 3. Contexto: 01-architecture/03-context-scope.md
@@ -67,6 +68,9 @@ nav:
       - 13. Análise Arquitetural: 01-architecture/13-architectural-analysis.md
       - 14. Problemas Identificados: 01-architecture/14-architectural-problems.md
       - 15. Recomendações: 01-architecture/15-recommendations.md
+      - 16. Sync Architecture v2: 01-architecture/16-sync-architecture-v2.md
+      - 17. User Control Philosophy: 01-architecture/17-user-control-philosophy.md
+      - 18. Project Philosophy: 01-architecture/18-project-philosophy.md
 
   - Diagramas:
       - Visão Geral: 02-diagrams/README.md
