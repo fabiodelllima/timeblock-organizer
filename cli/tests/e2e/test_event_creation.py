@@ -11,6 +11,7 @@ Referências:
 from pathlib import Path
 
 import pytest
+from pytest import MonkeyPatch
 from typer.testing import CliRunner
 
 from src.timeblock.main import app
@@ -40,7 +41,9 @@ class TestBREventCreationWorkflow:
     - BR-EVENT-001: Instâncias agendadas corretamente
     """
 
-    def test_br_routine_habit_schedule_complete_flow(self, isolated_db: Path) -> None:
+    def test_br_routine_habit_schedule_complete_flow(
+        self, isolated_db: Path, monkeypatch: MonkeyPatch
+    ) -> None:
         """
         E2E: Usuário cria rotina completa com múltiplos hábitos.
 
@@ -57,36 +60,42 @@ class TestBREventCreationWorkflow:
             - BR-HABIT-001: Hábitos pertencem a rotinas
             - BR-EVENT-001: Instâncias seguem schedule do hábito
         """
+        # Configurar banco de dados isolado via variável de ambiente
+        monkeypatch.setenv("TIMEBLOCK_DB_PATH", str(isolated_db))
+
         runner = CliRunner()
 
         # 1. Init sistema
         result = runner.invoke(app, ["init"])
-        assert result.exit_code == 0, "Sistema deve inicializar com sucesso"
+        assert result.exit_code == 0, f"Sistema deve inicializar com sucesso. Output: {result.output}"
 
         # 2. Criar rotina
         result = runner.invoke(app, [
             "routine", "create", "Manhã Produtiva"
         ])
-        assert result.exit_code == 0, "Criação de rotina deve ter sucesso"
+        assert result.exit_code == 0, f"Criação de rotina deve ter sucesso. Output: {result.output}"
         assert "criada" in result.output.lower() or "created" in result.output.lower(), (
             "Feedback de criação deve aparecer"
         )
 
         # 3. Adicionar 3 hábitos com horários não conflitantes
         habits = [
-            ("Meditação", "06:00", "20", "EVERYDAY"),
-            ("Exercício", "06:30", "60", "WEEKDAYS"),
-            ("Café da Manhã", "08:00", "30", "EVERYDAY"),
+            ("Meditação", "06:00", "06:20", "EVERYDAY"),
+            ("Exercício", "06:30", "07:30", "WEEKDAYS"),
+            ("Café da Manhã", "08:00", "08:30", "EVERYDAY"),
         ]
 
-        for title, start, duration, recurrence in habits:
+        for title, start, end, repeat in habits:
             result = runner.invoke(app, [
-                "habit", "create", title,
+                "habit", "create",
+                "--title", title,
                 "--start", start,
-                "--duration", duration,
-                "--recurrence", recurrence
+                "--end", end,
+                "--repeat", repeat
             ])
-            assert result.exit_code == 0, f"Criação de hábito '{title}' deve ter sucesso"
+            assert result.exit_code == 0, (
+                f"Criação de hábito '{title}' deve ter sucesso. Output: {result.output}"
+            )
             assert (
                 "criado" in result.output.lower()
                 or "created" in result.output.lower()
@@ -96,9 +105,8 @@ class TestBREventCreationWorkflow:
         result = runner.invoke(app, [
             "schedule", "generate", "--days", "7"
         ])
-        assert result.exit_code == 0, "Geração deve ter sucesso"
+        assert result.exit_code == 0, f"Geração deve ter sucesso. Output: {result.output}"
         # Meditação (7) + Exercício (5 weekdays) + Café (7) = 19 instâncias
-        # Aceitar output que contenha indicação de geração bem-sucedida
         assert (
             "gerada" in result.output.lower()
             or "generated" in result.output.lower()
@@ -107,13 +115,12 @@ class TestBREventCreationWorkflow:
 
         # 5. Listar agenda da semana
         result = runner.invoke(app, ["list", "week"])
-        assert result.exit_code == 0, "Listagem deve ter sucesso"
+        assert result.exit_code == 0, f"Listagem deve ter sucesso. Output: {result.output}"
         assert "Meditação" in result.output, "Hábito Meditação deve aparecer"
         assert "Exercício" in result.output, "Hábito Exercício deve aparecer"
         assert "Café da Manhã" in result.output, "Hábito Café da Manhã deve aparecer"
 
         # 6. Verificar ausência de conflitos
-        # Como os horários foram planejados sem sobreposição, não deve haver avisos
         assert (
             "conflito" not in result.output.lower()
         ), "Não deve haver conflitos em horários planejados corretamente"
@@ -121,7 +128,9 @@ class TestBREventCreationWorkflow:
             "overlap" not in result.output.lower()
         ), "Não deve haver sobreposições"
 
-    def test_br_event_creation_validates_time_ranges(self, isolated_db: Path) -> None:
+    def test_br_event_creation_validates_time_ranges(
+        self, isolated_db: Path, monkeypatch: MonkeyPatch
+    ) -> None:
         """
         E2E: Sistema valida horários ao criar hábitos.
 
@@ -133,6 +142,9 @@ class TestBREventCreationWorkflow:
             - BR-COMMON-001: Validação de formato de tempo
             - BR-COMMON-003: Validação de ranges válidos
         """
+        # Configurar banco de dados isolado
+        monkeypatch.setenv("TIMEBLOCK_DB_PATH", str(isolated_db))
+
         runner = CliRunner()
 
         # Setup
@@ -141,10 +153,11 @@ class TestBREventCreationWorkflow:
 
         # Tentar criar com horário inválido (25:00)
         result = runner.invoke(app, [
-            "habit", "create", "Invalid Habit",
+            "habit", "create",
+            "--title", "Invalid Habit",
             "--start", "25:00",
-            "--duration", "30",
-            "--recurrence", "EVERYDAY"
+            "--end", "26:00",
+            "--repeat", "EVERYDAY"
         ])
 
         # Deve falhar com erro de validação
@@ -154,4 +167,4 @@ class TestBREventCreationWorkflow:
             or "invalid" in result.output.lower()
             or "erro" in result.output.lower()
             or "error" in result.output.lower()
-        ), "Deve informar erro de validação"
+        ), f"Deve informar erro de validação. Output: {result.output}"
