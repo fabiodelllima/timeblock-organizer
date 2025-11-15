@@ -30,20 +30,20 @@ Skip de habit deve ser categorizado usando enum `SkipReason` com 8 categorias pr
 ```python
 class SkipReason(str, Enum):
     """Categorias de motivo para skip."""
-    HEALTH = "health"           # Saúde (doença, consulta)
-    WORK = "work"               # Trabalho (reunião, deadline)
-    FAMILY = "family"           # Família (evento, emergência)
-    TRAVEL = "travel"           # Viagem
-    WEATHER = "weather"         # Clima (chuva, frio extremo)
-    TIRED = "tired"             # Cansaço/Fadiga
-    PERSONAL = "personal"       # Pessoal (outro motivo)
-    NO_REASON = "no_reason"     # Sem motivo específico
+    HEALTH = "saude"           # Saúde (doença, consulta)
+    WORK = "trabalho"          # Trabalho (reunião, deadline)
+    FAMILY = "familia"         # Família (evento, emergência)
+    PERSONAL = "pessoal"       # Pessoal (outro motivo)
+    WEATHER = "clima"          # Clima (chuva, frio extremo)
+    FATIGUE = "cansaco"        # Cansaço/Fadiga
+    EMERGENCY = "emergencia"   # Emergências não categorizadas
+    OTHER = "outro"            # Outros motivos
 ```
 
 ### Critérios de Aceitação
 
 - [ ] Enum `SkipReason` com exatamente 8 valores
-- [ ] Valores em lowercase (health, work, etc)
+- [ ] Valores em lowercase português (saude, trabalho, etc)
 - [ ] Campo obrigatório quando `status = NOT_DONE` e `substatus = SKIPPED_JUSTIFIED`
 - [ ] Campo opcional quando `substatus = SKIPPED_UNJUSTIFIED`
 - [ ] Campo NULL quando `status != NOT_DONE`
@@ -308,11 +308,11 @@ Motivo do skip:
 [1] Saúde (consulta, doença)
 [2] Trabalho (reunião, deadline)
 [3] Família (evento, emergência)
-[4] Viagem
+[4] Pessoal (outro motivo)
 [5] Clima (chuva, frio extremo)
 [6] Cansaço/Fadiga
-[7] Pessoal (outro motivo)
-[8] Sem motivo específico
+[7] Emergência (não categorizada)
+[8] Outro motivo
 [9] Pular agora, justificar depois
 
 Escolha [1-9]: 2
@@ -365,11 +365,11 @@ Motivo do skip:
 [1] Saúde
 [2] Trabalho
 [3] Família
-[4] Viagem
+[4] Pessoal
 [5] Clima
 [6] Cansaço
-[7] Pessoal
-[8] Sem motivo
+[7] Emergência
+[8] Outro
 [9] Justificar depois
 
 Escolha [1-9]: 6
