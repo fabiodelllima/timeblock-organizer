@@ -217,3 +217,106 @@ Funcionalidade: Gerenciamento de Rotinas e Contexto
       Rotina vazia. Adicione habits:
         habit create --title "Nome" --start HH:MM --end HH:MM
       """
+
+# --- BR-ROUTINE-002: Delete Behaviors ---
+
+  Cenário: Soft delete por padrão (is_active=False)
+    Dado que existe rotina "Rotina Matinal" com 8 habits
+    E rotina está ativa
+    Quando usuário executa "routine delete 1"
+    E confirma ação
+    Então routine.is_active = False
+    E habits permanecem vinculados
+    E dados permanecem no banco
+    E sistema exibe:
+      """
+      [WARN] Desativar rotina "Rotina Matinal"?
+             - 8 hábitos permanecem vinculados
+             - Rotina pode ser reativada depois
+      
+      Confirmar? (s/N): s
+      [OK] Rotina "Rotina Matinal" desativada
+      """
+
+  Cenário: Hard delete sem habits funciona
+    Dado que existe rotina "Rotina Teste" sem habits
+    Quando usuário executa "routine delete 1 --purge"
+    E confirma ação
+    Então rotina é REMOVIDA do banco
+    E sistema exibe:
+      """
+      [WARN] Deletar PERMANENTEMENTE rotina "Rotina Teste"?
+             Esta ação NÃO pode ser desfeita.
+      
+      Confirmar? (s/N): s
+      [OK] Rotina deletada permanentemente
+      """
+
+  Cenário: Hard delete com habits bloqueia (MVP)
+    Dado que existe rotina "Rotina Matinal" com 8 habits
+    Quando usuário executa "routine delete 1 --purge"
+    Então sistema BLOQUEIA delete
+    E exibe mensagem de erro:
+      """
+      [ERROR] Não é possível deletar rotina com hábitos
+      
+      Rotina "Rotina Matinal" possui 8 hábitos:
+      1. Academia
+      2. Meditação
+      ...
+      
+      Ações disponíveis:
+      1. Mover hábitos para outra rotina (Sprint 2)
+      2. Deletar hábitos também com --cascade (Sprint 2)
+      
+      Para deletar a rotina vazia, remova os hábitos primeiro.
+      """
+
+# --- BR-ROUTINE-004: First Routine Flow ---
+
+  Cenário: Criar habit sem rotina orienta criação
+    Dado que NÃO existe nenhuma rotina
+    Quando usuário executa "habit create --title 'Academia'"
+    Então sistema exibe wizard interativo:
+      """
+      [ERROR] Nenhuma rotina existe
+      
+      Para criar hábitos, primeiro crie uma rotina.
+      
+      Deseja criar uma rotina agora? (S/n): s
+      
+      Nome da rotina: Rotina Matinal
+      [OK] Rotina "Rotina Matinal" criada e ativada
+      
+      Agora você pode criar o hábito "Academia". Continuar? (S/n): s
+      
+      [OK] Hábito "Academia" criado na rotina "Rotina Matinal"
+      """
+
+  Cenário: routine init cria rotina padrão
+    Dado que NÃO existe nenhuma rotina
+    Quando usuário executa "routine init"
+    Então sistema exibe wizard:
+      """
+      [INFO] Criar rotina padrão?
+      
+      Opções:
+      1. Rotina Diária (recomendado para iniciantes)
+      2. Criar rotina personalizada
+      
+      Escolha (1/2): 1
+      [OK] Rotina "Minha Rotina Diária" criada e ativada
+      
+      Próximo passo: habit create --title "Seu Primeiro Hábito"
+      """
+
+  Cenário: Primeira rotina criada fica ativa automaticamente
+    Dado que NÃO existe nenhuma rotina
+    Quando usuário cria primeira rotina "Rotina Matinal"
+    Então routine.is_active = True AUTOMATICAMENTE
+    E sistema exibe:
+      """
+      [OK] Rotina "Rotina Matinal" criada e ativada automaticamente
+      
+      Como esta é sua primeira rotina, ela já está ativa.
+      """
