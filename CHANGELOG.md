@@ -7,6 +7,75 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/spec/v2.0.
 
 ## [Não Lançado]
 
+### Adicionado em 2025-11-17
+
+#### **Sprint 2: HABIT - Validação BR-HABIT-004**
+
+**Models:**
+
+- `habit.py` - Validação de recurrence via **init** override
+  - Aceita enum Recurrence ou string válida
+  - Rejeita strings/tipos inválidos com mensagem clara
+  - Lista todos valores válidos no erro (95% cobertura)
+
+**Database:**
+
+- `engine.py` - Foreign keys habilitadas no SQLite (PRAGMA foreign_keys=ON)
+  - Crítico para BR-HABIT-003 (routine delete blocked)
+
+**Services:**
+
+- `routine_service.py` - Refatoração de imports (importa de src.timeblock.models)
+
+**Tests:**
+
+- `conftest.py` - Fixtures para testes de Habit:
+  - `routine_service` - Helper para criar routines
+  - `routine_delete_helper` - Helper para deletar routines
+
+**Business Rules Implementadas (5/5):**
+
+- BR-HABIT-001: Title Validation
+
+  - Title não vazio após trim
+  - Title máximo 200 caracteres
+  - Trim automático aplicado
+
+- BR-HABIT-002: Time Range Validation
+
+  - scheduled_start < scheduled_end
+  - Horários iguais rejeitados
+  - Sem eventos duração zero
+
+- BR-HABIT-003: Routine Association
+
+  - routine_id obrigatório
+  - FK constraint valida existência
+  - Delete routine com habits bloqueado (RESTRICT)
+
+- BR-HABIT-004: Recurrence Pattern
+
+  - Recurrence deve ser enum válido
+  - 10 padrões suportados (MONDAY-SUNDAY, WEEKDAYS, WEEKENDS, EVERYDAY)
+  - Validação via **init** override (Pydantic validators não funcionam com SQLModel table=True)
+
+- BR-HABIT-005: Optional Color
+  - Color opcional (pode ser None)
+  - Se presente, máximo 7 caracteres (hex #RRGGBB)
+
+**Documentação:**
+
+- `docs/04-specifications/business-rules/habit.md` - 5 BRs documentadas
+- `docs/10-meta/sessao-br-habit-004-validacao-2025-11-17.md` - Resumo da sessão
+
+**Testes:**
+
+- 13 novos testes unitários validando 5 BRs (13/13 GREEN)
+- Classes organizadas por BR (TestBRHabit001 a TestBRHabit005)
+- Padrão test*br*\* para rastreabilidade direta
+
+---
+
 ### Adicionado em 2025-11-16
 
 #### **Sprint 1: ROUTINE - Implementação Completa**
