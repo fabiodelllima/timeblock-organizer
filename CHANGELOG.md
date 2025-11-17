@@ -12,10 +12,12 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/spec/v2.0.
 #### **Sprint 1: ROUTINE - Implementação Completa**
 
 **Models:**
+
 - `routine.py` - Modelo Routine com is_active=False por padrão (BR-ROUTINE-001)
 - `habit.py` - FK routine_id com ondelete=RESTRICT (BR-ROUTINE-002)
 
 **Services:**
+
 - `routine_service.py` - 5 operações principais:
   - `create()` - Cria routine inativa
   - `activate()` - Ativa routine e desativa outras
@@ -24,6 +26,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/spec/v2.0.
   - `hard_delete()` - Hard delete condicional (sem habits)
 
 **Business Rules Implementadas (4/4):**
+
 - BR-ROUTINE-001: Single Active Constraint
   - Apenas uma routine ativa por vez
   - Ativação desativa outras automaticamente
@@ -41,33 +44,39 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/spec/v2.0.
   - Habits filtrados por routine ativa
 
 **Testes:**
+
 - 18 novos testes unitários validando 4 BRs (18/18 GREEN)
 - Classes organizadas por BR (TestBRRoutine001, TestBRRoutine002, etc)
-- Padrão test_br_* para rastreabilidade direta
+- Padrão test*br*\* para rastreabilidade direta
 - 100% cobertura nos modelos routine e habit
 
 **Documentação:**
+
 - `docs/04-specifications/business-rules/routine.md` - 4 BRs formalizadas
 - `docs/06-bdd/scenarios/routine.feature` - 6 scenarios Gherkin
 - `docs/sprints/sprint-1-routine-summary.md` - Resumo executivo
 
 **Infrastructure:**
+
 - `conftest.py` - PRAGMA foreign_keys habilitado no SQLite
 - `conftest.py` - collections.abc.Generator (Python 3.9+)
 - Event listener para configuração automática de FK
 
 **Decisões Arquiteturais:**
+
 - SQLModel mantido (validação runtime + 50-70% menos código)
 - ondelete=RESTRICT protege integridade de dados
 - Soft delete como padrão (preserva histórico)
 
 **Métricas:**
+
 - Testes: 18/18 GREEN ✓
 - Coverage: 100% (models routine/habit)
 - Ruff: All checks passed
 - Arquivos modificados: 10 (+486 linhas / -93 linhas)
 
 **Commits:**
+
 - e97a1fd Merge branch 'feature/mvp-sprint1-routine' into develop
 - 10d00d1 feat(routine): Implementa Sprint 1 ROUTINE - 4 BRs validadas (18/18 GREEN)
 - 4e824a0 test(br): Adiciona 6 testes para delete behaviors e first routine
