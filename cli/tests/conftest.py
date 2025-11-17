@@ -1,7 +1,8 @@
 """Shared fixtures for query tests."""
 
+from collections.abc import Generator
 from datetime import UTC, datetime, timedelta
-from typing import Any, Generator
+from typing import Any
 
 import pytest
 from sqlalchemy import event
@@ -18,7 +19,10 @@ def test_engine() -> Engine:
 
     # Habilitar foreign keys no SQLite (CRÍTICO para RESTRICT)
     @event.listens_for(engine, "connect")
-    def set_sqlite_pragma(dbapi_conn: Any, connection_record: Any) -> None:  # noqa: ARG001
+    def set_sqlite_pragma(  # noqa: ARG001
+        dbapi_conn: Any,
+        connection_record: Any,  # noqa: ARG001
+    ) -> None:
         """Habilita foreign keys no SQLite."""
         cursor = dbapi_conn.cursor()
         cursor.execute("PRAGMA foreign_keys=ON")
