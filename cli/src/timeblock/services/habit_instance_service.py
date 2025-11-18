@@ -19,7 +19,10 @@ class HabitInstanceService:
 
     @staticmethod
     def generate_instances(
-        habit_id: int, start_date: date, end_date: date
+        habit_id: int,
+        start_date: date,
+        end_date: date,
+        session: Session | None = None,
     ) -> list[HabitInstance]:
         """Gera instâncias de hábito para período."""
         logger.info(
@@ -27,8 +30,8 @@ class HabitInstanceService:
             f"período={start_date} até {end_date}"
         )
 
-        with get_engine_context() as engine, Session(engine) as session:
-            habit = session.get(Habit, habit_id)
+        def _generate(sess: Session) -> list[HabitInstance]:
+            habit = sess.get(Habit, habit_id)
             if not habit:
                 logger.error(f"Hábito não encontrado: habit_id={habit_id}")
                 raise ValueError(f"Habit {habit_id} not found")
@@ -46,25 +49,32 @@ class HabitInstanceService:
                         scheduled_end=habit.scheduled_end,
                         status="PLANNED",
                     )
-                    session.add(instance)
+                    sess.add(instance)
                     instances.append(instance)
 
                 current += timedelta(days=1)
 
-            session.commit()
+            sess.commit()
             for instance in instances:
-                session.refresh(instance)
+                sess.refresh(instance)
 
             logger.info(
                 f"Criadas {len(instances)} instâncias para habit_id={habit_id}"
             )
             return instances
 
+        if session is not None:
+            return _generate(session)
+        
+        with get_engine_context() as engine, Session(engine) as sess:
+            return _generate(sess)
+
     @staticmethod
     def adjust_instance_time(
         instance_id: int,
         new_start: time | None = None,
         new_end: time | None = None,
+        session: Session | None = None,
     ) -> tuple[HabitInstance | None, list[Conflict] | None]:
         """
         Ajusta horário de instância específica.
@@ -76,6 +86,7 @@ class HabitInstanceService:
             instance_id: ID da instância a ajustar
             new_start: Novo horário de início (opcional)
             new_end: Novo horário de fim (opcional)
+            session: Optional session (for tests/transactions)
 
         Returns:
             Tupla (instância atualizada, lista de conflitos detectados ou None)
@@ -93,8 +104,8 @@ class HabitInstanceService:
             )
             raise ValueError("Start time must be before end time")
 
-        with get_engine_context() as engine, Session(engine) as session:
-            instance = session.get(HabitInstance, instance_id)
+        def _adjust(sess: Session) -> tuple[HabitInstance, bool]:
+            instance = sess.get(HabitInstance, instance_id)
             if not instance:
                 logger.error(f"Instância não encontrada: instance_id={instance_id}")
                 raise ValueError(f"HabitInstance {instance_id} not found")
@@ -115,16 +126,24 @@ class HabitInstanceService:
                     f"novo horário={instance.scheduled_start}-{instance.scheduled_end}"
                 )
 
-            session.add(instance)
-            session.commit()
-            session.refresh(instance)
+            sess.add(instance)
+            sess.commit()
+            sess.refresh(instance)
+            return instance, time_changed
+
+        if session is not None:
+            instance, time_changed = _adjust(session)
+        else:
+            with get_engine_context() as engine, Session(engine) as sess:
+                instance, time_changed = _adjust(sess)
 
         # Detecta conflitos mas não propõe resolução automática
         conflicts = None
         if time_changed:
             conflicts = EventReorderingService.detect_conflicts(
                 triggered_event_id=instance_id,
-                event_type="habit_instance"
+                event_type="habit_instance",
+                session=session,
             )
 
             if conflicts:
@@ -136,12 +155,15 @@ class HabitInstanceService:
         return instance, conflicts
 
     @staticmethod
-    def mark_completed(instance_id: int) -> HabitInstance | None:
+    def mark_completed(
+        instance_id: int,
+        session: Session | None = None,
+    ) -> HabitInstance | None:
         """Marca instância como completa."""
         logger.debug(f"Marcando como completa: instance_id={instance_id}")
 
-        with get_engine_context() as engine, Session(engine) as session:
-            instance = session.get(HabitInstance, instance_id)
+        def _mark(sess: Session) -> HabitInstance | None:
+            instance = sess.get(HabitInstance, instance_id)
             if not instance:
                 logger.warning(
                     f"Tentativa de completar instância inexistente: "
@@ -150,20 +172,29 @@ class HabitInstanceService:
                 return None
 
             instance.status = "COMPLETED"
-            session.add(instance)
-            session.commit()
-            session.refresh(instance)
+            sess.add(instance)
+            sess.commit()
+            sess.refresh(instance)
 
             logger.info(f"Instância completada: instance_id={instance_id}")
             return instance
 
+        if session is not None:
+            return _mark(session)
+        
+        with get_engine_context() as engine, Session(engine) as sess:
+            return _mark(sess)
+
     @staticmethod
-    def mark_skipped(instance_id: int) -> HabitInstance | None:
+    def mark_skipped(
+        instance_id: int,
+        session: Session | None = None,
+    ) -> HabitInstance | None:
         """Marca instância como pulada."""
         logger.debug(f"Marcando como pulada: instance_id={instance_id}")
 
-        with get_engine_context() as engine, Session(engine) as session:
-            instance = session.get(HabitInstance, instance_id)
+        def _mark(sess: Session) -> HabitInstance | None:
+            instance = sess.get(HabitInstance, instance_id)
             if not instance:
                 logger.warning(
                     f"Tentativa de pular instância inexistente: "
@@ -172,12 +203,18 @@ class HabitInstanceService:
                 return None
 
             instance.status = "SKIPPED"
-            session.add(instance)
-            session.commit()
-            session.refresh(instance)
+            sess.add(instance)
+            sess.commit()
+            sess.refresh(instance)
 
             logger.info(f"Instância pulada: instance_id={instance_id}")
             return instance
+
+        if session is not None:
+            return _mark(session)
+        
+        with get_engine_context() as engine, Session(engine) as sess:
+            return _mark(sess)
 
     @staticmethod
     def _should_create_for_date(recurrence: Recurrence, target_date: date) -> bool:

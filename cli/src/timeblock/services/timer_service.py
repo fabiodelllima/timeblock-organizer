@@ -19,6 +19,7 @@ class TimerService:
         event_id: int | None = None,
         task_id: int | None = None,
         habit_instance_id: int | None = None,
+        session: Session | None = None,
     ) -> tuple[TimeLog, list[Conflict] | None]:
         """
         Inicia timer e detecta conflitos.
@@ -30,6 +31,7 @@ class TimerService:
             event_id: ID do evento (opcional)
             task_id: ID da task (opcional)
             habit_instance_id: ID da instância de hábito (opcional)
+            session: Optional session (for tests/transactions)
 
         Returns:
             Tupla (timelog criado, lista de conflitos detectados ou None)
@@ -47,21 +49,27 @@ class TimerService:
         if ids_provided != 1:
             raise ValueError("Exactly one ID must be provided")
 
-        active = TimerService.get_active_timer()
+        active = TimerService.get_active_timer(session=session)
         if active:
             raise ValueError("Another timer is already active")
 
-        timelog = TimeLog(
-            event_id=event_id,
-            task_id=task_id,
-            habit_instance_id=habit_instance_id,
-            start_time=datetime.now(),
-        )
+        def _start(sess: Session) -> TimeLog:
+            timelog = TimeLog(
+                event_id=event_id,
+                task_id=task_id,
+                habit_instance_id=habit_instance_id,
+                start_time=datetime.now(),
+            )
+            sess.add(timelog)
+            sess.commit()
+            sess.refresh(timelog)
+            return timelog
 
-        with get_engine_context() as engine, Session(engine) as session:
-            session.add(timelog)
-            session.commit()
-            session.refresh(timelog)
+        if session is not None:
+            timelog = _start(session)
+        else:
+            with get_engine_context() as engine, Session(engine) as sess:
+                timelog = _start(sess)
 
         # Detectar conflitos após criar timelog, mas não bloqueia
         conflicts = None
@@ -69,25 +77,37 @@ class TimerService:
             conflicts = EventReorderingService.detect_conflicts(
                 triggered_event_id=task_id,
                 event_type="task"
+            ,
+                session=session,
             )
         elif habit_instance_id:
             conflicts = EventReorderingService.detect_conflicts(
                 triggered_event_id=habit_instance_id,
                 event_type="habit_instance"
+            ,
+                session=session,
             )
         elif event_id:
             conflicts = EventReorderingService.detect_conflicts(
                 triggered_event_id=event_id,
                 event_type="event"
+            ,
+                session=session,
             )
 
-        return timelog, conflicts
+        # Retorna None se não houver conflitos
+        return timelog, conflicts if conflicts else None
 
     @staticmethod
-    def stop_timer(timelog_id: int) -> TimeLog | None:
-        """Para timer e salva duração."""
-        with get_engine_context() as engine, Session(engine) as session:
-            timelog = session.get(TimeLog, timelog_id)
+    def stop_timer(timelog_id: int, session: Session | None = None) -> TimeLog | None:
+        """Para timer e salva duração.
+        
+        Args:
+            timelog_id: ID of timer to stop
+            session: Optional session (for tests/transactions)
+        """
+        def _stop(sess: Session) -> TimeLog | None:
+            timelog = sess.get(TimeLog, timelog_id)
             if not timelog:
                 return None
             if timelog.end_time is not None:
@@ -98,34 +118,56 @@ class TimerService:
             paused_duration = timelog.paused_duration or 0
             timelog.duration_seconds = int(total_duration - paused_duration)
 
-            session.add(timelog)
-            session.commit()
-            session.refresh(timelog)
+            sess.add(timelog)
+            sess.commit()
+            sess.refresh(timelog)
             return timelog
 
+        if session is not None:
+            return _stop(session)
+        
+        with get_engine_context() as engine, Session(engine) as sess:
+            return _stop(sess)
+
     @staticmethod
-    def cancel_timer(timelog_id: int) -> bool:
-        """Cancela timer sem salvar."""
-        with get_engine_context() as engine, Session(engine) as session:
-            timelog = session.get(TimeLog, timelog_id)
+    def cancel_timer(timelog_id: int, session: Session | None = None) -> bool:
+        """Cancela timer sem salvar.
+        
+        Args:
+            timelog_id: ID of timer to cancel
+            session: Optional session (for tests/transactions)
+        """
+        def _cancel(sess: Session) -> bool:
+            timelog = sess.get(TimeLog, timelog_id)
             if not timelog:
                 return False
             if timelog.end_time is not None:
                 raise ValueError("Timer already stopped")
 
-            pauses = session.exec(select(PauseLog).where(PauseLog.timelog_id == timelog_id)).all()
+            pauses = sess.exec(select(PauseLog).where(PauseLog.timelog_id == timelog_id)).all()
             for pause in pauses:
-                session.delete(pause)
+                sess.delete(pause)
 
-            session.delete(timelog)
-            session.commit()
+            sess.delete(timelog)
+            sess.commit()
             return True
 
+        if session is not None:
+            return _cancel(session)
+        
+        with get_engine_context() as engine, Session(engine) as sess:
+            return _cancel(sess)
+
     @staticmethod
-    def pause_timer(timelog_id: int) -> PauseLog:
-        """Pausa timer ativo."""
-        with get_engine_context() as engine, Session(engine) as session:
-            timelog = session.get(TimeLog, timelog_id)
+    def pause_timer(timelog_id: int, session: Session | None = None) -> PauseLog:
+        """Pausa timer ativo.
+        
+        Args:
+            timelog_id: ID of timer to pause
+            session: Optional session (for tests/transactions)
+        """
+        def _pause(sess: Session) -> PauseLog:
+            timelog = sess.get(TimeLog, timelog_id)
             if not timelog:
                 raise ValueError("TimeLog not found")
             if timelog.end_time is not None:
@@ -135,20 +177,31 @@ class TimerService:
                 timelog_id=timelog_id,
                 pause_start=datetime.now(),
             )
-            session.add(pause)
-            session.commit()
-            session.refresh(pause)
+            sess.add(pause)
+            sess.commit()
+            sess.refresh(pause)
             return pause
 
+        if session is not None:
+            return _pause(session)
+        
+        with get_engine_context() as engine, Session(engine) as sess:
+            return _pause(sess)
+
     @staticmethod
-    def resume_timer(timelog_id: int) -> None:
-        """Retoma timer pausado."""
-        with get_engine_context() as engine, Session(engine) as session:
-            timelog = session.get(TimeLog, timelog_id)
+    def resume_timer(timelog_id: int, session: Session | None = None) -> None:
+        """Retoma timer pausado.
+        
+        Args:
+            timelog_id: ID of timer to resume
+            session: Optional session (for tests/transactions)
+        """
+        def _resume(sess: Session) -> None:
+            timelog = sess.get(TimeLog, timelog_id)
             if not timelog:
                 raise ValueError("TimeLog not found")
 
-            pauses = session.exec(
+            pauses = sess.exec(
                 select(PauseLog)
                 .where(PauseLog.timelog_id == timelog_id)
                 .where(PauseLog.pause_end == None)  # noqa: E711
@@ -161,13 +214,29 @@ class TimerService:
                 pause.pause_end = datetime.now()
                 pause_duration = (pause.pause_end - pause.pause_start).total_seconds()
                 timelog.paused_duration = (timelog.paused_duration or 0) + int(pause_duration)
-                session.add(pause)
+                sess.add(pause)
 
-            session.add(timelog)
-            session.commit()
+            sess.add(timelog)
+            sess.commit()
+
+        if session is not None:
+            _resume(session)
+        else:
+            with get_engine_context() as engine, Session(engine) as sess:
+                _resume(sess)
 
     @staticmethod
-    def get_active_timer() -> TimeLog | None:
-        """Busca timer ativo."""
-        with get_engine_context() as engine, Session(engine) as session:
-            return session.exec(select(TimeLog).where(TimeLog.end_time == None)).first()  # noqa: E711
+    def get_active_timer(session: Session | None = None) -> TimeLog | None:
+        """Busca timer ativo.
+        
+        Args:
+            session: Optional session (for tests/transactions)
+        """
+        def _get(sess: Session) -> TimeLog | None:
+            return sess.exec(select(TimeLog).where(TimeLog.end_time == None)).first()  # noqa: E711
+
+        if session is not None:
+            return _get(session)
+        
+        with get_engine_context() as engine, Session(engine) as sess:
+            return _get(sess)

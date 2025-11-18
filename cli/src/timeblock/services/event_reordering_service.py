@@ -17,6 +17,7 @@ class EventReorderingService:
     def detect_conflicts(
         triggered_event_id: int,
         event_type: str,
+        session: Session | None = None,
     ) -> list[Conflict]:
         """
         Detecta conflitos com outros eventos causados pelo evento disparador.
@@ -27,13 +28,14 @@ class EventReorderingService:
         Args:
             triggered_event_id: ID do evento que disparou a verificação
             event_type: Tipo do evento disparador ("task", "habit_instance", "event")
+            session: Optional session (for tests/transactions)
 
         Returns:
             Lista de conflitos encontrados. Lista vazia se não houver conflitos.
         """
-        with get_engine_context() as engine, Session(engine) as session:
+        def _detect(sess: Session) -> list[Conflict]:
             triggered = EventReorderingService._get_event_by_type(
-                session, triggered_event_id, event_type
+                sess, triggered_event_id, event_type
             )
             if not triggered:
                 return []
@@ -43,7 +45,7 @@ class EventReorderingService:
                 return []
 
             conflicting_events = EventReorderingService._get_events_in_range(
-                session, start, end, triggered_event_id, event_type
+                sess, start, end, triggered_event_id, event_type
             )
 
             conflicts = []
@@ -71,8 +73,17 @@ class EventReorderingService:
 
             return conflicts
 
+        if session is not None:
+            return _detect(session)
+        
+        with get_engine_context() as engine, Session(engine) as sess:
+            return _detect(sess)
+
     @staticmethod
-    def get_conflicts_for_day(target_date: date) -> list[Conflict]:
+    def get_conflicts_for_day(
+        target_date: date,
+        session: Session | None = None,
+    ) -> list[Conflict]:
         """
         Obtém todos os conflitos detectados em um dia específico.
 
@@ -80,11 +91,12 @@ class EventReorderingService:
 
         Args:
             target_date: Data para verificar conflitos
+            session: Optional session (for tests/transactions)
 
         Returns:
             Lista de todos os conflitos do dia
         """
-        with get_engine_context() as engine, Session(engine) as session:
+        def _get_conflicts(sess: Session) -> list[Conflict]:
             all_conflicts = []
 
             # Busca todos os eventos do dia
@@ -95,11 +107,11 @@ class EventReorderingService:
             task_stmt = select(Task).where(
                 Task.scheduled_datetime.between(day_start, day_end)
             )
-            tasks = list(session.exec(task_stmt).all())
+            tasks = list(sess.exec(task_stmt).all())
 
             # Busca todas as instâncias de hábitos do dia
             habit_stmt = select(HabitInstance).where(HabitInstance.date == target_date)
-            habits = list(session.exec(habit_stmt).all())
+            habits = list(sess.exec(habit_stmt).all())
 
             # Busca todos os eventos do dia
             event_stmt = select(Event).where(
@@ -109,23 +121,27 @@ class EventReorderingService:
                     (Event.scheduled_start <= day_start) & (Event.scheduled_end >= day_end),
                 )
             )
-            events = list(session.exec(event_stmt).all())
+            events = list(sess.exec(event_stmt).all())
 
             # Verifica cada task contra os outros
             for task in tasks:
-                task_conflicts = EventReorderingService.detect_conflicts(task.id, "task")
+                task_conflicts = EventReorderingService.detect_conflicts(
+                    task.id, "task", session=sess
+                )
                 all_conflicts.extend(task_conflicts)
 
             # Verifica cada instância de hábito contra os outros
             for habit in habits:
                 habit_conflicts = EventReorderingService.detect_conflicts(
-                    habit.id, "habit_instance"
+                    habit.id, "habit_instance", session=sess
                 )
                 all_conflicts.extend(habit_conflicts)
 
             # Verifica cada evento contra os outros
             for event in events:
-                event_conflicts = EventReorderingService.detect_conflicts(event.id, "event")
+                event_conflicts = EventReorderingService.detect_conflicts(
+                    event.id, "event", session=sess
+                )
                 all_conflicts.extend(event_conflicts)
 
             # Remove conflitos duplicados (A vs B e B vs A)
@@ -146,6 +162,12 @@ class EventReorderingService:
                     unique_conflicts.append(conflict)
 
             return unique_conflicts
+
+        if session is not None:
+            return _get_conflicts(session)
+        
+        with get_engine_context() as engine, Session(engine) as sess:
+            return _get_conflicts(sess)
 
     @staticmethod
     def _get_event_by_type(
