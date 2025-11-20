@@ -2,10 +2,12 @@
 
 from datetime import date, time, timedelta
 
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from src.timeblock.database import get_engine_context
 from src.timeblock.models import Habit, HabitInstance, Recurrence
+from src.timeblock.models.enums import Status, NotDoneSubstatus, SkipReason
+from src.timeblock.models.time_log import TimeLog
 from src.timeblock.utils.logger import get_logger
 
 from .event_reordering_models import Conflict
@@ -155,6 +157,106 @@ class HabitInstanceService:
         return instance, conflicts
 
     @staticmethod
+    def skip_habit_instance(
+        habit_instance_id: int,
+        skip_reason: SkipReason,
+        skip_note: str | None = None,
+        session: Session | None = None,
+    ) -> HabitInstance:
+        """Marca HabitInstance como skipped com categorização (BR-HABIT-SKIP-001).
+        
+        Args:
+            habit_instance_id: ID da instância
+            skip_reason: Categoria do skip (SkipReason enum)
+            skip_note: Nota opcional (max 500 chars)
+            session: Optional session (for tests/transactions)
+            
+        Returns:
+            HabitInstance atualizada
+            
+        Raises:
+            ValueError: Se instance não existe, nota muito longa, timer ativo, ou já completada
+            
+        Side effects:
+            - status → NOT_DONE
+            - not_done_substatus → SKIPPED_JUSTIFIED
+            - skip_reason → valor fornecido
+            - skip_note → texto fornecido ou None
+            - done_substatus → None
+            - completion_percentage → None
+        """
+        logger.debug(
+            f"Skip habit_instance_id={habit_instance_id}, "
+            f"reason={skip_reason.value}, note={skip_note}"
+        )
+
+        def _skip(sess: Session) -> HabitInstance:
+            # 1. Validação: nota <= 500 chars
+            if skip_note and len(skip_note) > 500:
+                logger.warning(
+                    f"Skip note muito longa para instance_id={habit_instance_id}: "
+                    f"{len(skip_note)} chars"
+                )
+                raise ValueError("Skip note must be <= 500 characters")
+
+            # 2. Buscar HabitInstance
+            instance = sess.get(HabitInstance, habit_instance_id)
+            if not instance:
+                logger.error(f"HabitInstance não encontrada: {habit_instance_id}")
+                raise ValueError(f"HabitInstance {habit_instance_id} not found")
+
+            # 3. Validação: não pode ter timer ativo
+            statement = select(TimeLog).where(
+                TimeLog.habit_instance_id == habit_instance_id,
+                TimeLog.end_time == None  # type: ignore
+            )
+            active_timer = sess.exec(statement).first()
+            if active_timer:
+                logger.warning(
+                    f"Tentativa de skip com timer ativo: "
+                    f"instance_id={habit_instance_id}"
+                )
+                raise ValueError("Cannot skip with active timer. Stop timer first.")
+
+            # 4. Validação: não pode skip se já completada
+            if instance.status == Status.DONE:
+                logger.warning(
+                    f"Tentativa de skip de instance completada: "
+                    f"instance_id={habit_instance_id}"
+                )
+                raise ValueError("Cannot skip completed instance")
+
+            # 5. Atualizar campos (BR-HABIT-SKIP-001)
+            instance.status = Status.NOT_DONE
+            instance.not_done_substatus = NotDoneSubstatus.SKIPPED_JUSTIFIED
+            instance.skip_reason = skip_reason
+            instance.skip_note = skip_note
+
+            # Limpar campos de completion
+            instance.done_substatus = None
+            instance.completion_percentage = None
+
+            # 6. Validar consistência (BR-HABIT-INSTANCE-STATUS-001)
+            instance.validate_status_consistency()
+
+            # 7. Persistir
+            sess.add(instance)
+            sess.commit()
+            sess.refresh(instance)
+
+            logger.info(
+                f"Instance skipped: instance_id={habit_instance_id}, "
+                f"reason={skip_reason.value}"
+            )
+            return instance
+
+        if session is not None:
+            return _skip(session)
+        
+        with get_engine_context() as engine, Session(engine) as sess:
+            return _skip(sess)
+
+    @staticmethod
     def mark_completed(
         instance_id: int,
         session: Session | None = None,
@@ -190,7 +292,10 @@ class HabitInstanceService:
         instance_id: int,
         session: Session | None = None,
     ) -> HabitInstance | None:
-        """Marca instância como pulada."""
+        """Marca instância como pulada.
+        
+        DEPRECATED: Use skip_habit_instance() com categoria para BR-HABIT-SKIP-001.
+        """
         logger.debug(f"Marcando como pulada: instance_id={instance_id}")
 
         def _mark(sess: Session) -> HabitInstance | None:

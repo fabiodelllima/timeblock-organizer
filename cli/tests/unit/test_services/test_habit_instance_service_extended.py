@@ -10,7 +10,7 @@ from datetime import date, time, timedelta
 import pytest
 from sqlmodel import Session, SQLModel, create_engine
 
-from src.timeblock.models import Habit, HabitInstanceStatus, Recurrence, Routine
+from src.timeblock.models import Habit, Status, Recurrence, Routine
 from src.timeblock.services.habit_instance_service import HabitInstanceService
 
 
@@ -115,7 +115,7 @@ class TestGenerateInstances:
         for inst in instances:
             assert inst.scheduled_start == time(7, 0)
             assert inst.scheduled_end == time(8, 0)
-            assert inst.status == HabitInstanceStatus.PLANNED
+            assert inst.status == Status.PLANNED
 
     def test_generate_weekdays_only(self, weekdays_habit):
         """Gera instâncias para hábito WEEKDAYS - pula fins de semana.
@@ -207,7 +207,7 @@ class TestMarkCompleted:
 
         # Verificação: Status atualizado
         assert updated is not None
-        assert updated.status == HabitInstanceStatus.COMPLETED
+        assert updated.status == Status.COMPLETED
 
     def test_mark_completed_nonexistent(self):
         """Marcar instância inexistente retorna None.
@@ -250,7 +250,7 @@ class TestMarkSkipped:
 
         # Verificação: Status atualizado
         assert updated is not None
-        assert updated.status == HabitInstanceStatus.SKIPPED
+        assert updated.status == Status.SKIPPED
 
     def test_mark_skipped_nonexistent(self):
         """Marcar instância inexistente retorna None.

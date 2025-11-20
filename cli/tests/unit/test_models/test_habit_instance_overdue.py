@@ -6,7 +6,7 @@ import pytest
 from freezegun import freeze_time
 from sqlmodel import SQLModel, create_engine
 
-from src.timeblock.models import HabitInstance, HabitInstanceStatus
+from src.timeblock.models import HabitInstance, Status
 
 
 @pytest.fixture
@@ -42,7 +42,7 @@ class TestHabitInstanceOverdue:
             date=date(2025, 10, 25),
             scheduled_start=time(8, 0),
             scheduled_end=time(9, 0),
-            status=HabitInstanceStatus.PLANNED,
+            status=Status.PLANNED,
             manually_adjusted=False,
             user_override=False
         )
@@ -68,7 +68,7 @@ class TestHabitInstanceOverdue:
             date=date(2025, 10, 25),
             scheduled_start=time(14, 0),
             scheduled_end=time(15, 0),
-            status=HabitInstanceStatus.PLANNED,
+            status=Status.PLANNED,
             manually_adjusted=False,
             user_override=False
         )
@@ -94,7 +94,7 @@ class TestHabitInstanceOverdue:
             date=date(2025, 10, 25),
             scheduled_start=time(8, 0),
             scheduled_end=time(9, 0),
-            status=HabitInstanceStatus.IN_PROGRESS,
+            status=Status.IN_PROGRESS,
             manually_adjusted=False,
             user_override=False
         )
@@ -120,7 +120,7 @@ class TestHabitInstanceOverdue:
             date=date(2025, 10, 25),
             scheduled_start=time(8, 0),
             scheduled_end=time(9, 0),
-            status=HabitInstanceStatus.COMPLETED,
+            status=Status.COMPLETED,
             manually_adjusted=False,
             user_override=False
         )
@@ -146,7 +146,7 @@ class TestHabitInstanceOverdue:
             date=date(2025, 10, 25),
             scheduled_start=time(8, 0),
             scheduled_end=time(9, 0),
-            status=HabitInstanceStatus.SKIPPED,
+            status=Status.SKIPPED,
             manually_adjusted=False,
             user_override=False
         )
@@ -172,7 +172,7 @@ class TestHabitInstanceOverdue:
             date=date(2025, 10, 25),
             scheduled_start=time(14, 0),
             scheduled_end=time(15, 0),
-            status=HabitInstanceStatus.PLANNED,
+            status=Status.PLANNED,
             manually_adjusted=False,
             user_override=False
         )

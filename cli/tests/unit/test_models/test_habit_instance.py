@@ -6,7 +6,7 @@ import pytest
 from sqlmodel import Session, SQLModel, create_engine
 
 from src.timeblock.models.habit import Habit, Recurrence
-from src.timeblock.models.habit_instance import HabitInstance, HabitInstanceStatus
+from src.timeblock.models.habit_instance import HabitInstance, Status
 from src.timeblock.models.routine import Routine
 
 
@@ -61,7 +61,7 @@ def test_habit_instance_creation(session, habit):
 
     assert instance.id is not None
     assert instance.date == date(2025, 10, 16)
-    assert instance.status == HabitInstanceStatus.PLANNED  # FIX: Usar enum
+    assert instance.status == Status.PLANNED  # FIX: Usar enum
     assert instance.manually_adjusted is False
 
 
