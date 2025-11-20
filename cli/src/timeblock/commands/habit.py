@@ -4,12 +4,14 @@ from datetime import date
 from datetime import time as dt_time
 
 import typer
-from dateutil.relativedelta import relativedelta
+from dateutil.relativedelta import relativedelta  # type: ignore[import-untyped]
 from rich.console import Console
 from sqlmodel import Session
 
 from src.timeblock.database import get_engine_context
 from src.timeblock.models import Recurrence
+from src.timeblock.models.enums import SkipReason
+from src.timeblock.models.habit_instance import HabitInstance
 from src.timeblock.services.habit_instance_service import HabitInstanceService
 from src.timeblock.services.habit_service import HabitService
 from src.timeblock.services.routine_service import RoutineService
@@ -32,6 +34,11 @@ def create_habit(
     """Cria um novo hábito."""
     try:
         with get_engine_context() as engine, Session(engine) as session:
+            # DEBUG
+            from sqlmodel import select
+
+            all_inst = session.exec(select(HabitInstance)).all()
+            console.print(f"[yellow][DEBUG] Instances: {[i.id for i in all_inst]}[/yellow]")
             routine_service = RoutineService(session)
 
             # Determinar rotina
@@ -246,17 +253,98 @@ def adjust_instance(
             instance_id, new_start, new_end
         )
 
-        console.print(
-            f"[green]✓ Instância {instance_id} ajustada: {new_start} - {new_end}[/green]"
-        )
+        console.print(f"[green]✓ Instância {instance_id} ajustada: {new_start} - {new_end}[/green]")
 
         # Exibir conflitos se houver
         if conflicts:
-            console.print(
-                "\n[yellow]⚠ Atenção: O ajuste resultou em conflitos:[/yellow]"
-            )
+            console.print("\n[yellow]⚠ Atenção: O ajuste resultou em conflitos:[/yellow]")
             display_conflicts(conflicts, console)
 
     except ValueError as e:
         console.print(f"[red]✗ Erro: {e}[/red]")
         raise typer.Exit(1)
+
+
+@app.command("skip")
+def skip_instance(
+    instance_id: int = typer.Argument(..., help="ID da instância do hábito"),
+    category: str = typer.Option(
+        None,
+        "--category",
+        "-c",
+        help="Categoria do skip (HEALTH|WORK|FAMILY|TRAVEL|WEATHER|LACK_RESOURCES|EMERGENCY|OTHER)",
+    ),
+    note: str = typer.Option(None, "--note", "-n", help="Nota opcional (máx 500 chars)"),
+):
+    """
+    Marca instância de hábito como skipped (pulada) com categorização.
+
+    Exemplos:
+        timeblock habit skip 42 --category WORK --note "Reunião urgente"
+        timeblock habit skip 42 --category HEALTH
+    """
+    try:
+        # Validar categoria
+        if category is None:
+            console.print("[red]Categoria obrigatória. Use --category[/red]")
+            console.print("\nCategorias válidas:")
+            console.print("  HEALTH, WORK, FAMILY, TRAVEL, WEATHER,")
+            console.print("  LACK_RESOURCES, EMERGENCY, OTHER")
+            raise typer.Exit(1)
+
+        # Converter categoria string para enum
+        try:
+            skip_reason = SkipReason[category.upper()]
+        except KeyError:
+            console.print(f"[red]Categoria inválida: {category}[/red]")
+            console.print("\nCategorias válidas:")
+            console.print("  HEALTH, WORK, FAMILY, TRAVEL, WEATHER,")
+            console.print("  LACK_RESOURCES, EMERGENCY, OTHER")
+            raise typer.Exit(1)
+
+        # Validar tamanho da nota
+        if note and len(note) > 500:
+            console.print("[red]Nota muito longa (máximo 500 caracteres)[/red]")
+            raise typer.Exit(1)
+
+        # Executar skip
+        with get_engine_context() as engine, Session(engine) as session:
+            service = HabitInstanceService()
+            service.skip_habit_instance(
+                habit_instance_id=instance_id,
+                skip_reason=skip_reason,
+                skip_note=note,
+                session=session,
+            )
+
+            # Mapear enum para português
+            category_pt = {
+                "health": "Saúde",
+                "work": "Trabalho",
+                "family": "Família",
+                "travel": "Viagem",
+                "weather": "Clima",
+                "lack_resources": "Falta de recursos",
+                "emergency": "Emergência",
+                "other": "Outro",
+            }
+
+            console.print("[green]Hábito marcado como skipped[/green]")
+            console.print(f"  Categoria: {category_pt.get(skip_reason.value, skip_reason.value)}")
+            if note:
+                console.print(f"  Nota: {note}")
+
+    except ValueError as e:
+        error_msg = str(e)
+        if "not found" in error_msg.lower():
+            console.print(f"[red]HabitInstance {instance_id} não encontrada[/red]")
+            raise typer.Exit(2)
+        elif "timer" in error_msg.lower():
+            console.print("[red]Pare o timer antes de marcar skip[/red]")
+            raise typer.Exit(1)
+        elif "completed" in error_msg.lower():
+            console.print("[red]Não é possível skip de instância completada[/red]")
+            raise typer.Exit(1)
+        else:
+            console.print(f"[red]Erro: {e}[/red]")
+            raise typer.Exit(1)
