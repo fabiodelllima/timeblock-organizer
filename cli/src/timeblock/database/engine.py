@@ -26,7 +26,7 @@ def get_engine():
 
     # Habilitar foreign keys no SQLite (CRÍTICO para RESTRICT)
     @event.listens_for(engine, "connect")
-    def set_sqlite_pragma(dbapi_conn: Any, connection_record: Any) -> None:  # noqa: ARG001
+    def set_sqlite_pragma(dbapi_conn: Any, connection_record: Any) -> None:
         """Habilita foreign keys no SQLite."""
         cursor = dbapi_conn.cursor()
         cursor.execute("PRAGMA foreign_keys=ON")

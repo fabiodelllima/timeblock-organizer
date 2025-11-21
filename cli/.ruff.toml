@@ -1,0 +1,30 @@
+# Opções globais
+line-length = 100
+
+[format]
+indent-style = "space"
+quote-style = "double"
+
+[lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "RUF",  # ruff-specific
+]
+
+ignore = [
+    "B904",  # raise in except (typer CLI pattern)
+    "W291",  # trailing whitespace (migrations SQL)
+    "E501",  # line too long
+    "W293",  # blank line whitespace (docstrings)
+    "RUF022",  # __all__ not sorted
+]
+
+[lint.isort]
+known-first-party = ["timeblock"]

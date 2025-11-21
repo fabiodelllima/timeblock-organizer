@@ -7,9 +7,9 @@ from src.timeblock.services.task_service import TaskService
 from src.timeblock.services.timer_service import TimerService
 
 __all__ = [
-    "RoutineService",
-    "HabitService",
     "HabitInstanceService",
+    "HabitService",
+    "RoutineService",
     "TaskService",
     "TimerService",
 ]

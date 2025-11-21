@@ -249,7 +249,7 @@ def adjust_instance(
         new_start = dt_time.fromisoformat(start)
         new_end = dt_time.fromisoformat(end)
 
-        instance, conflicts = HabitInstanceService.adjust_instance_time(
+        _instance, conflicts = HabitInstanceService.adjust_instance_time(
             instance_id, new_start, new_end
         )
 

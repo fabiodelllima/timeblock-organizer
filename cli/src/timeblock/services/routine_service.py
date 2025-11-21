@@ -2,7 +2,7 @@
 
 from sqlmodel import Session, select
 
-from src.timeblock.models import Habit, Routine
+from src.timeblock.models import Routine
 
 
 class RoutineService:

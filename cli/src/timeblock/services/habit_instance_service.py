@@ -6,7 +6,7 @@ from sqlmodel import Session, select
 
 from src.timeblock.database import get_engine_context
 from src.timeblock.models import Habit, HabitInstance, Recurrence
-from src.timeblock.models.enums import Status, NotDoneSubstatus, SkipReason
+from src.timeblock.models.enums import NotDoneSubstatus, SkipReason, Status
 from src.timeblock.models.time_log import TimeLog
 from src.timeblock.utils.logger import get_logger
 
@@ -67,7 +67,7 @@ class HabitInstanceService:
 
         if session is not None:
             return _generate(session)
-        
+
         with get_engine_context() as engine, Session(engine) as sess:
             return _generate(sess)
 
@@ -208,7 +208,7 @@ class HabitInstanceService:
             # 3. Validação: não pode ter timer ativo
             statement = select(TimeLog).where(
                 TimeLog.habit_instance_id == habit_instance_id,
-                TimeLog.end_time == None  # type: ignore
+                TimeLog.end_time.is_(None)  # type: ignore
             )
             active_timer = sess.exec(statement).first()
             if active_timer:
@@ -252,7 +252,7 @@ class HabitInstanceService:
 
         if session is not None:
             return _skip(session)
-        
+
         with get_engine_context() as engine, Session(engine) as sess:
             return _skip(sess)
 
@@ -283,7 +283,7 @@ class HabitInstanceService:
 
         if session is not None:
             return _mark(session)
-        
+
         with get_engine_context() as engine, Session(engine) as sess:
             return _mark(sess)
 
@@ -317,7 +317,7 @@ class HabitInstanceService:
 
         if session is not None:
             return _mark(session)
-        
+
         with get_engine_context() as engine, Session(engine) as sess:
             return _mark(sess)
 

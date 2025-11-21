@@ -75,7 +75,7 @@ class EventReorderingService:
 
         if session is not None:
             return _detect(session)
-        
+
         with get_engine_context() as engine, Session(engine) as sess:
             return _detect(sess)
 
@@ -165,7 +165,7 @@ class EventReorderingService:
 
         if session is not None:
             return _get_conflicts(session)
-        
+
         with get_engine_context() as engine, Session(engine) as sess:
             return _get_conflicts(sess)
 

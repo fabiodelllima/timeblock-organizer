@@ -1,5 +1,5 @@
 """Data models for TimeBlock application."""
-from .enums import Status, DoneSubstatus, NotDoneSubstatus, SkipReason
+from .enums import DoneSubstatus, NotDoneSubstatus, SkipReason, Status
 from .event import ChangeLog, ChangeType, Event, EventStatus, PauseLog
 from .habit import Habit, Recurrence
 from .habit_instance import HabitInstance
@@ -21,7 +21,7 @@ __all__ = [
     "Habit",
     "Recurrence",
     "HabitInstance",
-    # Status enums (novos)
+    # Status enums
     "Status",
     "DoneSubstatus",
     "NotDoneSubstatus",

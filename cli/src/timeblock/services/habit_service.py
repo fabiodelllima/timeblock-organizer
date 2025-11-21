@@ -46,7 +46,7 @@ class HabitService:
 
         if session is not None:
             return _create(session)
-        
+
         with get_engine_context() as engine, Session(engine) as sess:
             return _create(sess)
 
@@ -58,7 +58,7 @@ class HabitService:
 
         if session is not None:
             return _get(session)
-        
+
         with get_engine_context() as engine, Session(engine) as sess:
             return _get(sess)
 
@@ -76,7 +76,7 @@ class HabitService:
 
         if session is not None:
             return _list(session)
-        
+
         with get_engine_context() as engine, Session(engine) as sess:
             return _list(sess)
 
@@ -121,7 +121,7 @@ class HabitService:
 
         if session is not None:
             return _update(session)
-        
+
         with get_engine_context() as engine, Session(engine) as sess:
             return _update(sess)
 
@@ -139,6 +139,6 @@ class HabitService:
 
         if session is not None:
             return _delete(session)
-        
+
         with get_engine_context() as engine, Session(engine) as sess:
             return _delete(sess)
