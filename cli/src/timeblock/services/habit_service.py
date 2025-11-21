@@ -53,6 +53,7 @@ class HabitService:
     @staticmethod
     def get_habit(habit_id: int, session: Session | None = None) -> Habit | None:
         """Busca hábito por ID."""
+
         def _get(sess: Session) -> Habit | None:
             return sess.get(Habit, habit_id)
 
@@ -68,6 +69,7 @@ class HabitService:
         session: Session | None = None,
     ) -> list[Habit]:
         """Lista hábitos, opcionalmente filtrados por rotina."""
+
         def _list(sess: Session) -> list[Habit]:
             statement = select(Habit)
             if routine_id is not None:
@@ -91,6 +93,7 @@ class HabitService:
         session: Session | None = None,
     ) -> Habit | None:
         """Atualiza hábito existente."""
+
         def _update(sess: Session) -> Habit | None:
             habit = sess.get(Habit, habit_id)
             if not habit:
@@ -128,6 +131,7 @@ class HabitService:
     @staticmethod
     def delete_habit(habit_id: int, session: Session | None = None) -> bool:
         """Remove hábito."""
+
         def _delete(sess: Session) -> bool:
             habit = sess.get(Habit, habit_id)
             if not habit:

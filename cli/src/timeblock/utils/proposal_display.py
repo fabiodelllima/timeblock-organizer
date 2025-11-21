@@ -1,4 +1,5 @@
 """Formatação de propostas de reordenamento."""
+
 import typer
 from rich.console import Console
 from rich.table import Table
@@ -20,7 +21,7 @@ def display_proposal(proposal: ReorderingProposal, console: Console):
         conflicts_table.add_row(
             f"{conflict.triggered_event_type} #{conflict.triggered_event_id}",
             f"{conflict.conflicting_event_type} #{conflict.conflicting_event_id}",
-            conflict.conflict_type.value
+            conflict.conflict_type.value,
         )
 
     console.print(conflicts_table)
@@ -38,7 +39,7 @@ def display_proposal(proposal: ReorderingProposal, console: Console):
             f"{change.event_title}",
             f"{change.current_start.strftime('%H:%M')} - {change.current_end.strftime('%H:%M')}",
             f"{change.proposed_start.strftime('%H:%M')} - {change.proposed_end.strftime('%H:%M')}",
-            change.priority.name
+            change.priority.name,
         )
 
     console.print(changes_table)

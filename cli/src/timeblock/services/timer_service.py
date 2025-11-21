@@ -14,9 +14,7 @@ class TimerService:
     """Service para operações de timer."""
 
     @staticmethod
-    def start_timer(
-        habit_instance_id: int, session: Session | None = None
-    ) -> TimeLog:
+    def start_timer(habit_instance_id: int, session: Session | None = None) -> TimeLog:
         """Inicia timer para HabitInstance.
 
         Args:
@@ -29,6 +27,7 @@ class TimerService:
         Raises:
             ValueError: Se instance não existe ou timer já ativo
         """
+
         def _start(sess: Session) -> TimeLog:
             instance = sess.get(HabitInstance, habit_instance_id)
             if not instance:
@@ -36,8 +35,7 @@ class TimerService:
 
             # Verificar se já existe timer ativo
             statement = select(TimeLog).where(
-                TimeLog.habit_instance_id == habit_instance_id,
-                TimeLog.end_time is None
+                TimeLog.habit_instance_id == habit_instance_id, TimeLog.end_time is None
             )
             existing_timer = sess.exec(statement).first()
             if existing_timer:
@@ -78,6 +76,7 @@ class TimerService:
             - Calcula e seta done_substatus (FULL/PARTIAL/OVERDONE/EXCESSIVE)
             - Calcula e persiste completion_percentage
         """
+
         def _stop(sess: Session) -> TimeLog:
             # 1. Buscar TimeLog
             timelog = sess.get(TimeLog, timelog_id)
@@ -149,9 +148,7 @@ class TimerService:
             return _stop(sess)
 
     @staticmethod
-    def get_active_timer(
-        habit_instance_id: int, session: Session | None = None
-    ) -> TimeLog | None:
+    def get_active_timer(habit_instance_id: int, session: Session | None = None) -> TimeLog | None:
         """Busca timer ativo para HabitInstance.
 
         Args:
@@ -161,10 +158,10 @@ class TimerService:
         Returns:
             TimeLog ativo ou None se não houver
         """
+
         def _get(sess: Session) -> TimeLog | None:
             statement = select(TimeLog).where(
-                TimeLog.habit_instance_id == habit_instance_id,
-                TimeLog.end_time is None
+                TimeLog.habit_instance_id == habit_instance_id, TimeLog.end_time is None
             )
             return sess.exec(statement).first()
 

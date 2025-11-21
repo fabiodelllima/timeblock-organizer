@@ -28,8 +28,7 @@ class HabitInstanceService:
     ) -> list[HabitInstance]:
         """Gera instâncias de hábito para período."""
         logger.info(
-            f"Gerando instâncias para habit_id={habit_id}, "
-            f"período={start_date} até {end_date}"
+            f"Gerando instâncias para habit_id={habit_id}, período={start_date} até {end_date}"
         )
 
         def _generate(sess: Session) -> list[HabitInstance]:
@@ -41,9 +40,7 @@ class HabitInstanceService:
             instances = []
             current = start_date
             while current <= end_date:
-                if HabitInstanceService._should_create_for_date(
-                    habit.recurrence, current
-                ):
+                if HabitInstanceService._should_create_for_date(habit.recurrence, current):
                     instance = HabitInstance(
                         habit_id=habit_id,
                         date=current,
@@ -60,9 +57,7 @@ class HabitInstanceService:
             for instance in instances:
                 sess.refresh(instance)
 
-            logger.info(
-                f"Criadas {len(instances)} instâncias para habit_id={habit_id}"
-            )
+            logger.info(f"Criadas {len(instances)} instâncias para habit_id={habit_id}")
             return instances
 
         if session is not None:
@@ -94,8 +89,7 @@ class HabitInstanceService:
             Tupla (instância atualizada, lista de conflitos detectados ou None)
         """
         logger.debug(
-            f"Ajustando horário instance_id={instance_id}, "
-            f"new_start={new_start}, new_end={new_end}"
+            f"Ajustando horário instance_id={instance_id}, new_start={new_start}, new_end={new_end}"
         )
 
         # Validação
@@ -164,19 +158,19 @@ class HabitInstanceService:
         session: Session | None = None,
     ) -> HabitInstance:
         """Marca HabitInstance como skipped com categorização (BR-HABIT-SKIP-001).
-        
+
         Args:
             habit_instance_id: ID da instância
             skip_reason: Categoria do skip (SkipReason enum)
             skip_note: Nota opcional (max 500 chars)
             session: Optional session (for tests/transactions)
-            
+
         Returns:
             HabitInstance atualizada
-            
+
         Raises:
             ValueError: Se instance não existe, nota muito longa, timer ativo, ou já completada
-            
+
         Side effects:
             - status → NOT_DONE
             - not_done_substatus → SKIPPED_JUSTIFIED
@@ -208,21 +202,19 @@ class HabitInstanceService:
             # 3. Validação: não pode ter timer ativo
             statement = select(TimeLog).where(
                 TimeLog.habit_instance_id == habit_instance_id,
-                TimeLog.end_time.is_(None)  # type: ignore
+                TimeLog.end_time.is_(None),  # type: ignore
             )
             active_timer = sess.exec(statement).first()
             if active_timer:
                 logger.warning(
-                    f"Tentativa de skip com timer ativo: "
-                    f"instance_id={habit_instance_id}"
+                    f"Tentativa de skip com timer ativo: instance_id={habit_instance_id}"
                 )
                 raise ValueError("Cannot skip with active timer. Stop timer first.")
 
             # 4. Validação: não pode skip se já completada
             if instance.status == Status.DONE:
                 logger.warning(
-                    f"Tentativa de skip de instance completada: "
-                    f"instance_id={habit_instance_id}"
+                    f"Tentativa de skip de instance completada: instance_id={habit_instance_id}"
                 )
                 raise ValueError("Cannot skip completed instance")
 
@@ -245,8 +237,7 @@ class HabitInstanceService:
             sess.refresh(instance)
 
             logger.info(
-                f"Instance skipped: instance_id={habit_instance_id}, "
-                f"reason={skip_reason.value}"
+                f"Instance skipped: instance_id={habit_instance_id}, reason={skip_reason.value}"
             )
             return instance
 
@@ -268,8 +259,7 @@ class HabitInstanceService:
             instance = sess.get(HabitInstance, instance_id)
             if not instance:
                 logger.warning(
-                    f"Tentativa de completar instância inexistente: "
-                    f"instance_id={instance_id}"
+                    f"Tentativa de completar instância inexistente: instance_id={instance_id}"
                 )
                 return None
 
@@ -293,7 +283,7 @@ class HabitInstanceService:
         session: Session | None = None,
     ) -> HabitInstance | None:
         """Marca instância como pulada.
-        
+
         DEPRECATED: Use skip_habit_instance() com categoria para BR-HABIT-SKIP-001.
         """
         logger.debug(f"Marcando como pulada: instance_id={instance_id}")
@@ -302,8 +292,7 @@ class HabitInstanceService:
             instance = sess.get(HabitInstance, instance_id)
             if not instance:
                 logger.warning(
-                    f"Tentativa de pular instância inexistente: "
-                    f"instance_id={instance_id}"
+                    f"Tentativa de pular instância inexistente: instance_id={instance_id}"
                 )
                 return None
 

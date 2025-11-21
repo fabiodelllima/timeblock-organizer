@@ -1,4 +1,5 @@
 """HabitInstance model - Refatorado com Status+Substatus (BR-HABIT-INSTANCE-STATUS-001)."""
+
 from datetime import date as date_type
 from datetime import datetime, time
 from typing import TYPE_CHECKING, Optional

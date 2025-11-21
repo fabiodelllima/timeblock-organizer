@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+set -e
+
+# ========================================
+# pre-commit - Validações antes de commit
+# ========================================
+#
+# OBJETIVO:
+#   Executa validações automáticas antes de cada commit.
+#   Bloqueia commit se unit tests falharem.
+#
+# VALIDAÇÕES:
+#   [1/4] ruff format (auto-format código)
+#   [2/4] ruff check --fix (lint com auto-fix)
+#   [3/4] mypy (type checking - apenas aviso)
+#   [4/4] pytest unit tests (obrigatório)
+#
+# BYPASS (emergência):
+#   git commit --no-verify -m "mensagem"
+
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+echo -e "${BLUE}=========================================${NC}"
+echo -e "${BLUE}Pre-commit Hooks${NC}"
+echo -e "${BLUE}=========================================${NC}"
+echo ""
+
+cd cli || exit 1
+
+echo -e "${BLUE}[1/4] Ruff format...${NC}"
+if ruff format src/timeblock; then
+    echo -e "${GREEN}[OK] Format passed${NC}"
+else
+    echo -e "${RED}[FAIL] Format failed${NC}"
+    exit 1
+fi
+
+echo ""
+echo -e "${BLUE}[2/4] Ruff check...${NC}"
+if ruff check src/timeblock --fix; then
+    echo -e "${GREEN}[OK] Lint passed${NC}"
+else
+    echo -e "${RED}[FAIL] Lint failed${NC}"
+    exit 1
+fi
+
+echo ""
+echo -e "${BLUE}[3/4] Mypy (type checking - apenas aviso)...${NC}"
+if mypy src/timeblock --check-untyped-defs 2>/dev/null; then
+    echo -e "${GREEN}[OK] Type check passed${NC}"
+else
+    echo -e "${YELLOW}[WARN] Type check warnings${NC}"
+fi
+
+echo ""
+echo -e "${BLUE}[4/4] Pytest (unit tests - obrigatório)...${NC}"
+if python -m pytest tests/unit/ -q --tb=line; then
+    echo -e "${GREEN}[OK] Unit tests passed${NC}"
+else
+    echo -e "${RED}[FAIL] Unit tests failed${NC}"
+    echo -e "${RED}Commit bloqueado. Corrija os testes.${NC}"
+    echo ""
+    echo "Para bypass emergencial: git commit --no-verify"
+    exit 1
+fi
+
+echo ""
+echo -e "${GREEN}=========================================${NC}"
+echo -e "${GREEN}All pre-commit hooks passed!${NC}"
+echo -e "${GREEN}=========================================${NC}"
