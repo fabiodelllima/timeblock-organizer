@@ -19,10 +19,10 @@ def setup_logger(
     log_file: Path | None = None,
     max_bytes: int = 10_000_000,
     backup_count: int = 5,
-    console: bool = True
+    console: bool = True,
 ) -> logging.Logger:
     """Configura logger com formato estruturado.
-    
+
     Args:
         name: Nome do logger (geralmente __name__ do módulo)
         level: Nível mínimo - DEBUG, INFO, WARNING, ERROR
@@ -30,10 +30,10 @@ def setup_logger(
         max_bytes: Tamanho máximo antes de rotação (padrão: 10MB)
         backup_count: Número de backups mantidos (padrão: 5)
         console: Se True, também loga no console
-    
+
     Returns:
         Logger configurado
-    
+
     Exemplo:
         >>> from timeblock.utils.logger import setup_logger
         >>> logger = setup_logger(__name__)
@@ -49,8 +49,7 @@ def setup_logger(
 
     # Formato estruturado: [timestamp] [level] [module] message
     formatter = logging.Formatter(
-        fmt="[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S"
+        fmt="[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
     )
 
     # Handler para console (stderr)
@@ -66,10 +65,7 @@ def setup_logger(
         log_file.parent.mkdir(parents=True, exist_ok=True)
 
         file_handler = RotatingFileHandler(
-            filename=log_file,
-            maxBytes=max_bytes,
-            backupCount=backup_count,
-            encoding="utf-8"
+            filename=log_file, maxBytes=max_bytes, backupCount=backup_count, encoding="utf-8"
         )
         file_handler.setLevel(getattr(logging, level.upper()))
         file_handler.setFormatter(formatter)
@@ -83,13 +79,13 @@ def setup_logger(
 
 def get_logger(name: str) -> logging.Logger:
     """Obtém logger existente ou cria um novo com configuração padrão.
-    
+
     Args:
         name: Nome do logger (geralmente __name__ do módulo)
-    
+
     Returns:
         Logger configurado
-    
+
     Nota:
         Se logger não existir, cria com nível INFO e console only.
     """
@@ -104,7 +100,7 @@ def get_logger(name: str) -> logging.Logger:
 
 def disable_logging():
     """Desabilita todos os logs (útil para testes).
-    
+
     Exemplo:
         >>> from timeblock.utils.logger import disable_logging
         >>> disable_logging()  # Silencia logs durante testes

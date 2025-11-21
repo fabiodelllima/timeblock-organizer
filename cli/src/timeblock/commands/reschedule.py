@@ -1,4 +1,5 @@
 """Comandos para visualização de conflitos de eventos."""
+
 from datetime import datetime
 
 import typer

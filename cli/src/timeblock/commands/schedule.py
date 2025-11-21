@@ -33,7 +33,8 @@ def generate_instances(
         instances = HabitInstanceService.generate_instances(habit_id, start_date, end_date)
 
         console.print(
-            f"\n[OK] {len(instances)} hábitos gerados para [bold]{habit.title}[/bold]", style="green"
+            f"\n[OK] {len(instances)} hábitos gerados para [bold]{habit.title}[/bold]",
+            style="green",
         )
         console.print(
             f"  Período: {start_date.strftime('%d/%m/%Y')} a {end_date.strftime('%d/%m/%Y')}\n"
@@ -125,7 +126,10 @@ def edit_instance(
                 EventReorderingService.apply_reordering(proposal)
                 console.print("\n[OK] Reordenamento aplicado com sucesso!\n", style="bold green")
             else:
-                console.print("\n[!] Reordenamento cancelado. Horário ajustado mas agenda não foi reorganizada.\n", style="yellow")
+                console.print(
+                    "\n[!] Reordenamento cancelado. Horário ajustado mas agenda não foi reorganizada.\n",
+                    style="yellow",
+                )
 
         # Output detalhado
         console.print("\n[OK] Agenda editada com sucesso!\n", style="bold green")

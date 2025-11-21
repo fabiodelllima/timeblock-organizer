@@ -1,4 +1,5 @@
 """Entry point do TimeBlock Organizer CLI."""
+
 import typer
 
 from src.timeblock.commands import (

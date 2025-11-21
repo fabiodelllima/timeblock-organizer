@@ -124,7 +124,9 @@ def check_task(task_id: int = typer.Argument(..., help="ID da tarefa")):
 def update_task(
     task_id: int = typer.Argument(..., help="ID da tarefa"),
     title: str = typer.Option(None, "--title", "-t", help="Novo título"),
-    scheduled: str = typer.Option(None, "--datetime", "-D", help="Nova data/hora (YYYY-MM-DD HH:MM)"),
+    scheduled: str = typer.Option(
+        None, "--datetime", "-D", help="Nova data/hora (YYYY-MM-DD HH:MM)"
+    ),
     description: str = typer.Option(None, "--desc", help="Nova descrição"),
 ):
     """Atualiza uma tarefa."""

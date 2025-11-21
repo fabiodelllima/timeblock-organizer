@@ -1,4 +1,5 @@
 """Data models for TimeBlock application."""
+
 from .enums import DoneSubstatus, NotDoneSubstatus, SkipReason, Status
 from .event import ChangeLog, ChangeType, Event, EventStatus, PauseLog
 from .habit import Habit, Recurrence

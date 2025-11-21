@@ -50,6 +50,7 @@ class TaskService:
             sess.commit()
             sess.refresh(task)
             return task
+
         if session is not None:
             return _create(session)
         with get_engine_context() as engine, Session(engine) as sess:
@@ -62,8 +63,10 @@ class TaskService:
             task_id: ID of task to retrieve
             session: Optional session (for tests/transactions)
         """
+
         def _get(sess: Session) -> Task | None:
             return sess.get(Task, task_id)
+
         if session is not None:
             return _get(session)
         with get_engine_context() as engine, Session(engine) as sess:
@@ -81,6 +84,7 @@ class TaskService:
             end: Optional end datetime filter
             session: Optional session (for tests/transactions)
         """
+
         def _list(sess: Session) -> list[Task]:
             statement = select(Task)
             if start:
@@ -88,6 +92,7 @@ class TaskService:
             if end:
                 statement = statement.where(Task.scheduled_datetime <= end)
             return list(sess.exec(statement).all())
+
         if session is not None:
             return _list(session)
         with get_engine_context() as engine, Session(engine) as sess:
@@ -99,9 +104,11 @@ class TaskService:
         Args:
             session: Optional session (for tests/transactions)
         """
+
         def _list(sess: Session) -> list[Task]:
             statement = select(Task).where(Task.completed_datetime.is_(None))
             return list(sess.exec(statement).all())
+
         if session is not None:
             return _list(session)
         with get_engine_context() as engine, Session(engine) as sess:
@@ -129,13 +136,13 @@ class TaskService:
         Returns:
             Tupla (task atualizada, lista de conflitos se horário mudou)
         """
+
         def _update(sess: Session) -> tuple[Task | None, bool]:
             task = sess.get(Task, task_id)
             if not task:
                 return None, False
             datetime_changed = (
-                scheduled_datetime is not None
-                and scheduled_datetime != task.scheduled_datetime
+                scheduled_datetime is not None and scheduled_datetime != task.scheduled_datetime
             )
             if title is not None:
                 title_stripped = title.strip()
@@ -154,6 +161,7 @@ class TaskService:
             sess.commit()
             sess.refresh(task)
             return task, datetime_changed
+
         if session is not None:
             task, datetime_changed = _update(session)
         else:
@@ -172,6 +180,7 @@ class TaskService:
             task_id: ID of task to complete
             session: Optional session (for tests/transactions)
         """
+
         def _complete(sess: Session) -> Task | None:
             task = sess.get(Task, task_id)
             if not task:
@@ -181,6 +190,7 @@ class TaskService:
             sess.commit()
             sess.refresh(task)
             return task
+
         if session is not None:
             return _complete(session)
         with get_engine_context() as engine, Session(engine) as sess:
@@ -193,6 +203,7 @@ class TaskService:
             task_id: ID of task to delete
             session: Optional session (for tests/transactions)
         """
+
         def _delete(sess: Session) -> bool:
             task = sess.get(Task, task_id)
             if not task:
@@ -200,6 +211,7 @@ class TaskService:
             sess.delete(task)
             sess.commit()
             return True
+
         if session is not None:
             return _delete(session)
         with get_engine_context() as engine, Session(engine) as sess:

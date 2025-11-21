@@ -33,6 +33,7 @@ class EventReorderingService:
         Returns:
             Lista de conflitos encontrados. Lista vazia se não houver conflitos.
         """
+
         def _detect(sess: Session) -> list[Conflict]:
             triggered = EventReorderingService._get_event_by_type(
                 sess, triggered_event_id, event_type
@@ -96,6 +97,7 @@ class EventReorderingService:
         Returns:
             Lista de todos os conflitos do dia
         """
+
         def _get_conflicts(sess: Session) -> list[Conflict]:
             all_conflicts = []
 
@@ -104,9 +106,7 @@ class EventReorderingService:
             day_end = datetime.combine(target_date, datetime.max.time())
 
             # Busca todas as tasks do dia
-            task_stmt = select(Task).where(
-                Task.scheduled_datetime.between(day_start, day_end)
-            )
+            task_stmt = select(Task).where(Task.scheduled_datetime.between(day_start, day_end))
             tasks = list(sess.exec(task_stmt).all())
 
             # Busca todas as instâncias de hábitos do dia
