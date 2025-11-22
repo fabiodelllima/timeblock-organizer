@@ -42,7 +42,7 @@ class TestHabitInstanceOverdue:
             date=date(2025, 10, 25),
             scheduled_start=time(8, 0),
             scheduled_end=time(9, 0),
-            status=Status.PLANNED,
+            status=Status.PENDING,
             manually_adjusted=False,
             user_override=False
         )
@@ -68,7 +68,7 @@ class TestHabitInstanceOverdue:
             date=date(2025, 10, 25),
             scheduled_start=time(14, 0),
             scheduled_end=time(15, 0),
-            status=Status.PLANNED,
+            status=Status.PENDING,
             manually_adjusted=False,
             user_override=False
         )
@@ -79,32 +79,6 @@ class TestHabitInstanceOverdue:
 
         # Assert
         assert result is False, "Instância PLANNED no futuro não é overdue"
-
-    def test_not_overdue_when_in_progress(self):
-        """
-        CENÁRIO: HabitInstance em progresso
-        DADO: Uma instância com status IN_PROGRESS
-        QUANDO: Qualquer horário
-        ENTÃO: is_overdue deve ser False
-        """
-        # Arrange
-        instance = HabitInstance(
-            id=3,
-            habit_id=1,
-            date=date(2025, 10, 25),
-            scheduled_start=time(8, 0),
-            scheduled_end=time(9, 0),
-            status=Status.IN_PROGRESS,
-            manually_adjusted=False,
-            user_override=False
-        )
-
-        # Act - Mesmo após o horário
-        with freeze_time("2025-10-25 10:00:00"):
-            result = instance.is_overdue
-
-        # Assert
-        assert result is False, "IN_PROGRESS nunca é overdue"
 
     def test_not_overdue_when_completed(self):
         """
@@ -120,7 +94,7 @@ class TestHabitInstanceOverdue:
             date=date(2025, 10, 25),
             scheduled_start=time(8, 0),
             scheduled_end=time(9, 0),
-            status=Status.COMPLETED,
+            status=Status.DONE,
             manually_adjusted=False,
             user_override=False
         )
@@ -146,7 +120,7 @@ class TestHabitInstanceOverdue:
             date=date(2025, 10, 25),
             scheduled_start=time(8, 0),
             scheduled_end=time(9, 0),
-            status=Status.SKIPPED,
+            status=Status.NOT_DONE,
             manually_adjusted=False,
             user_override=False
         )
@@ -172,7 +146,7 @@ class TestHabitInstanceOverdue:
             date=date(2025, 10, 25),
             scheduled_start=time(14, 0),
             scheduled_end=time(15, 0),
-            status=Status.PLANNED,
+            status=Status.PENDING,
             manually_adjusted=False,
             user_override=False
         )

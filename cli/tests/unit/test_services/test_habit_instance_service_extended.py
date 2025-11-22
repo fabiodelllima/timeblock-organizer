@@ -10,7 +10,7 @@ from datetime import date, time, timedelta
 import pytest
 from sqlmodel import Session, SQLModel, create_engine
 
-from src.timeblock.models import Habit, Status, Recurrence, Routine
+from src.timeblock.models import Habit, Recurrence, Routine, Status
 from src.timeblock.services.habit_instance_service import HabitInstanceService
 
 
@@ -87,11 +87,11 @@ class TestGenerateInstances:
 
     def test_generate_everyday_habit(self, everyday_habit):
         """Gera instâncias para hábito EVERYDAY durante 7 dias.
-        
+
         DADO: Hábito com recorrência EVERYDAY
         QUANDO: Gerar instâncias para período de 7 dias
         ENTÃO: Deve criar exatamente 7 instâncias
-        
+
         Regra de Negócio: Hábitos EVERYDAY geram uma instância por dia.
         """
         # Preparação: Define intervalo de datas
@@ -115,15 +115,15 @@ class TestGenerateInstances:
         for inst in instances:
             assert inst.scheduled_start == time(7, 0)
             assert inst.scheduled_end == time(8, 0)
-            assert inst.status == Status.PLANNED
+            assert inst.status == Status.PENDING
 
     def test_generate_weekdays_only(self, weekdays_habit):
         """Gera instâncias para hábito WEEKDAYS - pula fins de semana.
-        
+
         DADO: Hábito com recorrência WEEKDAYS
         QUANDO: Gerar instâncias para semana completa (Seg-Dom)
         ENTÃO: Deve criar apenas 5 instâncias (Seg-Sex)
-        
+
         Regra de Negócio: WEEKDAYS exclui sábado e domingo.
         Caso Extremo: Semana contendo dias de fim de semana.
         """
@@ -148,11 +148,11 @@ class TestGenerateInstances:
 
     def test_generate_habit_not_found(self):
         """Gerar instâncias para hábito inexistente levanta erro.
-        
+
         DADO: ID de hábito inexistente
         QUANDO: Tentar gerar instâncias
         ENTÃO: Deve levantar ValueError
-        
+
         Caso Extremo: habit_id inválido.
         """
         with pytest.raises(ValueError, match="Habit 99999 not found"):
@@ -164,11 +164,11 @@ class TestGenerateInstances:
 
     def test_generate_single_day(self, everyday_habit):
         """Gera instâncias para período de um único dia.
-        
+
         DADO: Hábito com recorrência EVERYDAY
         QUANDO: Gerar para start_date == end_date
         ENTÃO: Deve criar exatamente 1 instância
-        
+
         Caso Extremo: Período mínimo (um dia).
         """
         # Preparação: Mesma data para início e fim
@@ -189,11 +189,11 @@ class TestMarkCompleted:
 
     def test_mark_completed_success(self, test_engine, everyday_habit):
         """Marca instância como completada com sucesso.
-        
+
         DADO: HabitInstance com status PLANNED
         QUANDO: Marcar como completa
         ENTÃO: Status muda para COMPLETED
-        
+
         Regra de Negócio: Usuários podem marcar hábitos como feitos.
         """
         # Preparação: Cria instância
@@ -207,15 +207,15 @@ class TestMarkCompleted:
 
         # Verificação: Status atualizado
         assert updated is not None
-        assert updated.status == Status.COMPLETED
+        assert updated.status == Status.DONE
 
     def test_mark_completed_nonexistent(self):
         """Marcar instância inexistente retorna None.
-        
+
         DADO: ID de instância inexistente
         QUANDO: Tentar marcar como completa
         ENTÃO: Deve retornar None (não levanta erro)
-        
+
         Caso Extremo: instance_id inválido.
         Regra de Negócio: Falha graciosa para instâncias ausentes.
         """
@@ -231,11 +231,11 @@ class TestMarkSkipped:
 
     def test_mark_skipped_success(self, test_engine, everyday_habit):
         """Marca instância como pulada com sucesso.
-        
+
         DADO: HabitInstance com status PLANNED
         QUANDO: Marcar como pulada
         ENTÃO: Status muda para SKIPPED
-        
+
         Regra de Negócio: Usuários podem pular hábitos intencionalmente.
         Caso de Uso: Usuário decide não fazer hábito hoje.
         """
@@ -250,15 +250,15 @@ class TestMarkSkipped:
 
         # Verificação: Status atualizado
         assert updated is not None
-        assert updated.status == Status.SKIPPED
+        assert updated.status == Status.NOT_DONE
 
     def test_mark_skipped_nonexistent(self):
         """Marcar instância inexistente retorna None.
-        
+
         DADO: ID de instância inexistente
         QUANDO: Tentar marcar como pulada
         ENTÃO: Deve retornar None (não levanta erro)
-        
+
         Caso Extremo: instance_id inválido.
         """
         # Ação: Tenta marcar inexistente
