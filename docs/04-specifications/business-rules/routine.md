@@ -181,7 +181,7 @@ Rotina Trabalho
 #### Soft Delete (padrão)
 
 ```bash
-$ routine delete <id>
+routine delete <id>
 ```
 
 **Comportamento:**
@@ -206,7 +206,7 @@ Confirmar? (s/N): s
 #### Hard Delete (--purge)
 
 ```bash
-$ routine delete <id> --purge
+routine delete <id> --purge
 ```
 
 **Comportamento quando rotina TEM habits (MVP):**
@@ -631,3 +631,64 @@ Todos os Hábitos:
 **Última revisão:** 15 de Novembro de 2025
 
 **Status:** Documentação completa, ready para implementação
+
+---
+
+## BR-ROUTINE-005: Validação de Nome de Rotina
+
+- **Status:** Definida
+- **Prioridade:** Média
+- **Decisão relacionada:** Consistência de validação no sistema
+
+### Descrição
+
+O nome da rotina deve atender requisitos de comprimento para garantir usabilidade e integridade do sistema.
+
+### Regras
+
+1. **Nome não pode ser vazio** (após remoção de espaços em branco)
+
+   - Input: `"   "` → `ValueError("Nome da rotina não pode ser vazio")`
+   - Input: `""` → `ValueError("Nome da rotina não pode ser vazio")`
+
+2. **Nome não pode exceder 200 caracteres**
+   - Input: 201+ caracteres → `ValueError("Nome da rotina não pode ter mais de 200 caracteres")`
+   - Input: 200 caracteres → OK (aceito)
+
+### Validação
+
+**Service Layer (RoutineService.create_routine):**
+
+```python
+name = name.strip()
+if not name:
+    raise ValueError("Nome da rotina não pode ser vazio")
+if len(name) > 200:
+    raise ValueError("Nome da rotina não pode ter mais de 200 caracteres")
+```
+
+**Model Layer (fallback):**
+
+```python
+name: str = Field(index=True, max_length=200)
+```
+
+### Justificativa
+
+- **Usabilidade:** 200 caracteres suficientes para nomes descritivos
+- **Interface:** Evita overflow em tabelas e listas
+- **Consistência:** Alinha com `Habit.title` (max_length=200)
+- **Segurança:** Previne ataques com strings extremamente longas
+- **Database:** Constraint como última barreira de defesa
+
+### Implementação
+
+- **Validação explícita:** Service layer com mensagens claras
+- **Validação implícita:** Model constraint como fallback
+- **Comportamento:** Trim de espaços antes da validação
+
+### Testes
+
+- `test_create_routine_with_name_too_long`: 201 chars → ValueError
+- `test_create_routine_with_max_length_name`: 200 chars → OK
+- `test_create_routine_with_empty_name`: `""` → ValueError

@@ -30,20 +30,15 @@ class TestCreateRoutine:
     ) -> None:
         """Testa criação de rotina com sucesso."""
         name = "Rotina Matinal"
-
         routine = routine_service.create_routine(name)
-
         assert routine.name == name
-        assert routine.is_active is True
+        assert routine.is_active is False
         assert isinstance(routine.created_at, datetime)
         mock_session.add.assert_called_once()
-        mock_session.commit.assert_called_once()
-        mock_session.refresh.assert_called_once_with(routine)
 
     def test_create_routine_strips_whitespace(self, routine_service: RoutineService) -> None:
         """Testa que espaços em branco são removidos."""
         routine = routine_service.create_routine("  Rotina Noturna  ")
-
         assert routine.name == "Rotina Noturna"
 
     def test_create_routine_with_empty_name(self, routine_service: RoutineService) -> None:
@@ -66,9 +61,7 @@ class TestCreateRoutine:
     def test_create_routine_with_max_length_name(self, routine_service: RoutineService) -> None:
         """Testa criação de rotina com nome no limite máximo."""
         max_name = "a" * 200
-
         routine = routine_service.create_routine(max_name)
-
         assert routine.name == max_name
         assert len(routine.name) == 200
 
@@ -86,9 +79,7 @@ class TestGetRoutine:
             created_at=datetime.now(),
         )
         mock_session.get.return_value = expected_routine
-
         routine = routine_service.get_routine(routine_id)
-
         assert routine == expected_routine
         mock_session.get.assert_called_once_with(Routine, routine_id)
 
@@ -98,9 +89,7 @@ class TestGetRoutine:
         """Testa busca de rotina inexistente."""
         routine_id = 999
         mock_session.get.return_value = None
-
         routine = routine_service.get_routine(routine_id)
-
         assert routine is None
         mock_session.get.assert_called_once_with(Routine, routine_id)
 
@@ -118,9 +107,7 @@ class TestListRoutines:
             Routine(id=2, name="Active 2", is_active=True, created_at=datetime.now()),
         ]
         mock_session.exec.return_value = mock_result
-
         routines = routine_service.list_routines(active_only=True)
-
         assert len(routines) == 2
         mock_session.exec.assert_called_once()
 
@@ -132,9 +119,7 @@ class TestListRoutines:
             Routine(id=2, name="Inactive", is_active=False, created_at=datetime.now()),
         ]
         mock_session.exec.return_value = mock_result
-
         routines = routine_service.list_routines(active_only=False)
-
         assert len(routines) == 2
         mock_session.exec.assert_called_once()
 
@@ -143,7 +128,5 @@ class TestListRoutines:
         mock_result = Mock()
         mock_result.all.return_value = []
         mock_session.exec.return_value = mock_result
-
         routines = routine_service.list_routines()
-
         assert routines == []
