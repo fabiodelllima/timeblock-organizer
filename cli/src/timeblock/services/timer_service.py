@@ -13,6 +13,9 @@ from ..models.time_log import TimeLog
 class TimerService:
     """Service para operações de timer."""
 
+    # Estado em memória para pause tracking (BR-TIMER-006 MVP)
+    _active_pause_start: datetime | None = None
+
     @staticmethod
     def start_timer(habit_instance_id: int, session: Session | None = None) -> TimeLog:
         """Inicia timer para HabitInstance.
@@ -146,6 +149,43 @@ class TimerService:
 
         with get_engine_context() as engine, Session(engine) as sess:
             return _stop(sess)
+
+    @staticmethod
+    def pause_timer(timelog_id: int, session: Session | None = None) -> TimeLog:
+        """Marca início de pausa (não persiste ainda).
+
+        BR-TIMER-006: Pause Tracking MVP
+
+        Args:
+            timelog_id: ID do TimeLog
+            session: Optional session (for tests/transactions)
+
+        Returns:
+            TimeLog (pausa marcada em memória)
+
+        Raises:
+            ValueError: Se timer não existe, já stopped, ou já pausado
+        """
+
+        def _pause(sess: Session) -> TimeLog:
+            timelog = sess.get(TimeLog, timelog_id)
+            if not timelog:
+                raise ValueError(f"TimeLog {timelog_id} not found")
+
+            if timelog.end_time is not None:
+                raise ValueError("Timer already stopped")
+
+            if TimerService._active_pause_start is not None:
+                raise ValueError("Timer already paused")
+
+            TimerService._active_pause_start = datetime.now()
+            return timelog
+
+        if session is not None:
+            return _pause(session)
+
+        with get_engine_context() as engine, Session(engine) as sess:
+            return _pause(sess)
 
     @staticmethod
     def get_active_timer(habit_instance_id: int, session: Session | None = None) -> TimeLog | None:

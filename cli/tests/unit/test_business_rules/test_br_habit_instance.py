@@ -372,7 +372,7 @@ class TestBRHabitInstance003:
 
         # Assert
         assert completion == 110.0
-        assert substatus == DoneSubstatus.OVERDONE  # 110% é OVERDONE
+        assert substatus == DoneSubstatus.FULL  # 110% é FULL (limite superior)
 
     def test_br_habit_instance_003_edge_case_90_exact(self):
         """BR-HABIT-INSTANCE-003: Edge case exato 90%."""
