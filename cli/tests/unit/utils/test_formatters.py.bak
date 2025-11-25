@@ -15,7 +15,7 @@ def test_create_table_with_colored_event():
             title="Colored Event",
             scheduled_start=now,
             scheduled_end=now + timedelta(hours=1),
-            status=EventStatus.PLANNED,
+            status=EventStatus.PENDING,
             color="#FF5733",  # Test with color
         )
     ]

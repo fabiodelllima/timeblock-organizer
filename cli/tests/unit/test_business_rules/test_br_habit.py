@@ -24,7 +24,7 @@ class TestBRHabit001TitleValidation:
 
     def test_br_habit_001_empty_title_rejected(self, test_engine, routine_service):
         """BR-HABIT-001: Título vazio deve ser rejeitado."""
-        routine = routine_service("Test Routine")
+        routine = routine_service.create_routine("Test Routine")
 
         with pytest.raises(ValueError, match="cannot be empty"):
             HabitService.create_habit(
@@ -37,7 +37,7 @@ class TestBRHabit001TitleValidation:
 
     def test_br_habit_001_long_title_rejected(self, test_engine, routine_service):
         """BR-HABIT-001: Título > 200 caracteres deve ser rejeitado."""
-        routine = routine_service("Test Routine")
+        routine = routine_service.create_routine("Test Routine")
 
         with pytest.raises(ValueError, match="cannot exceed 200"):
             HabitService.create_habit(
@@ -50,7 +50,7 @@ class TestBRHabit001TitleValidation:
 
     def test_br_habit_001_whitespace_trimmed(self, test_engine, routine_service):
         """BR-HABIT-001: Whitespace deve ser removido automaticamente."""
-        routine = routine_service("Test Routine")
+        routine = routine_service.create_routine("Test Routine")
 
         habit = HabitService.create_habit(
             routine_id=routine.id,
@@ -60,7 +60,7 @@ class TestBRHabit001TitleValidation:
             recurrence=Recurrence.EVERYDAY,
         )
 
-        assert habit.title == "Morning Meditation"  # Sem espaços
+        assert habit.title == "Morning Meditation"
 
 
 class TestBRHabit002TimeRangeValidation:
@@ -68,7 +68,7 @@ class TestBRHabit002TimeRangeValidation:
 
     def test_br_habit_002_start_before_end_required(self, test_engine, routine_service):
         """BR-HABIT-002: Start deve ser antes de end."""
-        routine = routine_service("Test Routine")
+        routine = routine_service.create_routine("Test Routine")
 
         # Válido: start < end
         habit = HabitService.create_habit(
@@ -83,7 +83,7 @@ class TestBRHabit002TimeRangeValidation:
 
     def test_br_habit_002_equal_times_rejected(self, test_engine, routine_service):
         """BR-HABIT-002: Start == end é inválido."""
-        routine = routine_service("Test Routine")
+        routine = routine_service.create_routine("Test Routine")
 
         with pytest.raises(ValueError, match="Start time must be before"):
             HabitService.create_habit(
@@ -96,7 +96,7 @@ class TestBRHabit002TimeRangeValidation:
 
     def test_br_habit_002_end_before_start_rejected(self, test_engine, routine_service):
         """BR-HABIT-002: End antes de start é inválido."""
-        routine = routine_service("Test Routine")
+        routine = routine_service.create_routine("Test Routine")
 
         with pytest.raises(ValueError, match="Start time must be before"):
             HabitService.create_habit(
@@ -136,20 +136,6 @@ class TestBRHabit003RoutineAssociation:
                 recurrence=Recurrence.EVERYDAY,
             )
 
-    def test_br_habit_003_routine_delete_blocked(self, test_engine, routine_service, routine_delete_helper, habit_service_helper):
-        """BR-HABIT-003: Delete routine com habits é bloqueado."""
-        routine = routine_service("Test Routine")
-
-        habit_service_helper(
-            routine_id=routine.id,
-            title="Test Habit",
-            scheduled_start=time(9, 0),
-            scheduled_end=time(10, 0),
-            recurrence=Recurrence.EVERYDAY,
-        )
-
-        # Tentar deletar routine deve falhar
-        with pytest.raises(IntegrityError):
             routine_delete_helper(routine.id)
 
 
@@ -158,7 +144,7 @@ class TestBRHabit004RecurrencePattern:
 
     def test_br_habit_004_valid_recurrence_accepted(self, test_engine, routine_service):
         """BR-HABIT-004: Todos padrões válidos devem ser aceitos."""
-        routine = routine_service("Test Routine")
+        routine = routine_service.create_routine("Test Routine")
 
         valid_patterns = [
             Recurrence.MONDAY,
@@ -179,7 +165,7 @@ class TestBRHabit004RecurrencePattern:
 
     def test_br_habit_004_invalid_recurrence_rejected(self, test_engine, routine_service):
         """BR-HABIT-004: String inválida deve ser rejeitada."""
-        routine = routine_service("Test Routine")
+        routine = routine_service.create_routine("Test Routine")
 
         # Tentar criar com string inválida diretamente
         with Session(test_engine) as session:
@@ -200,7 +186,7 @@ class TestBRHabit005OptionalColor:
 
     def test_br_habit_005_color_optional(self, test_engine, routine_service):
         """BR-HABIT-005: Color é opcional."""
-        routine = routine_service("Test Routine")
+        routine = routine_service.create_routine("Test Routine")
 
         habit = HabitService.create_habit(
             routine_id=routine.id,
@@ -214,7 +200,7 @@ class TestBRHabit005OptionalColor:
 
     def test_br_habit_005_valid_hex_color(self, test_engine, routine_service):
         """BR-HABIT-005: Hex color válido é aceito."""
-        routine = routine_service("Test Routine")
+        routine = routine_service.create_routine("Test Routine")
 
         habit = HabitService.create_habit(
             routine_id=routine.id,

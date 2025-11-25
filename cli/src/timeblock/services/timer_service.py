@@ -13,6 +13,9 @@ from ..models.time_log import TimeLog
 class TimerService:
     """Service para operações de timer."""
 
+    # Estado em memória para pause tracking (BR-TIMER-006 MVP)
+    _active_pause_start: datetime | None = None
+
     @staticmethod
     def start_timer(habit_instance_id: int, session: Session | None = None) -> TimeLog:
         """Inicia timer para HabitInstance.
@@ -33,13 +36,11 @@ class TimerService:
             if not instance:
                 raise ValueError(f"HabitInstance {habit_instance_id} not found")
 
-            # Verificar se já existe timer ativo
-            statement = select(TimeLog).where(
-                TimeLog.habit_instance_id == habit_instance_id, TimeLog.end_time is None
-            )
+            # BR-TIMER-001: Verificar se já existe qualquer timer ativo (global)
+            statement = select(TimeLog).where(TimeLog.end_time.is_(None))
             existing_timer = sess.exec(statement).first()
             if existing_timer:
-                raise ValueError("Timer already active for this instance")
+                raise ValueError("Timer already active")
 
             timelog = TimeLog(
                 habit_instance_id=habit_instance_id,
@@ -86,13 +87,19 @@ class TimerService:
             if timelog.end_time is not None:
                 raise ValueError("Timer already stopped")
 
-            # 2. Parar timer
+            # 2. BR-TIMER-006: Se estava pausado, acumula última pausa
+            if TimerService._active_pause_start is not None:
+                pause_duration = (datetime.now() - TimerService._active_pause_start).total_seconds()
+                timelog.paused_duration = (timelog.paused_duration or 0) + int(pause_duration)
+                TimerService._active_pause_start = None
+
+            # 3. Parar timer
             timelog.end_time = datetime.now()
             total_duration = (timelog.end_time - timelog.start_time).total_seconds()
             paused_duration = timelog.paused_duration or 0
             timelog.duration_seconds = int(total_duration - paused_duration)
 
-            # 3. Buscar HabitInstance (garantir não-None)
+            # 4. Buscar HabitInstance (garantir não-None)
             if timelog.habit_instance_id is None:
                 raise ValueError("TimeLog must have habit_instance_id")
 
@@ -100,7 +107,7 @@ class TimerService:
             if not instance:
                 raise ValueError(f"HabitInstance {timelog.habit_instance_id} not found")
 
-            # 4. Calcular completion percentage (BR-TIMER-006)
+            # 5. Calcular completion percentage (BR-TIMER-006)
             # Target duration em segundos
             target_start = datetime.combine(instance.date, instance.scheduled_start)
             target_end = datetime.combine(instance.date, instance.scheduled_end)
@@ -113,7 +120,7 @@ class TimerService:
             actual_seconds = timelog.duration_seconds
             completion_percentage = int((actual_seconds / target_seconds) * 100)
 
-            # 5. Determinar substatus baseado em completion (BR-TIMER-006)
+            # 6. Determinar substatus baseado em completion (BR-TIMER-006)
             if completion_percentage < 90:
                 done_substatus = DoneSubstatus.PARTIAL
             elif completion_percentage <= 110:
@@ -123,16 +130,16 @@ class TimerService:
             else:
                 done_substatus = DoneSubstatus.EXCESSIVE
 
-            # 6. Atualizar HabitInstance
+            # 7. Atualizar HabitInstance
             instance.status = Status.DONE
             instance.done_substatus = done_substatus
             instance.completion_percentage = completion_percentage
             instance.not_done_substatus = None
 
-            # 7. Validar consistência (BR-HABIT-INSTANCE-STATUS-001)
+            # 8. Validar consistência (BR-HABIT-INSTANCE-STATUS-001)
             instance.validate_status_consistency()
 
-            # 8. Persistir tudo
+            # 9. Persistir tudo
             sess.add(timelog)
             sess.add(instance)
             sess.commit()
@@ -146,6 +153,86 @@ class TimerService:
 
         with get_engine_context() as engine, Session(engine) as sess:
             return _stop(sess)
+
+    @staticmethod
+    def pause_timer(timelog_id: int, session: Session | None = None) -> TimeLog:
+        """Marca início de pausa (não persiste ainda).
+
+        BR-TIMER-006: Pause Tracking MVP
+
+        Args:
+            timelog_id: ID do TimeLog
+            session: Optional session (for tests/transactions)
+
+        Returns:
+            TimeLog (pausa marcada em memória)
+
+        Raises:
+            ValueError: Se timer não existe, já stopped, ou já pausado
+        """
+
+        def _pause(sess: Session) -> TimeLog:
+            timelog = sess.get(TimeLog, timelog_id)
+            if not timelog:
+                raise ValueError(f"TimeLog {timelog_id} not found")
+
+            if timelog.end_time is not None:
+                raise ValueError("Timer already stopped")
+
+            if TimerService._active_pause_start is not None:
+                raise ValueError("Timer already paused")
+
+            TimerService._active_pause_start = datetime.now()
+            return timelog
+
+        if session is not None:
+            return _pause(session)
+
+        with get_engine_context() as engine, Session(engine) as sess:
+            return _pause(sess)
+
+    @staticmethod
+    def resume_timer(timelog_id: int, session: Session | None = None) -> TimeLog:
+        """Calcula duração da pausa e acumula em paused_duration.
+
+        BR-TIMER-006: Pause Tracking MVP
+
+        Args:
+            timelog_id: ID do TimeLog
+            session: Optional session (for tests/transactions)
+
+        Returns:
+            TimeLog com paused_duration atualizado
+
+        Raises:
+            ValueError: Se timer não existe ou não está pausado
+        """
+
+        def _resume(sess: Session) -> TimeLog:
+            timelog = sess.get(TimeLog, timelog_id)
+            if not timelog:
+                raise ValueError(f"TimeLog {timelog_id} not found")
+
+            if TimerService._active_pause_start is None:
+                raise ValueError("Timer not paused")
+
+            # Calcula e acumula
+            pause_duration = (datetime.now() - TimerService._active_pause_start).total_seconds()
+            timelog.paused_duration = (timelog.paused_duration or 0) + int(pause_duration)
+
+            # Limpa estado
+            TimerService._active_pause_start = None
+
+            sess.add(timelog)
+            sess.commit()
+            sess.refresh(timelog)
+            return timelog
+
+        if session is not None:
+            return _resume(session)
+
+        with get_engine_context() as engine, Session(engine) as sess:
+            return _resume(sess)
 
     @staticmethod
     def get_active_timer(habit_instance_id: int, session: Session | None = None) -> TimeLog | None:
@@ -163,6 +250,60 @@ class TimerService:
             statement = select(TimeLog).where(
                 TimeLog.habit_instance_id == habit_instance_id, TimeLog.end_time is None
             )
+            return sess.exec(statement).first()
+
+        if session is not None:
+            return _get(session)
+
+        with get_engine_context() as engine, Session(engine) as sess:
+            return _get(sess)
+
+    @staticmethod
+    def cancel_timer(timelog_id: int, session: Session | None = None) -> None:
+        """Cancela timer ativo, deletando o TimeLog.
+
+        BR-TIMER-001: Cancel descarta registro sem marcar DONE.
+
+        Args:
+            timelog_id: ID do TimeLog
+            session: Optional session (for tests/transactions)
+
+        Raises:
+            ValueError: Se timer não existe
+        """
+
+        def _cancel(sess: Session) -> None:
+            timelog = sess.get(TimeLog, timelog_id)
+            if not timelog:
+                raise ValueError(f"TimeLog {timelog_id} not found")
+
+            # Limpar estado de pausa se estava pausado
+            TimerService._active_pause_start = None
+
+            sess.delete(timelog)
+            sess.commit()
+
+        if session is not None:
+            return _cancel(session)
+
+        with get_engine_context() as engine, Session(engine) as sess:
+            return _cancel(sess)
+
+    @staticmethod
+    def get_any_active_timer(session: Session | None = None) -> TimeLog | None:
+        """Busca qualquer timer ativo (sem precisar saber habit_instance_id).
+
+        Útil para CLI quando usuário quer ver/parar timer atual.
+
+        Args:
+            session: Optional session
+
+        Returns:
+            TimeLog ativo ou None se não houver
+        """
+
+        def _get(sess: Session) -> TimeLog | None:
+            statement = select(TimeLog).where(TimeLog.end_time.is_(None))
             return sess.exec(statement).first()
 
         if session is not None:

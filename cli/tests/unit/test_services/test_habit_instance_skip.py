@@ -74,7 +74,7 @@ class TestBRHabitSkip001BasicSkip:
             habit_instance_id=instance.id,
             skip_reason=SkipReason.HEALTH,
             skip_note="Gripe, febre 38°C",
-            session=session
+            session=session,
         )
 
         # ENTÃO
@@ -110,7 +110,7 @@ class TestBRHabitSkip001BasicSkip:
             habit_instance_id=instance.id,
             skip_reason=SkipReason.WORK,
             skip_note=None,
-            session=session
+            session=session,
         )
 
         # ENTÃO
@@ -119,9 +119,7 @@ class TestBRHabitSkip001BasicSkip:
         assert result.skip_reason == SkipReason.WORK
         assert result.skip_note is None
 
-    def test_br_habit_skip_001_scenario_003_skip_family(
-        self, session: Session, habit: Habit
-    ):
+    def test_br_habit_skip_001_scenario_003_skip_family(self, session: Session, habit: Habit):
         """CENÁRIO 3: Skip com categoria FAMILY."""
         assert habit.id is not None
 
@@ -144,7 +142,7 @@ class TestBRHabitSkip001BasicSkip:
             habit_instance_id=instance.id,
             skip_reason=SkipReason.FAMILY,
             skip_note="Aniversário do filho",
-            session=session
+            session=session,
         )
 
         # ENTÃO
@@ -153,9 +151,7 @@ class TestBRHabitSkip001BasicSkip:
         assert result.skip_reason == SkipReason.FAMILY
         assert result.skip_note == "Aniversário do filho"
 
-    def test_br_habit_skip_001_scenario_004_skip_weather(
-        self, session: Session, habit: Habit
-    ):
+    def test_br_habit_skip_001_scenario_004_skip_weather(self, session: Session, habit: Habit):
         """CENÁRIO 4: Skip com categoria WEATHER."""
         assert habit.id is not None
 
@@ -178,7 +174,7 @@ class TestBRHabitSkip001BasicSkip:
             habit_instance_id=instance.id,
             skip_reason=SkipReason.WEATHER,
             skip_note="Chuva forte",
-            session=session
+            session=session,
         )
 
         # ENTÃO
@@ -219,7 +215,7 @@ class TestBRHabitSkip001ReskipAndValidation:
             habit_instance_id=instance.id,
             skip_reason=SkipReason.HEALTH,
             skip_note="Descobri que estava doente",
-            session=session
+            session=session,
         )
 
         # ENTÃO
@@ -253,7 +249,7 @@ class TestBRHabitSkip001ReskipAndValidation:
             habit_instance_id=instance.id,
             skip_reason=SkipReason.EMERGENCY,
             skip_note=None,
-            session=session
+            session=session,
         )
 
         # ENTÃO: Validação deve passar (não lança exceção)
@@ -269,9 +265,7 @@ class TestBRHabitSkip001ReskipAndValidation:
 class TestBRHabitSkip001Errors:
     """Cenários 7-10: Validações e erros."""
 
-    def test_br_habit_skip_001_scenario_007_error_instance_not_found(
-        self, session: Session
-    ):
+    def test_br_habit_skip_001_scenario_007_error_instance_not_found(self, session: Session):
         """CENÁRIO 7: Erro - HabitInstance não existe."""
         service = HabitInstanceService()
 
@@ -280,7 +274,7 @@ class TestBRHabitSkip001Errors:
                 habit_instance_id=99999,
                 skip_reason=SkipReason.HEALTH,
                 skip_note=None,
-                session=session
+                session=session,
             )
 
     def test_br_habit_skip_001_scenario_008_error_note_too_long(
@@ -312,7 +306,7 @@ class TestBRHabitSkip001Errors:
                 habit_instance_id=instance.id,
                 skip_reason=SkipReason.HEALTH,
                 skip_note=long_note,
-                session=session
+                session=session,
             )
 
     def test_br_habit_skip_001_scenario_009_error_timer_active(
@@ -352,7 +346,7 @@ class TestBRHabitSkip001Errors:
                 habit_instance_id=instance.id,
                 skip_reason=SkipReason.HEALTH,
                 skip_note=None,
-                session=session
+                session=session,
             )
 
     def test_br_habit_skip_001_scenario_010_error_already_completed(
@@ -385,7 +379,7 @@ class TestBRHabitSkip001Errors:
                 habit_instance_id=instance.id,
                 skip_reason=SkipReason.HEALTH,
                 skip_note=None,
-                session=session
+                session=session,
             )
 
 
@@ -419,7 +413,7 @@ class TestBRHabitSkip001CompletionFields:
             habit_instance_id=instance.id,
             skip_reason=SkipReason.HEALTH,
             skip_note=None,
-            session=session
+            session=session,
         )
 
         # ENTÃO: Campos limpos
@@ -432,9 +426,7 @@ class TestBRHabitSkip001CompletionFields:
 class TestBRHabitSkip001AllCategories:
     """Cenário 12: Skip com todas as 8 categorias."""
 
-    def test_br_habit_skip_001_scenario_012_all_categories(
-        self, session: Session, habit: Habit
-    ):
+    def test_br_habit_skip_001_scenario_012_all_categories(self, session: Session, habit: Habit):
         """CENÁRIO 12: Skip com todas as 8 categorias."""
         assert habit.id is not None
 
@@ -467,10 +459,7 @@ class TestBRHabitSkip001AllCategories:
 
             # Skip
             result = service.skip_habit_instance(
-                habit_instance_id=instance.id,
-                skip_reason=category,
-                skip_note=None,
-                session=session
+                habit_instance_id=instance.id, skip_reason=category, skip_note=None, session=session
             )
 
             # Validar

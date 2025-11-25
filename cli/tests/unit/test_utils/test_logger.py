@@ -13,7 +13,7 @@ class TestSetupLogger:
 
     def test_setup_logger_console_only(self):
         """Configura logger apenas para console.
-        
+
         DADO: Sem arquivo de log especificado
         QUANDO: Configurar logger
         ENTÃO: Deve ter handler de console apenas
@@ -28,7 +28,7 @@ class TestSetupLogger:
 
     def test_setup_logger_with_file(self):
         """Configura logger com arquivo de log.
-        
+
         DADO: Arquivo de log especificado
         QUANDO: Configurar logger
         ENTÃO: Deve ter handlers de console e arquivo
@@ -38,11 +38,7 @@ class TestSetupLogger:
             log_file = Path(tmpdir) / "test.log"
 
             # Ação: Configura logger com arquivo
-            logger = setup_logger(
-                "test.file",
-                level="DEBUG",
-                log_file=log_file
-            )
+            logger = setup_logger("test.file", level="DEBUG", log_file=log_file)
 
             # Verificação: Tem 2 handlers (console + arquivo)
             assert len(logger.handlers) == 2
@@ -53,7 +49,7 @@ class TestSetupLogger:
 
     def test_setup_logger_without_console(self):
         """Configura logger sem console (apenas arquivo).
-        
+
         DADO: console=False e arquivo especificado
         QUANDO: Configurar logger
         ENTÃO: Deve ter apenas handler de arquivo (RotatingFileHandler)
@@ -63,12 +59,7 @@ class TestSetupLogger:
             log_file = Path(tmpdir) / "test.log"
 
             # Ação: Configura logger sem console
-            logger = setup_logger(
-                "test.nocons",
-                level="INFO",
-                log_file=log_file,
-                console=False
-            )
+            logger = setup_logger("test.nocons", level="INFO", log_file=log_file, console=False)
 
             # Verificação: Apenas 1 handler
             assert len(logger.handlers) == 1
@@ -78,7 +69,7 @@ class TestSetupLogger:
 
     def test_log_levels(self):
         """Testa diferentes níveis de log.
-        
+
         DADO: Logger configurado em diferentes níveis
         QUANDO: Logar mensagens
         ENTÃO: Apenas mensagens acima do nível devem passar
@@ -87,12 +78,7 @@ class TestSetupLogger:
             log_file = Path(tmpdir) / "test.log"
 
             # Preparação: Logger em WARNING
-            logger = setup_logger(
-                "test.levels",
-                level="WARNING",
-                log_file=log_file,
-                console=False
-            )
+            logger = setup_logger("test.levels", level="WARNING", log_file=log_file, console=False)
 
             # Ação: Loga em diferentes níveis
             logger.debug("Debug message")
@@ -109,11 +95,11 @@ class TestSetupLogger:
 
     def test_log_rotation(self):
         """Testa rotação de logs quando arquivo atinge tamanho máximo.
-        
+
         DADO: Logger com max_bytes=100
         QUANDO: Escrever mais de 100 bytes
         ENTÃO: Deve criar arquivo de backup
-        
+
         Regra de Negócio: Rotação automática previne arquivos gigantes.
         """
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -126,7 +112,7 @@ class TestSetupLogger:
                 log_file=log_file,
                 max_bytes=100,  # Muito pequeno para forçar rotação
                 backup_count=2,
-                console=False
+                console=False,
             )
 
             # Ação: Escreve muitas mensagens
@@ -143,7 +129,7 @@ class TestGetLogger:
 
     def test_get_logger_new(self):
         """Obtém logger novo (cria com padrão).
-        
+
         DADO: Logger não existe
         QUANDO: Chamar get_logger
         ENTÃO: Deve criar com configuração padrão
@@ -158,7 +144,7 @@ class TestGetLogger:
 
     def test_get_logger_existing(self):
         """Obtém logger existente.
-        
+
         DADO: Logger já configurado
         QUANDO: Chamar get_logger novamente
         ENTÃO: Deve retornar mesmo logger
@@ -179,23 +165,18 @@ class TestDisableEnableLogging:
 
     def test_disable_logging(self):
         """Desabilita todos os logs.
-        
+
         DADO: Logging habilitado
         QUANDO: Chamar disable_logging
         ENTÃO: Nenhuma mensagem deve ser logada
-        
+
         Caso de Uso: Silenciar logs durante testes.
         """
         with tempfile.TemporaryDirectory() as tmpdir:
             log_file = Path(tmpdir) / "test.log"
 
             # Preparação: Logger normal
-            logger = setup_logger(
-                "test.disable",
-                level="INFO",
-                log_file=log_file,
-                console=False
-            )
+            logger = setup_logger("test.disable", level="INFO", log_file=log_file, console=False)
 
             # Ação: Desabilita logging
             disable_logging()
@@ -212,7 +193,7 @@ class TestDisableEnableLogging:
 
     def test_enable_logging(self):
         """Reabilita logs após desabilitar.
-        
+
         DADO: Logging desabilitado
         QUANDO: Chamar enable_logging
         ENTÃO: Logs devem voltar a funcionar
@@ -221,12 +202,7 @@ class TestDisableEnableLogging:
             log_file = Path(tmpdir) / "test.log"
 
             # Preparação: Logger normal
-            logger = setup_logger(
-                "test.enable",
-                level="INFO",
-                log_file=log_file,
-                console=False
-            )
+            logger = setup_logger("test.enable", level="INFO", log_file=log_file, console=False)
 
             # Ação: Desabilita e reabilita
             disable_logging()
@@ -245,7 +221,7 @@ class TestLogFormat:
 
     def test_log_format_structure(self):
         """Verifica estrutura do formato de log.
-        
+
         DADO: Logger configurado
         QUANDO: Logar mensagem
         ENTÃO: Formato deve ser [timestamp] [level] [module] message
@@ -254,12 +230,7 @@ class TestLogFormat:
             log_file = Path(tmpdir) / "test.log"
 
             # Preparação: Logger
-            logger = setup_logger(
-                "test.format",
-                level="INFO",
-                log_file=log_file,
-                console=False
-            )
+            logger = setup_logger("test.format", level="INFO", log_file=log_file, console=False)
 
             # Ação: Loga mensagem
             logger.info("Mensagem de teste")
@@ -272,5 +243,6 @@ class TestLogFormat:
 
             # Verifica presença de timestamp (formato: [YYYY-MM-DD HH:MM:SS])
             import re
-            timestamp_pattern = r'\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]'
+
+            timestamp_pattern = r"\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]"
             assert re.search(timestamp_pattern, content), "Timestamp deve estar presente"

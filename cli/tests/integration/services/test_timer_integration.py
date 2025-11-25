@@ -76,8 +76,8 @@ class TestTimerReorderingIntegration:
         )
 
         instances = HabitInstanceService.generate_instances(
-            habit.id, 
-            today, 
+            habit.id,
+            today,
             today,
             session=test_db,
         )
@@ -94,7 +94,7 @@ class TestTimerReorderingIntegration:
         """Fornecer múltiplos IDs lança erro."""
         with pytest.raises(ValueError, match="Exactly one ID"):
             TimerService.start_timer(
-                task_id=1, 
+                task_id=1,
                 habit_instance_id=1,
                 session=test_db,
             )

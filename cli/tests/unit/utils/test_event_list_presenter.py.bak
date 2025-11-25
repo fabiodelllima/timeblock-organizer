@@ -42,7 +42,7 @@ def test_show_tables_with_only_present():
             title="Present Event",
             scheduled_start=now - timedelta(days=1),
             scheduled_end=now - timedelta(days=1, hours=-1),
-            status=EventStatus.PLANNED,
+            status=EventStatus.PENDING,
         )
     ]
 
@@ -63,7 +63,7 @@ def test_show_tables_with_only_future():
             title="Future Event",
             scheduled_start=now + timedelta(days=1),
             scheduled_end=now + timedelta(days=1, hours=1),
-            status=EventStatus.PLANNED,
+            status=EventStatus.PENDING,
         )
     ]
 

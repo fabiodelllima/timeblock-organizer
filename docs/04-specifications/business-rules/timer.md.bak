@@ -2,7 +2,7 @@
 
 - **Domínio:** Timer
 - **Área:** Tracking de Tempo e Múltiplas Sessões
-- **Última atualização:** 23 de Novembro de 2025
+- **Última atualização:** 14 de Novembro de 2025
 
 ---
 
@@ -22,10 +22,6 @@
 - **Status:** Definida
 - **Prioridade:** Alta
 - **Decisão relacionada:** [timer-workflows.md](../../11-planning/decisions/timer-workflows.md)
-
-### Escopo
-
-Timer aplica **APENAS em HabitInstance**. Tasks e Events não possuem funcionalidade de timer.
 
 ### Descrição
 
@@ -563,7 +559,8 @@ def calculate_completion(instance: HabitInstance) -> dict:
 expected = 90min
 actual = 95min
 completion = (95 / 90) * 100 = 105.56%
-# 105.56% está entre 90-110%
+substatus = DoneSubstatus.OVERDONE  # Entre 110-150%... não, é < 110!
+# Correção: 105.56% < 110%, então é FULL (90-110%)
 substatus = DoneSubstatus.FULL
 ```
 
@@ -571,163 +568,129 @@ substatus = DoneSubstatus.FULL
 
 ## BR-TIMER-006: Pause Tracking
 
-- **Status:** Definida (MVP Simplificado)
-- **Prioridade:** Alta
-- **Decisão relacionada:** [ADR-021: Pause Tracking Simplification](../../03-decisions/ADR-021-pause-tracking-simplification.md)
+- **Status:** Definida
+- **Prioridade:** Baixa
+- **Decisão relacionada:** [timer-workflows.md](../../11-planning/decisions/timer-workflows.md)
 
 ### Descrição
 
-Sistema rastreia pausas durante timer usando campo acumulado `paused_duration` (abordagem MVP). Histórico detalhado de pausas será implementado em v2.0 com tabela `PauseLog`.
+Sistema rastreia pausas durante timer (modelo TimeLog) para cálculo preciso de duração efetiva.
 
-### Modelo TimeLog (MVP)
+### Modelo TimeLog
 
 ```python
 class TimeLog(SQLModel, table=True):
-    """Registro de sessão de trabalho."""
+    """Registro de pausa durante timer."""
+
     id: int | None = Field(default=None, primary_key=True)
-    habit_instance_id: int = Field(foreign_key="habitinstance.id")
+    timer_id: int = Field(foreign_key="timers.id")
 
-    # Timestamps
-    start_time: datetime
-    end_time: datetime | None = None
+    # Timing
+    pause_start: datetime
+    pause_end: datetime | None  # NULL se ainda pausado
+    duration: int | None  # Calculado ao resume (minutos)
 
-    # Durations
-    duration_seconds: int | None = None
-    paused_duration: int | None = Field(default=0)  # Total pausado (segundos)
+    # Opcional
+    reason: str | None = Field(max_length=100)
 ```
 
-### Lógica de Tracking (MVP)
-
-**Estado interno (em memória):**
+### Lógica de Tracking
 
 ```python
-# TimerService mantém estado durante sessão ativa
-_active_pause_start: datetime | None = None
-```
+def pause_timer(timer_id: int) -> TimeLog:
+    """Pausa timer e registra pausa."""
 
-**pause_timer:**
+    timer = get_timer(timer_id)
+    timer.status = TimerStatus.PAUSED
 
-```python
-def pause_timer(timelog_id: int) -> TimeLog:
-    """Marca início de pausa (não persiste ainda)."""
-    timelog = get_timelog(timelog_id)
+    # Criar log de pausa
+    time_log = TimeLog(
+        timer_id=timer_id,
+        pause_start=datetime.now(),
+        pause_end=None,
+        duration=None
+    )
 
-    # Validações
-    if timelog.end_time is not None:
-        raise ValueError("Timer already stopped")
-    if _active_pause_start is not None:
-        raise ValueError("Timer already paused")
-
-    # Marca início (em memória)
-    _active_pause_start = datetime.now()
-    return timelog
-```
-
-**resume_timer:**
-
-```python
-def resume_timer(timelog_id: int) -> TimeLog:
-    """Calcula duração da pausa e acumula em paused_duration."""
-    timelog = get_timelog(timelog_id)
-
-    # Validações
-    if _active_pause_start is None:
-        raise ValueError("Timer not paused")
-
-    # Calcula e acumula
-    pause_duration = (datetime.now() - _active_pause_start).total_seconds()
-    timelog.paused_duration = (timelog.paused_duration or 0) + int(pause_duration)
-
-    # Limpa estado
-    _active_pause_start = None
-
-    session.add(timelog)
+    session.add(time_log)
     session.commit()
-    return timelog
+    return time_log
+
+def resume_timer(timer_id: int) -> None:
+    """Retoma timer e finaliza log de pausa."""
+
+    timer = get_timer(timer_id)
+    timer.status = TimerStatus.RUNNING
+
+    # Finalizar último log
+    time_log = get_last_pause(timer_id)
+    time_log.pause_end = datetime.now()
+    time_log.duration = calculate_minutes(
+        time_log.pause_start,
+        time_log.pause_end
+    )
+
+    session.commit()
 ```
 
 ### Cálculo de Duração Efetiva
 
 ```python
-def stop_timer(timelog_id: int) -> TimeLog:
-    """Finaliza timer calculando tempo efetivo."""
-    timelog = get_timelog(timelog_id)
-
-    # Se estava pausado, acumula última pausa
-    if _active_pause_start is not None:
-        pause_duration = (datetime.now() - _active_pause_start).total_seconds()
-        timelog.paused_duration = (timelog.paused_duration or 0) + int(pause_duration)
-
-    # Calcula tempo total e efetivo
-    total_duration = (datetime.now() - timelog.start_time).total_seconds()
-    paused = timelog.paused_duration or 0
-    effective_duration = total_duration - paused
-
-    timelog.end_time = datetime.now()
-    timelog.duration_seconds = int(effective_duration)
-
-    session.add(timelog)
-    session.commit()
-    return timelog
+# Tempo total - pausas = tempo efetivo
+elapsed_time = stop_time - start_time  # 100min
+total_pauses = sum(p.duration for p in pauses)  # 15min
+effective_duration = elapsed_time - total_pauses  # 85min
 ```
+
+### Critérios de Aceitação
+
+- [ ] TimeLog criado ao pausar
+- [ ] TimeLog finalizado ao resumir
+- [ ] Duração calculada automaticamente
+- [ ] Pausas descontadas do tempo total
+- [ ] CLI mostra pausas no output final
+
+### Testes Relacionados
+
+- `test_br_timer_006_create_log_on_pause`
+- `test_br_timer_006_finalize_on_resume`
+- `test_br_timer_006_effective_duration`
 
 ### Exemplos
 
-#### **Cenário 1: Pausa única**
+#### Exemplo 1: CLI Output com Pausas
 
-```terminal
-10:00 - start_timer()
-10:30 - pause_timer()  # _active_pause_start = 10:30
-10:45 - resume_timer() # paused_duration = 15min
-11:00 - stop_timer()   # duration = 60min - 15min = 45min
+```bash
+$ timer stop
+
+✓ SESSÃO COMPLETA!
+╔════════════════════════════════════════╗
+║ Academia (14/11/2025)                  ║
+╠════════════════════════════════════════╣
+║ Programado: 07:00 → 08:30 (90min)      ║
+║ Real: 07:00 → 08:45 (105min total)     ║
+╠════════════════════════════════════════╣
+║ Pausas: 2x (15min total)               ║
+║   1. 07:30-07:40 (10min)               ║
+║   2. 08:10-08:15 (5min)                ║
+╠════════════════════════════════════════╣
+║ Tempo efetivo: 90min                   ║
+║ Completion: 100%                       ║
+║ Status: DONE (FULL)                    ║
+╚════════════════════════════════════════╝
 ```
-
-#### **Cenário 2: Múltiplas pausas**
-
-```terminal
-10:00 - start_timer()
-10:20 - pause_timer()  # _active_pause_start = 10:20
-10:30 - resume_timer() # paused_duration = 10min
-10:50 - pause_timer()  # _active_pause_start = 10:50
-11:00 - resume_timer() # paused_duration = 20min (10 + 10)
-11:30 - stop_timer()   # duration = 90min - 20min = 70min
-```
-
-### Validações
-
-1. **Pause apenas timer ativo:** Timer já stopped = erro
-2. **Sem pause duplo:** Já pausado = erro
-3. **Resume apenas pausado:** Não pausado = erro
-4. **Stop acumula pausa ativa:** Se pausado, acumula antes de finalizar
-
-### Migração v2.0
-
-Em v2.0, adicionar `PauseLog` table sem remover `paused_duration`:
-
-- `paused_duration`: total acumulado (compatibilidade)
-- `PauseLog`: histórico detalhado (analytics)
-
-### Testes
-
-- `test_pause_timer_success`: Marca início de pausa
-- `test_resume_timer_success`: Acumula duração
-- `test_multiple_pauses`: Soma múltiplas pausas
-- `test_stop_while_paused`: Acumula pausa ativa
-- `test_pause_already_paused`: Erro esperado
-- `test_resume_not_paused`: Erro esperado
 
 ---
 
 ## Referências
 
 - **Decisão:** [timer-workflows.md](../../11-planning/decisions/timer-workflows.md)
-- **Decisão:** [ADR-021: Pause Tracking Simplification](../../03-decisions/ADR-021-pause-tracking-simplification.md)
-- **Modelo:** `cli/src/timeblock/models/time_log.py`
-- **Service:** `cli/src/timeblock/services/timer_service.py`
-- **CLI:** `cli/src/timeblock/commands/timer.py`
+- **Modelo:** `src/timeblock/models/timer.py`
+- **Modelo:** `src/timeblock/models/time_log.py`
+- **Service:** `src/timeblock/services/timer_service.py`
+- **CLI:** `src/timeblock/commands/timer.py`
 
 ---
 
-**Última revisão:** 23 de Novembro de 2025
+**Última revisão:** 14 de Novembro de 2025
 
-**Status:** Documentação completa, ready para implementação MVP
+**Status:** Documentação completa, ready para implementação

@@ -80,7 +80,7 @@ def list_instances(
 
         for inst in instances:
             habit = HabitService.get_habit(inst.habit_id)
-            adjusted = "[OK]" if inst.manually_adjusted else "—"
+            adjusted = "[OK]" if inst.scheduled_start != habit.scheduled_start else "—"
             table.add_row(
                 str(inst.id),
                 habit.title,

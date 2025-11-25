@@ -53,12 +53,8 @@ def isolated_db(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
             pass  # Não dispose durante teste
 
     # Mock get_engine_context para retornar test engine
-    monkeypatch.setattr(
-        "src.timeblock.database.get_engine_context", mock_engine_context
-    )
-    monkeypatch.setattr(
-        "src.timeblock.commands.list.get_engine_context", mock_engine_context
-    )
+    monkeypatch.setattr("src.timeblock.database.get_engine_context", mock_engine_context)
+    monkeypatch.setattr("src.timeblock.commands.list.get_engine_context", mock_engine_context)
 
     # Criar tabelas
     SQLModel.metadata.create_all(engine)
@@ -83,9 +79,7 @@ class TestBREventListing:
     - BR-EVENT-LIST-003: Funciona com banco vazio
     """
 
-    def test_br_event_list_001_command_executes(
-        self, isolated_db: None
-    ) -> None:
+    def test_br_event_list_001_command_executes(self, isolated_db: None) -> None:
         """
         Integration: Comando list executa sem erros.
 
@@ -128,13 +122,13 @@ class TestBREventListing:
                     title="Morning Meeting",
                     scheduled_start=now + timedelta(days=1),
                     scheduled_end=now + timedelta(days=1, hours=1),
-                    status=EventStatus.PLANNED,
+                    status=EventStatus.PENDING,
                 ),
                 Event(
                     title="Lunch Break",
                     scheduled_start=now + timedelta(days=1, hours=5),
                     scheduled_end=now + timedelta(days=1, hours=6),
-                    status=EventStatus.PLANNED,
+                    status=EventStatus.PENDING,
                 ),
             ]
             with Session(engine) as session:
@@ -149,9 +143,7 @@ class TestBREventListing:
         assert "Morning Meeting" in result.output, "Evento 1 deve aparecer"
         assert "Lunch Break" in result.output, "Evento 2 deve aparecer"
 
-    def test_br_event_list_003_empty_database(
-        self, isolated_db: None
-    ) -> None:
+    def test_br_event_list_003_empty_database(self, isolated_db: None) -> None:
         """
         Integration: Sistema lida graciosamente com banco vazio.
 

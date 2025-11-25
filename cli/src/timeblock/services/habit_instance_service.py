@@ -46,7 +46,7 @@ class HabitInstanceService:
                         date=current,
                         scheduled_start=habit.scheduled_start,
                         scheduled_end=habit.scheduled_end,
-                        status="PLANNED",
+                        status=Status.PENDING,
                     )
                     sess.add(instance)
                     instances.append(instance)
@@ -263,7 +263,7 @@ class HabitInstanceService:
                 )
                 return None
 
-            instance.status = "COMPLETED"
+            instance.status = Status.DONE
             sess.add(instance)
             sess.commit()
             sess.refresh(instance)
@@ -296,7 +296,7 @@ class HabitInstanceService:
                 )
                 return None
 
-            instance.status = "SKIPPED"
+            instance.status = Status.NOT_DONE
             sess.add(instance)
             sess.commit()
             sess.refresh(instance)

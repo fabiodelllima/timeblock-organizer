@@ -26,9 +26,9 @@ from src.timeblock.models import (
     Task,
     TimeLog,
 )
+
+
 @pytest.mark.skip(reason="migrate_v2 not implemented yet")
-
-
 @pytest.fixture
 def temp_db() -> Iterator[Path]:
     """
@@ -88,9 +88,7 @@ class TestBRDatabaseMigrations:
             assert result is not None
             assert result.name == "Test"
 
-    def test_br_db_migrate_002_creates_routine_table(
-        self, temp_db: Path
-    ) -> None:
+    def test_br_db_migrate_002_creates_routine_table(self, temp_db: Path) -> None:
         """
         Integration: migrate_v2 cria tabela Routine.
 
@@ -112,9 +110,7 @@ class TestBRDatabaseMigrations:
             session.commit()
             assert routine.id is not None, "ID deve ser gerado automaticamente"
 
-    def test_br_db_migrate_003_creates_habit_table(
-        self, temp_db: Path
-    ) -> None:
+    def test_br_db_migrate_003_creates_habit_table(self, temp_db: Path) -> None:
         """
         Integration: migrate_v2 cria tabela Habit.
 
@@ -149,9 +145,7 @@ class TestBRDatabaseMigrations:
             session.commit()
             assert habit.id is not None, "ID deve ser gerado automaticamente"
 
-    def test_br_db_migrate_004_creates_habit_instance_table(
-        self, temp_db: Path
-    ) -> None:
+    def test_br_db_migrate_004_creates_habit_instance_table(self, temp_db: Path) -> None:
         """
         Integration: migrate_v2 cria tabela HabitInstance.
 
@@ -196,9 +190,7 @@ class TestBRDatabaseMigrations:
             session.commit()
             assert instance.id is not None, "ID deve ser gerado automaticamente"
 
-    def test_br_db_migrate_005_creates_task_table(
-        self, temp_db: Path
-    ) -> None:
+    def test_br_db_migrate_005_creates_task_table(self, temp_db: Path) -> None:
         """
         Integration: migrate_v2 cria tabela Task.
 
@@ -223,9 +215,7 @@ class TestBRDatabaseMigrations:
             session.commit()
             assert task.id is not None, "ID deve ser gerado automaticamente"
 
-    def test_br_db_migrate_006_creates_time_log_table(
-        self, temp_db: Path
-    ) -> None:
+    def test_br_db_migrate_006_creates_time_log_table(self, temp_db: Path) -> None:
         """
         Integration: migrate_v2 cria tabela TimeLog.
 

@@ -20,10 +20,10 @@ from src.timeblock.models import Event
 class TestBRTaskCreationSuccess:
     """
     Integration: Criação bem-sucedida de tasks (BR-TASK-CREATE-*).
-    
+
     Valida que o sistema cria e persiste eventos corretamente
     em diferentes cenários de uso.
-    
+
     BRs cobertas:
     - BR-TASK-CREATE-001: Criação básica de evento
     - BR-TASK-CREATE-002: Criação com descrição opcional
@@ -33,17 +33,15 @@ class TestBRTaskCreationSuccess:
     - BR-TASK-CREATE-006: Horários com minutos específicos
     """
 
-    def test_br_task_create_001_basic_event(
-        self, isolated_db: None, cli_runner: CliRunner
-    ) -> None:
+    def test_br_task_create_001_basic_event(self, isolated_db: None, cli_runner: CliRunner) -> None:
         """
         Integration: Sistema cria evento básico com sucesso.
-        
+
         DADO: Comando add com título e horários obrigatórios
         QUANDO: Usuário cria evento simples
         ENTÃO: Sistema retorna sucesso (exit_code 0)
         E: Evento é persistido no banco com dados corretos
-        
+
         Referências:
             - BR-TASK-CREATE-001: Criação básica de evento
         """
@@ -55,7 +53,7 @@ class TestBRTaskCreationSuccess:
 
         # ASSERT
         assert result.exit_code == 0, "Criação deve ter sucesso"
-        
+
         with Session(get_engine()) as session:
             events = session.exec(select(Event)).all()
             assert len(events) == 1, "Deve criar exatamente 1 evento"
@@ -66,11 +64,11 @@ class TestBRTaskCreationSuccess:
     ) -> None:
         """
         Integration: Sistema cria evento com descrição opcional.
-        
+
         DADO: Comando add com flag --desc
         QUANDO: Usuário fornece descrição
         ENTÃO: Sistema persiste descrição corretamente
-        
+
         Referências:
             - BR-TASK-CREATE-002: Criação com descrição opcional
         """
@@ -91,22 +89,20 @@ class TestBRTaskCreationSuccess:
 
         # ASSERT
         assert result.exit_code == 0, "Criação com descrição deve ter sucesso"
-        
+
         with Session(get_engine()) as session:
             event = session.exec(select(Event)).first()
             assert event is not None, "Evento deve existir"
             assert event.description == "Daily sync meeting", "Descrição deve ser preservada"
 
-    def test_br_task_create_003_with_color(
-        self, isolated_db: None, cli_runner: CliRunner
-    ) -> None:
+    def test_br_task_create_003_with_color(self, isolated_db: None, cli_runner: CliRunner) -> None:
         """
         Integration: Sistema cria evento com cor personalizada.
-        
+
         DADO: Comando add com flag --color e formato hexadecimal válido
         QUANDO: Usuário especifica cor (#FF5733)
         ENTÃO: Sistema persiste cor corretamente
-        
+
         Referências:
             - BR-TASK-CREATE-003: Criação com cor personalizada
         """
@@ -127,7 +123,7 @@ class TestBRTaskCreationSuccess:
 
         # ASSERT
         assert result.exit_code == 0, "Criação com cor deve ter sucesso"
-        
+
         with Session(get_engine()) as session:
             event = session.exec(select(Event)).first()
             assert event is not None, "Evento deve existir"
@@ -138,11 +134,11 @@ class TestBRTaskCreationSuccess:
     ) -> None:
         """
         Integration: Sistema cria evento com todos os campos opcionais.
-        
+
         DADO: Comando add com descrição E cor
         QUANDO: Usuário fornece todos os campos
         ENTÃO: Sistema persiste todos os campos corretamente
-        
+
         Referências:
             - BR-TASK-CREATE-004: Criação com todos os campos
         """
@@ -165,7 +161,7 @@ class TestBRTaskCreationSuccess:
 
         # ASSERT
         assert result.exit_code == 0, "Criação completa deve ter sucesso"
-        
+
         with Session(get_engine()) as session:
             event = session.exec(select(Event)).first()
             assert event is not None, "Evento deve existir"
@@ -178,12 +174,12 @@ class TestBRTaskCreationSuccess:
     ) -> None:
         """
         Integration: Sistema cria múltiplos eventos sequenciais.
-        
+
         DADO: Três comandos add executados sequencialmente
         QUANDO: Usuário cria múltiplos eventos
         ENTÃO: Sistema persiste todos os eventos
         E: Total de eventos no banco é 3
-        
+
         Referências:
             - BR-TASK-CREATE-005: Múltiplos eventos sequenciais
         """
@@ -202,12 +198,12 @@ class TestBRTaskCreationSuccess:
     ) -> None:
         """
         Integration: Sistema manuseia horários com minutos específicos.
-        
+
         DADO: Comando add com horários incluindo minutos (10:15, 10:45)
         QUANDO: Usuário especifica minutos não-zero
         ENTÃO: Sistema persiste minutos corretamente
         E: Hora e minuto são exatos
-        
+
         Referências:
             - BR-TASK-CREATE-006: Horários com minutos específicos
         """
@@ -219,7 +215,7 @@ class TestBRTaskCreationSuccess:
 
         # ASSERT
         assert result.exit_code == 0, "Criação com minutos deve ter sucesso"
-        
+
         with Session(get_engine()) as session:
             event = session.exec(select(Event)).first()
             assert event is not None, "Evento deve existir"

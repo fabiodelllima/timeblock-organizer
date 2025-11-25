@@ -30,8 +30,8 @@ def test_engine() -> Engine:
 
     @event.listens_for(engine, "connect")
     def set_sqlite_pragma(
-        dbapi_conn: Any,  # noqa: ARG001
-        connection_record: Any,  # noqa: ARG001
+        dbapi_conn: Any,
+        connection_record: Any,
     ) -> None:
         """Habilita foreign keys no SQLite."""
         cursor = dbapi_conn.cursor()
@@ -48,6 +48,12 @@ def session(test_engine: Engine) -> Generator[Session]:
     with Session(test_engine) as session:
         yield session
         session.rollback()
+
+
+@pytest.fixture
+def test_db(session: Session) -> Session:
+    """Alias para session (compatibilidade com testes antigos)."""
+    return session
 
 
 @pytest.fixture

@@ -67,12 +67,12 @@ class TestBREventCreationWorkflow:
 
         # 1. Init sistema
         result = runner.invoke(app, ["init"])
-        assert result.exit_code == 0, f"Sistema deve inicializar com sucesso. Output: {result.output}"
+        assert result.exit_code == 0, (
+            f"Sistema deve inicializar com sucesso. Output: {result.output}"
+        )
 
         # 2. Criar rotina
-        result = runner.invoke(app, [
-            "routine", "create", "Manhã Produtiva"
-        ])
+        result = runner.invoke(app, ["routine", "create", "Manhã Produtiva"])
         assert result.exit_code == 0, f"Criação de rotina deve ter sucesso. Output: {result.output}"
         assert "criada" in result.output.lower() or "created" in result.output.lower(), (
             "Feedback de criação deve aparecer"
@@ -86,25 +86,30 @@ class TestBREventCreationWorkflow:
         ]
 
         for title, start, end, repeat in habits:
-            result = runner.invoke(app, [
-                "habit", "create",
-                "--title", title,
-                "--start", start,
-                "--end", end,
-                "--repeat", repeat
-            ])
+            result = runner.invoke(
+                app,
+                [
+                    "habit",
+                    "create",
+                    "--title",
+                    title,
+                    "--start",
+                    start,
+                    "--end",
+                    end,
+                    "--repeat",
+                    repeat,
+                ],
+            )
             assert result.exit_code == 0, (
                 f"Criação de hábito '{title}' deve ter sucesso. Output: {result.output}"
             )
-            assert (
-                "criado" in result.output.lower()
-                or "created" in result.output.lower()
-            ), f"Feedback de criação para '{title}' deve aparecer"
+            assert "criado" in result.output.lower() or "created" in result.output.lower(), (
+                f"Feedback de criação para '{title}' deve aparecer"
+            )
 
         # 4. Gerar instâncias para 1 semana
-        result = runner.invoke(app, [
-            "schedule", "generate", "--days", "7"
-        ])
+        result = runner.invoke(app, ["schedule", "generate", "--days", "7"])
         assert result.exit_code == 0, f"Geração deve ter sucesso. Output: {result.output}"
         # Meditação (7) + Exercício (5 weekdays) + Café (7) = 19 instâncias
         assert (
@@ -121,12 +126,10 @@ class TestBREventCreationWorkflow:
         assert "Café da Manhã" in result.output, "Hábito Café da Manhã deve aparecer"
 
         # 6. Verificar ausência de conflitos
-        assert (
-            "conflito" not in result.output.lower()
-        ), "Não deve haver conflitos em horários planejados corretamente"
-        assert (
-            "overlap" not in result.output.lower()
-        ), "Não deve haver sobreposições"
+        assert "conflito" not in result.output.lower(), (
+            "Não deve haver conflitos em horários planejados corretamente"
+        )
+        assert "overlap" not in result.output.lower(), "Não deve haver sobreposições"
 
     def test_br_event_creation_validates_time_ranges(
         self, isolated_db: Path, monkeypatch: MonkeyPatch
@@ -152,13 +155,21 @@ class TestBREventCreationWorkflow:
         runner.invoke(app, ["routine", "create", "Test Routine"])
 
         # Tentar criar com horário inválido (25:00)
-        result = runner.invoke(app, [
-            "habit", "create",
-            "--title", "Invalid Habit",
-            "--start", "25:00",
-            "--end", "26:00",
-            "--repeat", "EVERYDAY"
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "habit",
+                "create",
+                "--title",
+                "Invalid Habit",
+                "--start",
+                "25:00",
+                "--end",
+                "26:00",
+                "--repeat",
+                "EVERYDAY",
+            ],
+        )
 
         # Deve falhar com erro de validação
         assert result.exit_code != 0, "Criação com horário inválido deve falhar"

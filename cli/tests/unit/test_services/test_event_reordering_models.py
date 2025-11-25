@@ -1,4 +1,5 @@
 """Tests for event reordering models - Validação de Regras de Negócio."""
+
 from datetime import datetime
 
 from src.timeblock.services.event_reordering_models import Conflict, ConflictType

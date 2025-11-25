@@ -5,8 +5,7 @@ from typing import Any
 
 import pytest
 from sqlalchemy import Engine, event
-from sqlmodel import Session
-from sqlmodel import SQLModel, create_engine
+from sqlmodel import Session, SQLModel, create_engine
 
 from src.timeblock.models import Habit, Recurrence, Routine, Task
 
@@ -28,6 +27,7 @@ def integration_engine():
         cursor = dbapi_conn.cursor()
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()
+
     # Criar todas as tabelas
     SQLModel.metadata.create_all(engine)
     yield engine

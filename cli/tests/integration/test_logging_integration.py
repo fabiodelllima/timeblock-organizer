@@ -31,8 +31,7 @@ def mock_engine(monkeypatch, test_engine):
         yield test_engine
 
     monkeypatch.setattr(
-        "src.timeblock.services.habit_instance_service.get_engine_context",
-        mock_get_engine
+        "src.timeblock.services.habit_instance_service.get_engine_context", mock_get_engine
     )
 
 
@@ -50,7 +49,7 @@ def habit(test_engine):
             title="Test Habit",
             scheduled_start=time(7, 0),
             scheduled_end=time(8, 0),
-            recurrence=Recurrence.EVERYDAY
+            recurrence=Recurrence.EVERYDAY,
         )
         session.add(habit)
         session.commit()
@@ -63,7 +62,7 @@ class TestServiceLogging:
 
     def test_generate_instances_logs(self, habit):
         """Verifica logs ao gerar instâncias.
-        
+
         DADO: Hábito válido
         QUANDO: Gerar instâncias
         ENTÃO: Deve logar início, sucesso e quantidade criada
@@ -76,15 +75,13 @@ class TestServiceLogging:
                 "src.timeblock.services.habit_instance_service",
                 level="INFO",
                 log_file=log_file,
-                console=False
+                console=False,
             )
 
             # Ação: Gera instâncias
             start = date.today()
             end = start + timedelta(days=6)
-            instances = HabitInstanceService.generate_instances(
-                habit.id, start, end
-            )
+            instances = HabitInstanceService.generate_instances(habit.id, start, end)
 
             # Verificação: Logs contêm informações esperadas
             content = log_file.read_text()
@@ -94,7 +91,7 @@ class TestServiceLogging:
 
     def test_mark_completed_logs(self, habit):
         """Verifica logs ao completar instância.
-        
+
         DADO: Instância válida
         QUANDO: Marcar como completa
         ENTÃO: Deve logar sucesso
@@ -112,7 +109,7 @@ class TestServiceLogging:
                 "src.timeblock.services.habit_instance_service",
                 level="INFO",
                 log_file=log_file,
-                console=False
+                console=False,
             )
 
             # Ação: Completa instância
@@ -125,7 +122,7 @@ class TestServiceLogging:
 
     def test_error_logs(self):
         """Verifica logs de erro ao tentar operação inválida.
-        
+
         DADO: habit_id inexistente
         QUANDO: Tentar gerar instâncias
         ENTÃO: Deve logar erro antes de levantar exceção
@@ -138,14 +135,12 @@ class TestServiceLogging:
                 "src.timeblock.services.habit_instance_service",
                 level="ERROR",
                 log_file=log_file,
-                console=False
+                console=False,
             )
 
             # Ação: Tenta gerar para hábito inexistente
             with pytest.raises(ValueError):
-                HabitInstanceService.generate_instances(
-                    99999, date.today(), date.today()
-                )
+                HabitInstanceService.generate_instances(99999, date.today(), date.today())
 
             # Verificação: Log de erro
             content = log_file.read_text()
@@ -154,7 +149,7 @@ class TestServiceLogging:
 
     def test_warning_logs(self, habit):
         """Verifica logs de warning em operações suspeitas.
-        
+
         DADO: instance_id inexistente
         QUANDO: Tentar marcar como completa
         ENTÃO: Deve logar warning (não erro, pois retorna None)
@@ -167,7 +162,7 @@ class TestServiceLogging:
                 "src.timeblock.services.habit_instance_service",
                 level="WARNING",
                 log_file=log_file,
-                console=False
+                console=False,
             )
 
             # Ação: Tenta completar instância inexistente
@@ -185,20 +180,18 @@ class TestLoggingInTests:
 
     def test_logs_disabled_by_default_in_tests(self, habit):
         """Logs não aparecem no console durante testes normais.
-        
+
         DADO: Suite de testes rodando
         QUANDO: Service executa operação
         ENTÃO: Logs não devem poluir output de teste
-        
+
         Nota: Este teste verifica que logs podem ser silenciados.
         """
         # Ação: Desabilita logging
         disable_logging()
 
         # Executa operação (sem logs no console)
-        instances = HabitInstanceService.generate_instances(
-            habit.id, date.today(), date.today()
-        )
+        instances = HabitInstanceService.generate_instances(habit.id, date.today(), date.today())
 
         # Verificação: Operação funcionou
         assert len(instances) == 1

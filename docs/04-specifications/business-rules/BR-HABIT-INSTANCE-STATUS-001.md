@@ -1,376 +1,268 @@
-# BR-HABIT-INSTANCE-STATUS-001: Refatoração Status + Substatus
+# BR-HABIT-INSTANCE-STATUS-001: Sistema Status e Substatus
 
-- **ID:** BR-HABIT-INSTANCE-STATUS-001
-- **Domínio:** HabitInstance
-- **Tipo:** Breaking Change
-- **Prioridade:** CRÍTICA
-- **Versão:** MVP v1.4.0
-
----
-
-## 1. DESCRIÇÃO
-
-Refatorar modelo HabitInstance de status único (string) para sistema Status + Substatus (enums), permitindo rastreamento detalhado de completion e skip.
+- **Data Criação:** 2025-11-21 (Retroativo)
+- **Status:** IMPLEMENTADO
+- **Commit:** afea231 (2025-11-19)
+- **ADR:** [ADR-021] Status+Substatus Refactoring
 
 ---
 
-## 2. MOTIVAÇÃO
+## Contexto
 
-**Problema atual:**
+Refatoração do sistema de status do HabitInstance para suportar rastreamento detalhado de completude e skip categorizado.
 
-- Status é string livre (`status: str = "planned"`)
-- Não há distinção entre DONE com 50% vs 150% completion
-- Não há diferenciação entre skip justificado vs injustificado
-- Sistema não rastreia razões de skip
-- Dificulta análise de padrões comportamentais
-
-**Benefícios da refatoração:**
-
-- Rastreamento preciso de completion (FULL/PARTIAL/OVERDONE/EXCESSIVE)
-- Distinção clara entre skip categorias (JUSTIFIED/UNJUSTIFIED/IGNORED)
-- Histórico rastreável de motivos de skip
-- Análise de impacto de overdone em rotina
-- Fundação para Streak tracking
+**BREAKING CHANGE:** Migração de sistema 4-estados para sistema 3-estados com substatus.
 
 ---
 
-## 3. REGRAS DE NEGÓCIO
+## Sistema Anterior (DEPRECATED)
 
-### 3.1 Status Principal (3 valores)
+```python
+# 4 estados independentes (v1.0-v1.3)
+PLANNED       # Aguardando execução
+IN_PROGRESS   # Timer ativo
+COMPLETED     # Concluído
+SKIPPED       # Pulado
+```
+
+**Problemas:**
+
+- Não rastreia % completude (parcial vs completo)
+- Skip sem categorização (justificado vs injustificado)
+- Timer não calcula automaticamente status final
+
+---
+
+## Sistema Atual (v1.4+)
+
+### Status Principal (3 estados)
 
 ```python
 class Status(str, Enum):
-    PENDING = "pending"    # Ainda não iniciado
-    DONE = "done"          # Completado (qualquer %)
-    NOT_DONE = "not_done"  # Não completado
+    PENDING = "pending"      # Aguardando execução
+    DONE = "done"            # Concluído (qualquer %)
+    NOT_DONE = "not_done"    # Não concluído (skip/timeout)
 ```
 
-**Transição de estados:**
-
-```
-PENDING -> DONE (timer stop com completion > 0%)
-PENDING -> NOT_DONE (skip ou dia termina sem execução)
-DONE -> imutável (não volta para PENDING)
-NOT_DONE -> imutável (não volta para PENDING)
-```
-
-### 3.2 DoneSubstatus (4 valores)
-
-Aplica-se apenas quando `status = DONE`.
+### Substatus Done (4 níveis)
 
 ```python
 class DoneSubstatus(str, Enum):
-    FULL = "full"              # 90-110% da meta
-    PARTIAL = "partial"        # <90% da meta
-    OVERDONE = "overdone"      # 110-150% da meta
-    EXCESSIVE = "excessive"    # >150% da meta
+    FULL = "full"            # 90-110% (ideal)
+    OVERDONE = "overdone"    # 110-150% (excesso moderado)
+    EXCESSIVE = "excessive"  # >150% (burnout warning)
+    PARTIAL = "partial"      # <90% (insuficiente)
 ```
 
-**Cálculo:**
-
-```python
-completion_percentage = (actual_duration / target_duration) * 100
-
-if completion >= 90 and completion <= 110:
-    substatus = FULL
-elif completion < 90:
-    substatus = PARTIAL
-elif completion > 110 and completion <= 150:
-    substatus = OVERDONE
-else:  # >150%
-    substatus = EXCESSIVE
-```
-
-**Validação:**
-
-- `done_substatus` deve ser `None` se `status != DONE`
-- `done_substatus` deve ser preenchido se `status == DONE`
-
-### 3.3 NotDoneSubstatus (3 valores)
-
-Aplica-se apenas quando `status = NOT_DONE`.
+### Substatus NotDone (3 categorias)
 
 ```python
 class NotDoneSubstatus(str, Enum):
-    SKIPPED_JUSTIFIED = "skipped_justified"        # Skip com categoria
-    SKIPPED_UNJUSTIFIED = "skipped_unjustified"    # Skip sem categoria (após 24h)
-    IGNORED = "ignored"                             # Não marcado, dia terminou
+    SKIPPED_JUSTIFIED = "skipped_justified"        # Com razão válida
+    SKIPPED_UNJUSTIFIED = "skipped_unjustified"    # Sem razão
+    IGNORED = "ignored"                            # Timeout (>48h)
 ```
 
-**Regras:**
-
-- `SKIPPED_JUSTIFIED`: Requer `skip_reason` preenchido
-- `SKIPPED_UNJUSTIFIED`: `skip_reason = None` e skip explícito
-- `IGNORED`: Nunca teve interação do usuário
-
-**Validação:**
-
-- `not_done_substatus` deve ser `None` se `status != NOT_DONE`
-- `not_done_substatus` deve ser preenchido se `status == NOT_DONE`
-
-### 3.4 SkipReason (8 categorias)
-
-Aplica-se apenas quando `not_done_substatus = SKIPPED_JUSTIFIED`.
+### Skip Reason (8 categorias)
 
 ```python
 class SkipReason(str, Enum):
-    HEALTH = "saude"
-    WORK = "trabalho"
-    FAMILY = "familia"
-    TRAVEL = "viagem"
-    WEATHER = "clima"
-    LACK_RESOURCES = "falta_recursos"
-    EMERGENCY = "emergencia"
-    OTHER = "outro"
+    HEALTH = "saude"          # Doença, mal-estar
+    WORK = "trabalho"         # Demandas profissionais
+    FAMILY = "familia"        # Obrigações familiares
+    WEATHER = "clima"         # Condições climáticas
+    LACK_TIME = "falta_tempo" # Agenda sobrecarregada
+    LACK_ENERGY = "falta_energia"  # Cansaço físico/mental
+    TRAVEL = "viagem"         # Deslocamento
+    OTHER = "outro"           # Outras razões
 ```
-
-**Regras:**
-
-- Obrigatório quando usuário executa `habit skip`
-- Opcional campo adicional `skip_note` (texto livre)
-- Categorias são mutuamente exclusivas
 
 ---
 
-## 4. MODELO DE DADOS
+## Regras de Negócio
 
-### 4.1 Campos NOVOS
+### BR-HABIT-INSTANCE-STATUS-001.1: Estados Válidos
+
+**DADO** uma instância de hábito
+**QUANDO** o status é definido
+**ENTÃO** deve ser PENDING, DONE ou NOT_DONE
+
+**Validação:** Enum Status garante valores válidos.
+
+### BR-HABIT-INSTANCE-STATUS-001.2: Substatus Obrigatório
+
+**DADO** uma instância com status DONE
+**QUANDO** finalizada
+**ENTÃO** deve ter done_substatus definido
+
+**DADO** uma instância com status NOT_DONE
+**QUANDO** finalizada
+**ENTÃO** deve ter not_done_substatus definido
+
+**DADO** uma instância com status PENDING
+**QUANDO** ainda não iniciada
+**ENTÃO** ambos substatus devem ser None
+
+**Validação:** método `validate_status_consistency()`
+
+### BR-HABIT-INSTANCE-STATUS-001.3: Substatus Mutuamente Exclusivos
+
+**DADO** uma instância finalizada
+**QUANDO** substatus é definido
+**ENTÃO** apenas UM substatus pode existir (done_substatus XOR not_done_substatus)
+
+**Exemplo Inválido:**
 
 ```python
-class HabitInstance(SQLModel, table=True):
-    # Campos existentes mantidos
-    id: int | None
-    habit_id: int
-    date: date
-    scheduled_start: time
-    scheduled_end: time
-    actual_start: datetime | None
-    actual_end: datetime | None
-    manually_adjusted: bool
-
-    # NOVOS campos (Status+Substatus)
-    status: Status = Field(default=Status.PENDING)
-    done_substatus: DoneSubstatus | None = None
-    not_done_substatus: NotDoneSubstatus | None = None
-    skip_reason: SkipReason | None = None
-    skip_note: str | None = None
-    completion_percentage: int | None = None  # Calculado, persistido
+instance.done_substatus = DoneSubstatus.FULL
+instance.not_done_substatus = NotDoneSubstatus.IGNORED
+# ValueError: Cannot have both done and not_done substatus
 ```
 
-### 4.2 Migração de Dados
+### BR-HABIT-INSTANCE-STATUS-001.4: Cálculo Automático (Timer)
 
-**Mapeamento de status antigo -> novo:**
+**DADO** timer parado
+**QUANDO** duração efetiva vs esperada calculada
+**ENTÃO** substatus definido automaticamente:
+
+| % Completude | Substatus | Fórmula                    |
+| ------------ | --------- | -------------------------- |
+| < 90%        | PARTIAL   | duration < 0.9 \* expected |
+| 90-110%      | FULL      | 0.9 <= ratio <= 1.1        |
+| 110-150%     | OVERDONE  | 1.1 < ratio <= 1.5         |
+| > 150%       | EXCESSIVE | ratio > 1.5                |
+
+**Implementação:** `TimerService.stop()` + `HabitInstance.completion_percentage`
+
+### BR-HABIT-INSTANCE-STATUS-001.5: Skip com Categorização
+
+**DADO** usuário pula hábito
+**QUANDO** escolhe categoria (1-8)
+**ENTÃO** cria NOT_DONE + SKIPPED_JUSTIFIED + skip_reason
+
+**QUANDO** escolhe "Sem razão" (opção 9)
+**ENTÃO** cria NOT_DONE + SKIPPED_UNJUSTIFIED + skip_reason=None
+
+**Validação:** skip_reason obrigatório se SKIPPED_JUSTIFIED
+
+### BR-HABIT-INSTANCE-STATUS-001.6: Timeout (>48h)
+
+**DADO** instância PENDING
+**QUANDO** >48h após scheduled_start
+**ENTÃO** automaticamente: NOT_DONE + IGNORED
+
+**Implementação:** `HabitInstance.is_overdue` property
+
+---
+
+## Migração de Dados
+
+### SQL Migration
 
 ```sql
--- Status atual (string) -> Status novo (enum)
-UPDATE habit_instances SET
-    status = CASE
-        WHEN status = 'planned' THEN 'pending'
-        WHEN status = 'in_progress' THEN 'pending'
-        WHEN status = 'completed' THEN 'done'
-        WHEN status = 'skipped' THEN 'not_done'
-        ELSE 'pending'
-    END;
+-- Adicionar novos campos
+ALTER TABLE habitinstance ADD COLUMN done_substatus TEXT;
+ALTER TABLE habitinstance ADD COLUMN not_done_substatus TEXT;
+ALTER TABLE habitinstance ADD COLUMN skip_reason TEXT;
+ALTER TABLE habitinstance ADD COLUMN skip_note TEXT;
+ALTER TABLE habitinstance ADD COLUMN completion_percentage REAL;
 
--- Preencher substatus para eventos DONE (assumir FULL se não tiver info)
-UPDATE habit_instances SET
-    done_substatus = 'full'
-WHERE status = 'done' AND done_substatus IS NULL;
+-- Mapear status antigo -> novo
+UPDATE habitinstance
+SET status = 'pending' WHERE status = 'PLANNED';
 
--- Preencher substatus para eventos NOT_DONE (assumir UNJUSTIFIED)
-UPDATE habit_instances SET
-    not_done_substatus = 'skipped_unjustified'
-WHERE status = 'not_done' AND not_done_substatus IS NULL;
+UPDATE habitinstance
+SET status = 'done', done_substatus = 'full'
+WHERE status = 'COMPLETED';
+
+UPDATE habitinstance
+SET status = 'not_done', not_done_substatus = 'skipped_unjustified'
+WHERE status = 'SKIPPED';
 ```
+
+**Script:** `migration_001_status_substatus.py`
 
 ---
 
-## 5. VALIDAÇÕES
+## Testes
 
-### 5.1 Validações de Integridade
+### Cobertura
 
-**Regra 1:** Status e substatus devem ser consistentes
+```terminal
+[18 scenarios BDD] - docs/06-bdd/scenarios/habit-instance.feature
+[14 unit tests]    - tests/unit/test_models/test_habit_instance_status.py
+[12 skip tests]    - tests/unit/test_services/test_habit_instance_skip.py
+[7 timer tests]    - tests/unit/test_services/test_timer_service_substatus.py
+```
+
+### Exemplos Críticos
 
 ```python
-# INVÁLIDO
-status = DONE, not_done_substatus = SKIPPED_JUSTIFIED  # [X]
+# Teste: Timer calcula FULL (90-110%)
+def test_scenario_001_completion_full():
+    instance = create_instance(expected_duration=60)
+    timer.start(); sleep(58); timer.stop()
+    assert instance.status == Status.DONE
+    assert instance.done_substatus == DoneSubstatus.FULL
+    assert 90 <= instance.completion_percentage <= 110
 
-# VÁLIDO
-status = DONE, done_substatus = FULL  # [OK]
-status = NOT_DONE, not_done_substatus = SKIPPED_JUSTIFIED  # [OK]
+# Teste: Skip com saúde
+def test_scenario_skip_health():
+    result = service.skip_instance(
+        instance_id=1,
+        skip_reason=SkipReason.HEALTH,
+        skip_note="Gripe"
+    )
+    assert instance.status == Status.NOT_DONE
+    assert instance.not_done_substatus == NotDoneSubstatus.SKIPPED_JUSTIFIED
+    assert instance.skip_reason == SkipReason.HEALTH
+
+# Teste: Validação consistência
+def test_scenario_both_substatus_error():
+    instance.done_substatus = DoneSubstatus.FULL
+    instance.not_done_substatus = NotDoneSubstatus.IGNORED
+    with pytest.raises(ValueError, match="Cannot have both"):
+        instance.validate_status_consistency()
 ```
 
-**Regra 2:** Skip reason só com substatus correto
+---
+
+## Impacto
+
+### Arquivos Modificados
+
+```terminal
+src/timeblock/models/enums.py
+src/timeblock/models/habit_instance.py
+src/timeblock/services/timer_service.py
+src/timeblock/services/habit_instance_service.py
+src/timeblock/database/migrations/migration_001_*.py [NOVO]
+```
+
+### Retrocompatibilidade
 
 ```python
-# INVÁLIDO
-not_done_substatus = IGNORED, skip_reason = HEALTH  # [X]
-
-# VÁLIDO
-not_done_substatus = SKIPPED_JUSTIFIED, skip_reason = HEALTH  # [OK]
-```
-
-**Regra 3:** Substatus mutuamente exclusivos
-
-```python
-# INVÁLIDO
-done_substatus = FULL, not_done_substatus = IGNORED  # [X]
-
-# VÁLIDO
-done_substatus = FULL, not_done_substatus = None  # [OK]
-```
-
-### 5.2 Método de Validação
-
-```python
-def validate_status_consistency(self) -> None:
-    """Valida consistência entre status e substatus."""
-    if self.status == Status.DONE:
-        if self.done_substatus is None:
-            raise ValueError("done_substatus obrigatório quando status=DONE")
-        if self.not_done_substatus is not None:
-            raise ValueError("not_done_substatus deve ser None quando status=DONE")
-
-    elif self.status == Status.NOT_DONE:
-        if self.not_done_substatus is None:
-            raise ValueError("not_done_substatus obrigatório quando status=NOT_DONE")
-        if self.done_substatus is not None:
-            raise ValueError("done_substatus deve ser None quando status=NOT_DONE")
-
-    elif self.status == Status.PENDING:
-        if self.done_substatus is not None or self.not_done_substatus is not None:
-            raise ValueError("Substatus deve ser None quando status=PENDING")
-
-    # Validar skip_reason
-    if self.not_done_substatus == NotDoneSubstatus.SKIPPED_JUSTIFIED:
-        if self.skip_reason is None:
-            raise ValueError("skip_reason obrigatório para SKIPPED_JUSTIFIED")
-    else:
-        if self.skip_reason is not None:
-            raise ValueError("skip_reason só permitido com SKIPPED_JUSTIFIED")
+# DEPRECATED (manter por 1 release)
+class HabitInstanceStatus(str, Enum):
+    PLANNED = "PLANNED"  # Mapeia para Status.PENDING
+    # Warning: Use Status enum instead
 ```
 
 ---
 
-## 6. IMPACTO
+## Referências
 
-### 6.1 Breaking Changes
-
-**Modelos afetados:**
-
-- `HabitInstance` (mudança de schema)
-
-**Services afetados:**
-
-- `HabitInstanceService` (lógica de status)
-- `TimerService` (cálculo de completion)
-- `SkipService` (novo - a criar)
-
-**CLI afetados:**
-
-- `habit skip` (novo comando)
-- `timer stop` (calcular substatus)
-- `report` (usar novos campos)
-
-### 6.2 Compatibilidade
-
-**[X] NÃO compatível com v1.3.0**
-
-- Requer migração de banco
-- Requer atualização de todos services
-- Requer atualização de CLI commands
-
-**Migração obrigatória:**
-
-- Script SQL de migração
-- Testes de migração
-- Rollback plan documentado
+- **Commit:** afea231 - feat(models): Implementa refatoração Status+Substatus
+- **ADR:** ADR-021 Status+Substatus Refactoring (prometido, não criado)
+- **Sprint:** Sprint 1 - Routine + HabitInstance Status (Nov 2025)
+- **Atomic Habits:** Cap. 15 - Tracking Progress
 
 ---
 
-## 7. TESTES
+## Notas Retroativas
 
-### 7.1 Cenários de Teste (BDD)
+[ ! ] Esta BR foi criada RETROATIVAMENTE em 2025-11-21 para documentar mudança implementada em 2025-11-19.
 
-Ver arquivo: `docs/04-specifications/business-rules/BR-HABIT-INSTANCE-STATUS-001-scenarios.md`
+**Razão:** Débito técnico - implementação precedeu documentação formal.
 
-### 7.2 Testes Unitários
-
-**Arquivo:** `tests/unit/test_models/test_habit_instance_status.py`
-
-Cobertura mínima:
-
-- [ ] Transições de status válidas
-- [ ] Validação substatus obrigatório
-- [ ] Validação skip_reason com JUSTIFIED
-- [ ] Validação substatus mutuamente exclusivos
-- [ ] Cálculo de completion_percentage
-- [ ] Property `is_overdue` (se PENDING)
-
-### 7.3 Testes de Integração
-
-**Arquivo:** `tests/integration/test_habit_instance_status_integration.py`
-
-Cobertura mínima:
-
-- [ ] Timer stop define status=DONE + substatus correto
-- [ ] Skip define status=NOT_DONE + substatus JUSTIFIED
-- [ ] Migração de dados de v1.3.0 funciona
-- [ ] Queries com novos campos funcionam
-
----
-
-## 8. DOCUMENTAÇÃO ATUALIZAR
-
-- [ ] `CHANGELOG.md` (breaking change)
-- [ ] `docs/01-architecture/ARCHITECTURE.md` (modelo atualizado)
-- [ ] `docs/08-user-guides/cli-reference.md` (comandos novos)
-- [ ] ADR-021: Status+Substatus Refactoring
-
----
-
-## 9. ROLLBACK PLAN
-
-Em caso de problemas críticos após deploy:
-
-1. **Parar aplicação**
-2. **Restaurar backup do banco** (pré-migração)
-3. **Reverter para branch `v1.3.0`**
-4. **Reiniciar aplicação**
-
-**Tempo estimado de rollback:** 5 minutos
-
----
-
-## 10. CHECKLIST DE IMPLEMENTAÇÃO
-
-**Docs:**
-
-- [ ] BR-HABIT-INSTANCE-STATUS-001.md (este arquivo)
-- [ ] BDD scenarios (próximo arquivo)
-
-**Testes:**
-
-- [ ] Testes unitários (RED)
-- [ ] Testes integração (RED)
-- [ ] Testes E2E (RED)
-
-**Código:**
-
-- [ ] Enums (Status, DoneSubstatus, NotDoneSubstatus, SkipReason)
-- [ ] HabitInstance model refatorado
-- [ ] Migração SQL
-- [ ] Services atualizados
-- [ ] CLI commands atualizados
-
-**Validação:**
-
-- [ ] Todos testes passando (GREEN)
-- [ ] Cobertura 99%+
-- [ ] Migração testada com dados reais
-
----
-
-**Criado em:** 19 de novembro de 2025
-
-**Status:** [APROVADO - PRONTO PARA BDD]
+**Correção:** Sprint 3.4 - Alinhamento DOCS > BDD > TDD > CODE.

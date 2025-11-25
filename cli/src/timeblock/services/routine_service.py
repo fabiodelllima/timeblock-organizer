@@ -28,6 +28,8 @@ class RoutineService:
             - BR-ROUTINE-004: Primeira routine ativada automaticamente
         """
         name = name.strip()
+        if len(name) > 200:
+            raise ValueError("Nome da rotina não pode ter mais de 200 caracteres")
         if not name:
             raise ValueError("Nome da rotina não pode ser vazio")
 
@@ -158,6 +160,8 @@ class RoutineService:
 
         if name is not None:
             name = name.strip()
+        if len(name) > 200:
+            raise ValueError("Nome da rotina não pode ter mais de 200 caracteres")
             if not name:
                 raise ValueError("Nome da rotina não pode ser vazio")
             routine.name = name
