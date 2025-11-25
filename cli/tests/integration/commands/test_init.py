@@ -50,6 +50,7 @@ def isolated_db(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Pat
     monkeypatch.setenv("TIMEBLOCK_DB_PATH", str(db_file))
     # Forçar reimport para usar nova variável de ambiente
     import sys
+
     for module in [
         "src.timeblock.database",
         "src.timeblock.commands.init",
@@ -74,9 +75,7 @@ class TestBRSystemInitialization:
     - BR-SYSTEM-INIT-004: Tratamento de erros de criação
     """
 
-    def test_br_system_init_001_creates_database(
-        self, isolated_db: Path
-    ) -> None:
+    def test_br_system_init_001_creates_database(self, isolated_db: Path) -> None:
         """
         Integration: Sistema cria banco de dados quando não existe.
 
@@ -92,19 +91,16 @@ class TestBRSystemInitialization:
         # TECHNICAL DEBT: Import aqui devido a global state em engine.py
         # Ver docstring do módulo para detalhes sobre o problema arquitetural
         from src.timeblock.main import app
+
         runner = CliRunner()
         # ACT
         result = runner.invoke(app, ["init"])
         # ASSERT
         assert result.exit_code == 0, "Inicialização deve ter sucesso"
-        assert (
-            "initialized" in result.output.lower()
-        ), "Mensagem deve confirmar inicialização"
+        assert "initialized" in result.output.lower(), "Mensagem deve confirmar inicialização"
         assert isolated_db.exists(), "Arquivo do banco deve existir"
 
-    def test_br_system_init_002_recreate_with_confirmation(
-        self, isolated_db: Path
-    ) -> None:
+    def test_br_system_init_002_recreate_with_confirmation(self, isolated_db: Path) -> None:
         """
         Integration: Sistema recria banco quando usuário confirma.
 
@@ -122,6 +118,7 @@ class TestBRSystemInitialization:
         """
         # TECHNICAL DEBT: Import aqui devido a global state em engine.py
         from src.timeblock.main import app
+
         runner = CliRunner()
         # ARRANGE - Primeira inicialização
         runner.invoke(app, ["init"])
@@ -129,13 +126,9 @@ class TestBRSystemInitialization:
         result = runner.invoke(app, ["init"], input="y\n")
         # ASSERT
         assert result.exit_code == 0, "Recriação deve ter sucesso"
-        assert (
-            "initialized" in result.output.lower()
-        ), "Mensagem deve confirmar reinicialização"
+        assert "initialized" in result.output.lower(), "Mensagem deve confirmar reinicialização"
 
-    def test_br_system_init_003_cancel_recreation(
-        self, isolated_db: Path
-    ) -> None:
+    def test_br_system_init_003_cancel_recreation(self, isolated_db: Path) -> None:
         """
         Integration: Sistema cancela recriação quando usuário recusa.
 
@@ -150,6 +143,7 @@ class TestBRSystemInitialization:
         """
         # TECHNICAL DEBT: Import aqui devido a global state em engine.py
         from src.timeblock.main import app
+
         runner = CliRunner()
         # ARRANGE - Primeira inicialização
         runner.invoke(app, ["init"])
@@ -157,10 +151,9 @@ class TestBRSystemInitialization:
         result = runner.invoke(app, ["init"], input="n\n")
         # ASSERT
         assert result.exit_code == 0, "Cancelamento deve retornar sucesso"
-        assert (
-            "cancelled" in result.output.lower()
-            or "aborted" in result.output.lower()
-        ), "Mensagem deve indicar cancelamento"
+        assert "cancelled" in result.output.lower() or "aborted" in result.output.lower(), (
+            "Mensagem deve indicar cancelamento"
+        )
 
     def test_br_system_init_004_handles_database_error(
         self, isolated_db: Path, monkeypatch: pytest.MonkeyPatch
@@ -179,13 +172,14 @@ class TestBRSystemInitialization:
         """
         # TECHNICAL DEBT: Import aqui devido a global state em engine.py
         from src.timeblock.main import app
+
         runner = CliRunner()
+
         # ARRANGE - Mock para simular erro
         def mock_create_error() -> None:
             raise Exception("Simulated database error")
-        monkeypatch.setattr(
-            "src.timeblock.commands.init.create_db_and_tables", mock_create_error
-        )
+
+        monkeypatch.setattr("src.timeblock.commands.init.create_db_and_tables", mock_create_error)
         # ACT
         result = runner.invoke(app, ["init"])
         # ASSERT

@@ -50,9 +50,7 @@ def habit(session: Session, routine: Routine) -> Habit:
 class TestBRTimer006CalculateSubstatus:
     """Cenários 1-6: Timer stop calcula substatus baseado em completion."""
 
-    def test_scenario_001_stop_calculates_partial_75_percent(
-        self, session: Session, habit: Habit
-    ):
+    def test_scenario_001_stop_calculates_partial_75_percent(self, session: Session, habit: Habit):
         """CENÁRIO 1: Timer stop com 75% completion -> PARTIAL."""
         assert habit.id is not None
 
@@ -86,16 +84,14 @@ class TestBRTimer006CalculateSubstatus:
 
         # QUANDO: Para timer após 45 minutos (75%)
         from unittest.mock import patch
+
         stop_time = start_time + timedelta(minutes=45)
 
-        with patch('src.timeblock.services.timer_service.datetime') as mock_dt:
+        with patch("src.timeblock.services.timer_service.datetime") as mock_dt:
             mock_dt.now.return_value = stop_time
             mock_dt.combine = datetime.combine
 
-            result_timelog = timer_service.stop_timer(
-                timelog_id=timelog.id,
-                session=session
-            )
+            result_timelog = timer_service.stop_timer(timelog_id=timelog.id, session=session)
 
         # Refresh instance para pegar mudanças
         session.refresh(instance)
@@ -107,9 +103,7 @@ class TestBRTimer006CalculateSubstatus:
         assert instance.not_done_substatus is None
         assert result_timelog.duration_seconds == 2700  # 45min
 
-    def test_scenario_002_stop_calculates_full_90_percent(
-        self, session: Session, habit: Habit
-    ):
+    def test_scenario_002_stop_calculates_full_90_percent(self, session: Session, habit: Habit):
         """CENÁRIO 2: Timer stop com 90% completion -> FULL."""
         assert habit.id is not None
 
@@ -141,9 +135,10 @@ class TestBRTimer006CalculateSubstatus:
 
         # QUANDO: 54 minutos = 90%
         from unittest.mock import patch
+
         stop_time = start_time + timedelta(minutes=54)
 
-        with patch('src.timeblock.services.timer_service.datetime') as mock_dt:
+        with patch("src.timeblock.services.timer_service.datetime") as mock_dt:
             mock_dt.now.return_value = stop_time
             mock_dt.combine = datetime.combine
 
@@ -157,9 +152,7 @@ class TestBRTimer006CalculateSubstatus:
         assert instance.completion_percentage == 90
         assert instance.not_done_substatus is None
 
-    def test_scenario_003_stop_calculates_full_100_percent(
-        self, session: Session, habit: Habit
-    ):
+    def test_scenario_003_stop_calculates_full_100_percent(self, session: Session, habit: Habit):
         """CENÁRIO 3: Timer stop com 100% completion -> FULL."""
         assert habit.id is not None
 
@@ -191,9 +184,10 @@ class TestBRTimer006CalculateSubstatus:
 
         # QUANDO: 60 minutos = 100%
         from unittest.mock import patch
+
         stop_time = start_time + timedelta(minutes=60)
 
-        with patch('src.timeblock.services.timer_service.datetime') as mock_dt:
+        with patch("src.timeblock.services.timer_service.datetime") as mock_dt:
             mock_dt.now.return_value = stop_time
             mock_dt.combine = datetime.combine
 
@@ -240,9 +234,10 @@ class TestBRTimer006CalculateSubstatus:
 
         # QUANDO: 78 minutos = 130%
         from unittest.mock import patch
+
         stop_time = start_time + timedelta(minutes=78)
 
-        with patch('src.timeblock.services.timer_service.datetime') as mock_dt:
+        with patch("src.timeblock.services.timer_service.datetime") as mock_dt:
             mock_dt.now.return_value = stop_time
             mock_dt.combine = datetime.combine
 
@@ -289,9 +284,10 @@ class TestBRTimer006CalculateSubstatus:
 
         # QUANDO: 120 minutos = 200%
         from unittest.mock import patch
+
         stop_time = start_time + timedelta(minutes=120)
 
-        with patch('src.timeblock.services.timer_service.datetime') as mock_dt:
+        with patch("src.timeblock.services.timer_service.datetime") as mock_dt:
             mock_dt.now.return_value = stop_time
             mock_dt.combine = datetime.combine
 
@@ -308,9 +304,7 @@ class TestBRTimer006CalculateSubstatus:
 class TestBRTimer006Validation:
     """Cenário 7-8: Validações e erros."""
 
-    def test_scenario_007_validates_consistency_after_stop(
-        self, session: Session, habit: Habit
-    ):
+    def test_scenario_007_validates_consistency_after_stop(self, session: Session, habit: Habit):
         """CENÁRIO 7: Validação de consistência após stop."""
         assert habit.id is not None
 
@@ -342,9 +336,10 @@ class TestBRTimer006Validation:
 
         # QUANDO
         from unittest.mock import patch
+
         stop_time = start_time + timedelta(minutes=55)
 
-        with patch('src.timeblock.services.timer_service.datetime') as mock_dt:
+        with patch("src.timeblock.services.timer_service.datetime") as mock_dt:
             mock_dt.now.return_value = stop_time
             mock_dt.combine = datetime.combine
 
@@ -361,9 +356,7 @@ class TestBRTimer006Validation:
         assert instance.not_done_substatus is None
         assert instance.skip_reason is None
 
-    def test_scenario_008_error_no_active_timer(
-        self, session: Session, habit: Habit
-    ):
+    def test_scenario_008_error_no_active_timer(self, session: Session, habit: Habit):
         """CENÁRIO 8: Timer stop sem timer ativo -> ValueError."""
         assert habit.id is not None
 

@@ -20,11 +20,11 @@ def test_engine():
 class TestHabitInstanceOverdue:
     """
     REGRA DE NEGÓCIO RN023: Propriedade is_overdue
-    
+
     A propriedade is_overdue deve retornar True quando:
     1. Status é PLANNED
     2. Hora atual > scheduled_start
-    
+
     Deve retornar False para qualquer outro status.
     """
 

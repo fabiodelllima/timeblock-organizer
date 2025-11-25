@@ -54,10 +54,7 @@ def mock_engine(monkeypatch: MonkeyPatch, test_engine: Engine) -> None:
     def mock_get_engine():
         yield test_engine
 
-    monkeypatch.setattr(
-        "src.timeblock.services.habit_service.get_engine_context",
-        mock_get_engine
-    )
+    monkeypatch.setattr("src.timeblock.services.habit_service.get_engine_context", mock_get_engine)
 
 
 class TestBRHabit001Creation:
@@ -100,7 +97,7 @@ class TestBRHabit001Creation:
             title=title,
             scheduled_start=start,
             scheduled_end=end,
-            recurrence=recurrence
+            recurrence=recurrence,
         )
 
         # ASSERT - Verificar resultados esperados
@@ -130,7 +127,7 @@ class TestBRHabit001Creation:
             scheduled_start=time(6, 0),
             scheduled_end=time(6, 30),
             recurrence=Recurrence.WEEKDAYS,
-            color=color
+            color=color,
         )
 
         # ASSERT
@@ -155,7 +152,7 @@ class TestBRHabit001Creation:
             title=title_with_spaces,
             scheduled_start=time(20, 0),
             scheduled_end=time(21, 0),
-            recurrence=Recurrence.EVERYDAY
+            recurrence=Recurrence.EVERYDAY,
         )
 
         # ASSERT
@@ -181,7 +178,7 @@ class TestBRHabit001Creation:
                 title=empty_title,
                 scheduled_start=time(10, 0),
                 scheduled_end=time(11, 0),
-                recurrence=Recurrence.EVERYDAY
+                recurrence=Recurrence.EVERYDAY,
             )
 
     def test_br_habit_001_rejects_long_title(self, test_routine: Routine) -> None:
@@ -203,7 +200,7 @@ class TestBRHabit001Creation:
                 title=long_title,
                 scheduled_start=time(10, 0),
                 scheduled_end=time(11, 0),
-                recurrence=Recurrence.EVERYDAY
+                recurrence=Recurrence.EVERYDAY,
             )
 
     def test_br_habit_001_rejects_invalid_time_range(self, test_routine: Routine) -> None:
@@ -226,7 +223,7 @@ class TestBRHabit001Creation:
                 title="Inválido",
                 scheduled_start=start,
                 scheduled_end=end,
-                recurrence=Recurrence.EVERYDAY
+                recurrence=Recurrence.EVERYDAY,
             )
 
     def test_br_habit_001_rejects_equal_start_end(self, test_routine: Routine) -> None:
@@ -248,7 +245,7 @@ class TestBRHabit001Creation:
                 title="Zero Duração",
                 scheduled_start=same_time,
                 scheduled_end=same_time,
-                recurrence=Recurrence.EVERYDAY
+                recurrence=Recurrence.EVERYDAY,
             )
 
 
@@ -277,7 +274,7 @@ class TestBRHabit001Integration:
             title="Exercício",
             scheduled_start=time(6, 0),
             scheduled_end=time(7, 0),
-            recurrence=Recurrence.EVERYDAY
+            recurrence=Recurrence.EVERYDAY,
         )
 
         habit2 = HabitService.create_habit(
@@ -285,7 +282,7 @@ class TestBRHabit001Integration:
             title="Meditação",
             scheduled_start=time(7, 0),
             scheduled_end=time(7, 30),
-            recurrence=Recurrence.EVERYDAY
+            recurrence=Recurrence.EVERYDAY,
         )
 
         # ASSERT

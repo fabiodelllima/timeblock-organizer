@@ -36,6 +36,7 @@ def isolated_db(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Pat
     db_path = tmp_path / "test.db"
     monkeypatch.setenv("TIMEBLOCK_DB_PATH", str(db_path))
     import sys
+
     for mod in [
         "src.timeblock.database",
         "src.timeblock.commands.list",
@@ -58,6 +59,7 @@ def sample_events(isolated_db: Path) -> CliRunner:
     """
     # TECHNICAL DEBT: Import aqui devido a global state
     from src.timeblock.main import app
+
     runner = CliRunner()
     # Inicializar banco
     runner.invoke(app, ["init"])
@@ -82,9 +84,7 @@ class TestBREventListFilters:
     - BR-EVENT-FILTER-006: Tratamento de erros de database
     """
 
-    def test_br_event_filter_001_month_filter(
-        self, sample_events: CliRunner
-    ) -> None:
+    def test_br_event_filter_001_month_filter(self, sample_events: CliRunner) -> None:
         """
         Integration: Filtro por mês funciona corretamente.
 
@@ -98,14 +98,13 @@ class TestBREventListFilters:
         """
         # TECHNICAL DEBT: Import aqui devido a global state
         from src.timeblock.main import app
+
         # ACT
         result = sample_events.invoke(app, ["list", "--month", "0"])
         # ASSERT
         assert result.exit_code == 0, "Filtro por mês deve ter sucesso"
 
-    def test_br_event_filter_002_week_filter(
-        self, sample_events: CliRunner
-    ) -> None:
+    def test_br_event_filter_002_week_filter(self, sample_events: CliRunner) -> None:
         """
         Integration: Filtro por semana funciona corretamente.
 
@@ -119,14 +118,13 @@ class TestBREventListFilters:
         """
         # TECHNICAL DEBT: Import aqui devido a global state
         from src.timeblock.main import app
+
         # ACT
         result = sample_events.invoke(app, ["list", "--week", "0"])
         # ASSERT
         assert result.exit_code == 0, "Filtro por semana deve ter sucesso"
 
-    def test_br_event_filter_003_day_filter(
-        self, sample_events: CliRunner
-    ) -> None:
+    def test_br_event_filter_003_day_filter(self, sample_events: CliRunner) -> None:
         """
         Integration: Filtro por dia funciona corretamente.
 
@@ -140,14 +138,13 @@ class TestBREventListFilters:
         """
         # TECHNICAL DEBT: Import aqui devido a global state
         from src.timeblock.main import app
+
         # ACT
         result = sample_events.invoke(app, ["list", "--day", "0"])
         # ASSERT
         assert result.exit_code == 0, "Filtro por dia deve ter sucesso"
 
-    def test_br_event_filter_004_limit_results(
-        self, sample_events: CliRunner
-    ) -> None:
+    def test_br_event_filter_004_limit_results(self, sample_events: CliRunner) -> None:
         """
         Integration: Limite de resultados funciona corretamente.
 
@@ -161,17 +158,16 @@ class TestBREventListFilters:
         """
         # TECHNICAL DEBT: Import aqui devido a global state
         from src.timeblock.main import app
+
         # ACT
         result = sample_events.invoke(app, ["list", "--limit", "5"])
         # ASSERT
         assert result.exit_code == 0, "Limite deve funcionar"
-        assert (
-            "Latest 5 Events" in result.output or "5" in result.output
-        ), "Saída deve indicar limite"
+        assert "Latest 5 Events" in result.output or "5" in result.output, (
+            "Saída deve indicar limite"
+        )
 
-    def test_br_event_filter_005_all_events(
-        self, sample_events: CliRunner
-    ) -> None:
+    def test_br_event_filter_005_all_events(self, sample_events: CliRunner) -> None:
         """
         Integration: Flag --all exibe todos os eventos.
 
@@ -185,6 +181,7 @@ class TestBREventListFilters:
         """
         # TECHNICAL DEBT: Import aqui devido a global state
         from src.timeblock.main import app
+
         # ACT
         result = sample_events.invoke(app, ["list", "--all"])
         # ASSERT
@@ -218,9 +215,8 @@ class TestBREventListFilters:
         # ARRANGE - Mock para simular erro
         def mock_fetch_error(*args: object, **kwargs: object) -> NoReturn:
             raise Exception("Database connection failed")
-        monkeypatch.setattr(
-            "src.timeblock.commands.list.fetch_events_in_range", mock_fetch_error
-        )
+
+        monkeypatch.setattr("src.timeblock.commands.list.fetch_events_in_range", mock_fetch_error)
         # ACT
         result = runner.invoke(app, ["list"])
         # ASSERT

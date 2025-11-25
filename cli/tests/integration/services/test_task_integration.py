@@ -38,9 +38,7 @@ class TestBRTaskReordering:
     - BR-TASK-REORDER-006: Atualização para mesmo horário
     """
 
-    def test_br_task_reorder_001_update_without_time_change(
-        self, test_engine: object
-    ) -> None:
+    def test_br_task_reorder_001_update_without_time_change(self, test_engine: object) -> None:
         """
         Integration: Atualização sem mudança de horário não dispara reordering.
 
@@ -67,9 +65,7 @@ class TestBRTaskReordering:
         assert updated.description == "Check tests"
         assert proposal is None or len(proposal) == 0
 
-    def test_br_task_reorder_002_update_without_conflicts(
-        self, test_engine: object
-    ) -> None:
+    def test_br_task_reorder_002_update_without_conflicts(self, test_engine: object) -> None:
         """
         Integration: Mudança de horário sem conflitos não gera proposta.
 
@@ -94,9 +90,7 @@ class TestBRTaskReordering:
         assert updated.scheduled_datetime == new_time
         assert proposal is None or len(proposal) == 0
 
-    def test_br_task_reorder_003_update_with_task_conflict(
-        self, test_engine: object
-    ) -> None:
+    def test_br_task_reorder_003_update_with_task_conflict(self, test_engine: object) -> None:
         """
         Integration: Mudança causando conflito com outra task gera proposta.
 
@@ -119,18 +113,14 @@ class TestBRTaskReordering:
         assert task1.id is not None
         # ACT
         new_time = now + timedelta(minutes=30)
-        updated, conflicts = TaskService.update_task(
-            task1.id, scheduled_datetime=new_time
-        )
+        updated, conflicts = TaskService.update_task(task1.id, scheduled_datetime=new_time)
         # ASSERT
         assert updated is not None
         assert updated.scheduled_datetime == new_time
         assert conflicts is not None
         assert len(conflicts) > 0, "Deve detectar conflito"
 
-    def test_br_task_reorder_004_update_conflicts_with_habit(
-        self, test_engine: object
-    ) -> None:
+    def test_br_task_reorder_004_update_conflicts_with_habit(self, test_engine: object) -> None:
         """
         Integration: Task conflitando com HabitInstance gera proposta.
 
@@ -175,9 +165,7 @@ class TestBRTaskReordering:
         assert conflicts is not None
         assert len(conflicts) > 0, "Deve detectar conflito com habit"
 
-    def test_br_task_reorder_005_update_nonexistent(
-        self, test_engine: object
-    ) -> None:
+    def test_br_task_reorder_005_update_nonexistent(self, test_engine: object) -> None:
         """
         Integration: Atualização de task inexistente retorna (None, None).
 
@@ -195,9 +183,7 @@ class TestBRTaskReordering:
         assert updated is None
         assert proposal is None
 
-    def test_br_task_reorder_006_update_same_time(
-        self, test_engine: object
-    ) -> None:
+    def test_br_task_reorder_006_update_same_time(self, test_engine: object) -> None:
         """
         Integration: Atualização para mesmo horário não dispara reordering.
 

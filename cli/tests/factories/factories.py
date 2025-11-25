@@ -7,25 +7,25 @@ com valores padrão sensatos, permitindo overrides quando necessário.
 Uso:
     # Usar valores padrão
     habit = HabitFactory.create()
-    
+
     # Override valores específicos
     habit = HabitFactory.create(title="Meditação", scheduled_start=time(6, 0))
-    
+
 Referências:
     - Pattern: Factory Method (GoF Design Patterns)
     - ADR-019: Test Naming Convention
 """
 
-from datetime import date, time, datetime
+from datetime import date, datetime, time
 from typing import Any
 
 from src.timeblock.models import (
     Habit,
     HabitInstance,
-    Task,
+    Recurrence,
     Routine,
     Tag,
-    Recurrence,
+    Task,
 )
 
 

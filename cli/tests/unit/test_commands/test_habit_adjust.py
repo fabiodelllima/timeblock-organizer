@@ -1,4 +1,5 @@
 """Testes para comando habit adjust."""
+
 from datetime import date, time
 
 import pytest
@@ -23,8 +24,12 @@ def mock_engine(monkeypatch, test_engine):
     def mock_get_engine():
         yield test_engine
 
-    monkeypatch.setattr("src.timeblock.services.habit_instance_service.get_engine_context", mock_get_engine)
-    monkeypatch.setattr("src.timeblock.services.event_reordering_service.get_engine_context", mock_get_engine)
+    monkeypatch.setattr(
+        "src.timeblock.services.habit_instance_service.get_engine_context", mock_get_engine
+    )
+    monkeypatch.setattr(
+        "src.timeblock.services.event_reordering_service.get_engine_context", mock_get_engine
+    )
 
 
 @pytest.fixture
@@ -40,7 +45,7 @@ def sample_instance(test_engine):
             title="Morning Run",
             scheduled_start=time(6, 0),
             scheduled_end=time(7, 0),
-            recurrence="EVERYDAY"
+            recurrence="EVERYDAY",
         )
         session.add(habit)
         session.commit()
@@ -60,9 +65,7 @@ def sample_instance(test_engine):
 
 def test_adjust_returns_tuple(sample_instance):
     """Adjust retorna tupla."""
-    result = HabitInstanceService.adjust_instance_time(
-        sample_instance.id, time(8, 0), time(9, 0)
-    )
+    result = HabitInstanceService.adjust_instance_time(sample_instance.id, time(8, 0), time(9, 0))
     assert isinstance(result, tuple)
     assert len(result) == 2
 

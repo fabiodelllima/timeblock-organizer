@@ -43,7 +43,7 @@ def routine_id(runner: CliRunner, isolated_db: None) -> str:
     result = runner.invoke(app, ["routine", "create", "Test Routine"], input="y\n")
     # Extrair ID da saída (remover códigos ANSI)
     id_lines = [line for line in result.stdout.split("\n") if "ID:" in line]
-    clean = re.sub(r'\x1b\[[0-9;]*m', '', id_lines[0])
+    clean = re.sub(r"\x1b\[[0-9;]*m", "", id_lines[0])
     return clean.split(":")[1].strip()
 
 
@@ -76,14 +76,23 @@ class TestBRHabitCreation:
             - BR-HABIT-CREATE-001: Criação com recorrência específica
         """
         # ACT
-        result = runner.invoke(app, [
-            "habit", "create",
-            "--routine", routine_id,
-            "-t", "Monday Run",
-            "-r", "MONDAY",
-            "-s", "06:00",
-            "-e", "07:00"
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "habit",
+                "create",
+                "--routine",
+                routine_id,
+                "-t",
+                "Monday Run",
+                "-r",
+                "MONDAY",
+                "-s",
+                "06:00",
+                "-e",
+                "07:00",
+            ],
+        )
         # ASSERT
         assert result.exit_code == 0, "Criação de hábito MONDAY deve ter sucesso"
 
@@ -102,14 +111,23 @@ class TestBRHabitCreation:
             - BR-HABIT-CREATE-002: Criação com recorrência múltipla
         """
         # ACT
-        result = runner.invoke(app, [
-            "habit", "create",
-            "--routine", routine_id,
-            "-t", "Meditation",
-            "-r", "WEEKDAYS",
-            "-s", "05:00",
-            "-e", "05:30"
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "habit",
+                "create",
+                "--routine",
+                routine_id,
+                "-t",
+                "Meditation",
+                "-r",
+                "WEEKDAYS",
+                "-s",
+                "05:00",
+                "-e",
+                "05:30",
+            ],
+        )
         # ASSERT
         assert result.exit_code == 0, "Criação de hábito WEEKDAYS deve ter sucesso"
 
@@ -128,15 +146,25 @@ class TestBRHabitCreation:
             - BR-HABIT-CREATE-003: Criação com cor personalizada
         """
         # ACT
-        result = runner.invoke(app, [
-            "habit", "create",
-            "--routine", routine_id,
-            "-t", "Gym",
-            "-r", "FRIDAY",
-            "-s", "18:00",
-            "-e", "19:30",
-            "-c", "#FF5733"
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "habit",
+                "create",
+                "--routine",
+                routine_id,
+                "-t",
+                "Gym",
+                "-r",
+                "FRIDAY",
+                "-s",
+                "18:00",
+                "-e",
+                "19:30",
+                "-c",
+                "#FF5733",
+            ],
+        )
         # ASSERT
         assert result.exit_code == 0, "Criação com cor deve ter sucesso"
 
@@ -155,14 +183,23 @@ class TestBRHabitCreation:
             - BR-HABIT-CREATE-004: Validação de rotina existente
         """
         # ACT
-        result = runner.invoke(app, [
-            "habit", "create",
-            "--routine", "999",
-            "-t", "Test",
-            "-r", "MONDAY",
-            "-s", "10:00",
-            "-e", "11:00"
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "habit",
+                "create",
+                "--routine",
+                "999",
+                "-t",
+                "Test",
+                "-r",
+                "MONDAY",
+                "-s",
+                "10:00",
+                "-e",
+                "11:00",
+            ],
+        )
         # ASSERT
         assert result.exit_code != 0, "Rotina inexistente deve causar erro"
 
@@ -213,16 +250,40 @@ class TestBRHabitListing:
             - BR-HABIT-LIST-002: Listagem com múltiplos hábitos
         """
         # ARRANGE
-        runner.invoke(app, [
-            "habit", "create",
-            "--routine", routine_id,
-            "-t", "Habit 1", "-r", "MONDAY", "-s", "06:00", "-e", "07:00"
-        ])
-        runner.invoke(app, [
-            "habit", "create",
-            "--routine", routine_id,
-            "-t", "Habit 2", "-r", "FRIDAY", "-s", "18:00", "-e", "19:00"
-        ])
+        runner.invoke(
+            app,
+            [
+                "habit",
+                "create",
+                "--routine",
+                routine_id,
+                "-t",
+                "Habit 1",
+                "-r",
+                "MONDAY",
+                "-s",
+                "06:00",
+                "-e",
+                "07:00",
+            ],
+        )
+        runner.invoke(
+            app,
+            [
+                "habit",
+                "create",
+                "--routine",
+                routine_id,
+                "-t",
+                "Habit 2",
+                "-r",
+                "FRIDAY",
+                "-s",
+                "18:00",
+                "-e",
+                "19:00",
+            ],
+        )
         # ACT
         result = runner.invoke(app, ["habit", "list", "--routine", routine_id])
         # ASSERT
@@ -258,14 +319,26 @@ class TestBRHabitDeletion:
             - BR-HABIT-DELETE-001: Deleção forçada sem confirmação
         """
         # ARRANGE - Criar hábito
-        create_result = runner.invoke(app, [
-            "habit", "create",
-            "--routine", routine_id,
-            "-t", "Delete Me", "-r", "TUESDAY", "-s", "06:00", "-e", "07:00"
-        ])
+        create_result = runner.invoke(
+            app,
+            [
+                "habit",
+                "create",
+                "--routine",
+                routine_id,
+                "-t",
+                "Delete Me",
+                "-r",
+                "TUESDAY",
+                "-s",
+                "06:00",
+                "-e",
+                "07:00",
+            ],
+        )
         # Extrair habit_id
         id_lines = [line for line in create_result.stdout.split("\n") if "ID:" in line]
-        clean = re.sub(r'\x1b\[[0-9;]*m', '', id_lines[0])
+        clean = re.sub(r"\x1b\[[0-9;]*m", "", id_lines[0])
         habit_id = clean.split(":")[1].strip()
         # ACT
         result = runner.invoke(app, ["habit", "delete", habit_id, "--force"])
@@ -287,14 +360,26 @@ class TestBRHabitDeletion:
             - BR-HABIT-DELETE-002: Cancelamento de deleção
         """
         # ARRANGE - Criar hábito
-        create_result = runner.invoke(app, [
-            "habit", "create",
-            "--routine", routine_id,
-            "-t", "Keep Me", "-r", "WEDNESDAY", "-s", "06:00", "-e", "07:00"
-        ])
+        create_result = runner.invoke(
+            app,
+            [
+                "habit",
+                "create",
+                "--routine",
+                routine_id,
+                "-t",
+                "Keep Me",
+                "-r",
+                "WEDNESDAY",
+                "-s",
+                "06:00",
+                "-e",
+                "07:00",
+            ],
+        )
         # Extrair habit_id
         id_lines = [line for line in create_result.stdout.split("\n") if "ID:" in line]
-        clean = re.sub(r'\x1b\[[0-9;]*m', '', id_lines[0])
+        clean = re.sub(r"\x1b\[[0-9;]*m", "", id_lines[0])
         habit_id = clean.split(":")[1].strip()
         # ACT
         result = runner.invoke(app, ["habit", "delete", habit_id], input="n\n")

@@ -106,7 +106,7 @@ def main():
             found = True
             print(f"\n{'=' * 60}")
             migrate_database(db_path)
-            print('=' * 60)
+            print("=" * 60)
 
     if not found:
         print("⚠ Nenhum banco de dados encontrado.")

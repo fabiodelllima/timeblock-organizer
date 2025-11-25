@@ -4,13 +4,15 @@ Refatoração Status + Substatus do modelo HabitInstance.
 Valida transições de estado, cálculo de substatus e validações.
 """
 
+from datetime import date, datetime, time, timedelta
+
 import pytest
-from datetime import date, time, datetime, timedelta
+
 from src.timeblock.models.enums import (
-    Status,
     DoneSubstatus,
     NotDoneSubstatus,
     SkipReason,
+    Status,
 )
 from src.timeblock.models.habit_instance import HabitInstance
 
@@ -226,9 +228,7 @@ class TestBRStatus001ValidationSubstatusMutuallyExclusive:
         )
 
         # ENTÃO: validação deve falhar
-        with pytest.raises(
-            ValueError, match="not_done_substatus deve ser None quando status=DONE"
-        ):
+        with pytest.raises(ValueError, match="not_done_substatus deve ser None quando status=DONE"):
             instance.validate_status_consistency()
 
 
@@ -321,4 +321,4 @@ class TestBRStatus001PropertyIsOverdue:
         )
 
         # ENTÃO
-        assert instance.is_overdue == False
+        assert not instance.is_overdue

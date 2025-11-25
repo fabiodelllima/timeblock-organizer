@@ -1,4 +1,5 @@
 """Tests for EventReorderingService."""
+
 from datetime import datetime, time
 from unittest.mock import patch
 
@@ -27,7 +28,7 @@ def session(test_engine):
 class TestDetectConflicts:
     """Tests for detect_conflicts."""
 
-    @patch('src.timeblock.services.event_reordering_service.get_engine_context')
+    @patch("src.timeblock.services.event_reordering_service.get_engine_context")
     def test_no_conflicts(self, mock_context, test_engine, session):
         """No conflicts when events don't overlap."""
         mock_context.return_value.__enter__.return_value = test_engine
@@ -40,14 +41,14 @@ class TestDetectConflicts:
         conflicts = EventReorderingService.detect_conflicts(task.id, "task")
         assert len(conflicts) == 0
 
-    @patch('src.timeblock.services.event_reordering_service.get_engine_context')
+    @patch("src.timeblock.services.event_reordering_service.get_engine_context")
     def test_event_not_found(self, mock_context, test_engine):
         """Returns empty list when event doesn't exist."""
         mock_context.return_value.__enter__.return_value = test_engine
         conflicts = EventReorderingService.detect_conflicts(9999, "task")
         assert len(conflicts) == 0
 
-    @patch('src.timeblock.services.event_reordering_service.get_engine_context')
+    @patch("src.timeblock.services.event_reordering_service.get_engine_context")
     def test_task_overlaps_with_task(self, mock_context, test_engine, session):
         """Detects conflict between two overlapping tasks."""
         mock_context.return_value.__enter__.return_value = test_engine

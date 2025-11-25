@@ -1,4 +1,5 @@
 """Fixtures específicas para testes de utils."""
+
 from datetime import UTC, datetime, timedelta
 
 import pytest

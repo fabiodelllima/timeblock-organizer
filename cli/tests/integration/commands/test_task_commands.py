@@ -42,9 +42,7 @@ class TestBRTaskCreation:
     - BR-TASK-CMD-CREATE-004: Rejeita datetime inválido
     """
 
-    def test_br_task_cmd_create_001_basic(
-        self, runner: CliRunner, isolated_db: None
-    ) -> None:
+    def test_br_task_cmd_create_001_basic(self, runner: CliRunner, isolated_db: None) -> None:
         """
         Integration: Sistema cria task básica com sucesso.
 
@@ -60,9 +58,7 @@ class TestBRTaskCreation:
         # ARRANGE
         dt = (datetime.now() + timedelta(hours=2)).strftime("%Y-%m-%d %H:%M")
         # ACT
-        result = runner.invoke(
-            app, ["task", "create", "--title", "Test Task", "--datetime", dt]
-        )
+        result = runner.invoke(app, ["task", "create", "--title", "Test Task", "--datetime", dt])
         # ASSERT
         assert result.exit_code == 0, "Criação deve ter sucesso"
         assert "Tarefa criada com sucesso" in result.stdout
@@ -101,9 +97,7 @@ class TestBRTaskCreation:
         assert result.exit_code == 0
         assert "Test description" in result.stdout
 
-    def test_br_task_cmd_create_003_with_color(
-        self, runner: CliRunner, isolated_db: None
-    ) -> None:
+    def test_br_task_cmd_create_003_with_color(self, runner: CliRunner, isolated_db: None) -> None:
         """
         Integration: Sistema cria task com cor personalizada.
 
@@ -138,9 +132,7 @@ class TestBRTaskCreation:
             - BR-TASK-CMD-CREATE-004: Rejeita datetime inválido
         """
         # ACT
-        result = runner.invoke(
-            app, ["task", "create", "-t", "Bad Date", "-D", "invalid-date"]
-        )
+        result = runner.invoke(app, ["task", "create", "-t", "Bad Date", "-D", "invalid-date"])
         # ASSERT
         assert result.exit_code == 1, "Datetime inválido deve causar erro"
 
@@ -159,9 +151,7 @@ class TestBRTaskListing:
     - BR-TASK-CMD-LIST-004: Range de datas
     """
 
-    def test_br_task_cmd_list_001_empty(
-        self, runner: CliRunner, isolated_db: None
-    ) -> None:
+    def test_br_task_cmd_list_001_empty(self, runner: CliRunner, isolated_db: None) -> None:
         """
         Integration: Sistema lista vazio graciosamente.
 
@@ -178,9 +168,7 @@ class TestBRTaskListing:
         assert result.exit_code == 0
         assert "Nenhuma tarefa encontrada" in result.stdout
 
-    def test_br_task_cmd_list_002_with_tasks(
-        self, runner: CliRunner, isolated_db: None
-    ) -> None:
+    def test_br_task_cmd_list_002_with_tasks(self, runner: CliRunner, isolated_db: None) -> None:
         """
         Integration: Sistema lista múltiplas tasks.
 
@@ -203,9 +191,7 @@ class TestBRTaskListing:
         assert "Task 1" in result.stdout
         assert "Task 2" in result.stdout
 
-    def test_br_task_cmd_list_003_pending_only(
-        self, runner: CliRunner, isolated_db: None
-    ) -> None:
+    def test_br_task_cmd_list_003_pending_only(self, runner: CliRunner, isolated_db: None) -> None:
         """
         Integration: Filtro --pending lista apenas pendentes.
 
@@ -226,9 +212,7 @@ class TestBRTaskListing:
         assert "Pendentes" in result.stdout
         assert "Pending Task" in result.stdout
 
-    def test_br_task_cmd_list_004_date_range(
-        self, runner: CliRunner, isolated_db: None
-    ) -> None:
+    def test_br_task_cmd_list_004_date_range(self, runner: CliRunner, isolated_db: None) -> None:
         """
         Integration: Filtro --from/--to limita por datas.
 
@@ -264,9 +248,7 @@ class TestBRTaskStart:
     - BR-TASK-CMD-START-003: Rejeita ID inválido
     """
 
-    def test_br_task_cmd_start_001_task(
-        self, runner: CliRunner, isolated_db: None
-    ) -> None:
+    def test_br_task_cmd_start_001_task(self, runner: CliRunner, isolated_db: None) -> None:
         """
         Integration: Sistema inicia task pendente.
 
@@ -279,12 +261,8 @@ class TestBRTaskStart:
         """
         # ARRANGE
         dt = (datetime.now() + timedelta(hours=1)).strftime("%Y-%m-%d %H:%M")
-        create_result = runner.invoke(
-            app, ["task", "create", "-t", "Start Test", "-D", dt]
-        )
-        id_line = [line for line in create_result.stdout.split("\n") if "ID:" in line][
-            0
-        ]
+        create_result = runner.invoke(app, ["task", "create", "-t", "Start Test", "-D", dt])
+        id_line = [line for line in create_result.stdout.split("\n") if "ID:" in line][0]
         task_id = id_line.split(":")[1].strip()
         # ACT
         result = runner.invoke(app, ["task", "start", task_id])
@@ -307,12 +285,8 @@ class TestBRTaskStart:
         """
         # ARRANGE
         dt = (datetime.now() + timedelta(hours=1)).strftime("%Y-%m-%d %H:%M")
-        create_result = runner.invoke(
-            app, ["task", "create", "-t", "Already Started", "-D", dt]
-        )
-        id_line = [line for line in create_result.stdout.split("\n") if "ID:" in line][
-            0
-        ]
+        create_result = runner.invoke(app, ["task", "create", "-t", "Already Started", "-D", dt])
+        id_line = [line for line in create_result.stdout.split("\n") if "ID:" in line][0]
         task_id = id_line.split(":")[1].strip()
         runner.invoke(app, ["task", "start", task_id])
         # ACT
@@ -321,9 +295,7 @@ class TestBRTaskStart:
         assert result.exit_code == 0
         assert "já foi iniciada" in result.stdout
 
-    def test_br_task_cmd_start_003_invalid_id(
-        self, runner: CliRunner, isolated_db: None
-    ) -> None:
+    def test_br_task_cmd_start_003_invalid_id(self, runner: CliRunner, isolated_db: None) -> None:
         """
         Integration: Sistema rejeita ID inválido.
 
@@ -353,9 +325,7 @@ class TestBRTaskCheck:
     - BR-TASK-CMD-CHECK-003: Rejeita ID inválido
     """
 
-    def test_br_task_cmd_check_001_task(
-        self, runner: CliRunner, isolated_db: None
-    ) -> None:
+    def test_br_task_cmd_check_001_task(self, runner: CliRunner, isolated_db: None) -> None:
         """
         Integration: Sistema marca task como concluída.
 
@@ -368,12 +338,8 @@ class TestBRTaskCheck:
         """
         # ARRANGE
         dt = (datetime.now() + timedelta(hours=1)).strftime("%Y-%m-%d %H:%M")
-        create_result = runner.invoke(
-            app, ["task", "create", "-t", "Complete Me", "-D", dt]
-        )
-        id_line = [line for line in create_result.stdout.split("\n") if "ID:" in line][
-            0
-        ]
+        create_result = runner.invoke(app, ["task", "create", "-t", "Complete Me", "-D", dt])
+        id_line = [line for line in create_result.stdout.split("\n") if "ID:" in line][0]
         task_id = id_line.split(":")[1].strip()
         # ACT
         result = runner.invoke(app, ["task", "check", task_id])
@@ -381,9 +347,7 @@ class TestBRTaskCheck:
         assert result.exit_code == 0
         assert "Tarefa concluída" in result.stdout
 
-    def test_br_task_cmd_check_002_shows_timing(
-        self, runner: CliRunner, isolated_db: None
-    ) -> None:
+    def test_br_task_cmd_check_002_shows_timing(self, runner: CliRunner, isolated_db: None) -> None:
         """
         Integration: Sistema calcula e exibe timing.
 
@@ -396,12 +360,8 @@ class TestBRTaskCheck:
         """
         # ARRANGE
         dt = (datetime.now() - timedelta(minutes=30)).strftime("%Y-%m-%d %H:%M")
-        create_result = runner.invoke(
-            app, ["task", "create", "-t", "Late Task", "-D", dt]
-        )
-        id_line = [line for line in create_result.stdout.split("\n") if "ID:" in line][
-            0
-        ]
+        create_result = runner.invoke(app, ["task", "create", "-t", "Late Task", "-D", dt])
+        id_line = [line for line in create_result.stdout.split("\n") if "ID:" in line][0]
         task_id = id_line.split(":")[1].strip()
         # ACT
         result = runner.invoke(app, ["task", "check", task_id])
@@ -413,9 +373,7 @@ class TestBRTaskCheck:
             or "No horário" in result.stdout
         )
 
-    def test_br_task_cmd_check_003_invalid_id(
-        self, runner: CliRunner, isolated_db: None
-    ) -> None:
+    def test_br_task_cmd_check_003_invalid_id(self, runner: CliRunner, isolated_db: None) -> None:
         """
         Integration: Sistema rejeita ID inválido.
 
@@ -446,9 +404,7 @@ class TestBRTaskDeletion:
     - BR-TASK-CMD-DELETE-004: Rejeita ID inválido
     """
 
-    def test_br_task_cmd_delete_001_with_force(
-        self, runner: CliRunner, isolated_db: None
-    ) -> None:
+    def test_br_task_cmd_delete_001_with_force(self, runner: CliRunner, isolated_db: None) -> None:
         """
         Integration: Sistema deleta task com --force.
 
@@ -461,12 +417,8 @@ class TestBRTaskDeletion:
         """
         # ARRANGE
         dt = (datetime.now() + timedelta(hours=1)).strftime("%Y-%m-%d %H:%M")
-        create_result = runner.invoke(
-            app, ["task", "create", "-t", "Delete Me", "-D", dt]
-        )
-        id_line = [line for line in create_result.stdout.split("\n") if "ID:" in line][
-            0
-        ]
+        create_result = runner.invoke(app, ["task", "create", "-t", "Delete Me", "-D", dt])
+        id_line = [line for line in create_result.stdout.split("\n") if "ID:" in line][0]
         task_id = id_line.split(":")[1].strip()
         # ACT
         result = runner.invoke(app, ["task", "delete", task_id, "--force"])
@@ -489,12 +441,8 @@ class TestBRTaskDeletion:
         """
         # ARRANGE
         dt = (datetime.now() + timedelta(hours=1)).strftime("%Y-%m-%d %H:%M")
-        create_result = runner.invoke(
-            app, ["task", "create", "-t", "Delete Confirm", "-D", dt]
-        )
-        id_line = [line for line in create_result.stdout.split("\n") if "ID:" in line][
-            0
-        ]
+        create_result = runner.invoke(app, ["task", "create", "-t", "Delete Confirm", "-D", dt])
+        id_line = [line for line in create_result.stdout.split("\n") if "ID:" in line][0]
         task_id = id_line.split(":")[1].strip()
         # ACT
         result = runner.invoke(app, ["task", "delete", task_id], input="y\n")
@@ -502,9 +450,7 @@ class TestBRTaskDeletion:
         assert result.exit_code == 0
         assert "Tarefa deletada" in result.stdout
 
-    def test_br_task_cmd_delete_003_cancel(
-        self, runner: CliRunner, isolated_db: None
-    ) -> None:
+    def test_br_task_cmd_delete_003_cancel(self, runner: CliRunner, isolated_db: None) -> None:
         """
         Integration: Sistema preserva task quando usuário cancela.
 
@@ -517,12 +463,8 @@ class TestBRTaskDeletion:
         """
         # ARRANGE
         dt = (datetime.now() + timedelta(hours=1)).strftime("%Y-%m-%d %H:%M")
-        create_result = runner.invoke(
-            app, ["task", "create", "-t", "Keep Me", "-D", dt]
-        )
-        id_line = [line for line in create_result.stdout.split("\n") if "ID:" in line][
-            0
-        ]
+        create_result = runner.invoke(app, ["task", "create", "-t", "Keep Me", "-D", dt])
+        id_line = [line for line in create_result.stdout.split("\n") if "ID:" in line][0]
         task_id = id_line.split(":")[1].strip()
         # ACT
         result = runner.invoke(app, ["task", "delete", task_id], input="n\n")
@@ -530,9 +472,7 @@ class TestBRTaskDeletion:
         assert result.exit_code == 0
         assert "Cancelado" in result.stdout
 
-    def test_br_task_cmd_delete_004_invalid_id(
-        self, runner: CliRunner, isolated_db: None
-    ) -> None:
+    def test_br_task_cmd_delete_004_invalid_id(self, runner: CliRunner, isolated_db: None) -> None:
         """
         Integration: Sistema rejeita ID inválido.
 

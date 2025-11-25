@@ -1,4 +1,5 @@
 """Testes para o modelo HabitInstance."""
+
 from datetime import date, time
 
 import pytest

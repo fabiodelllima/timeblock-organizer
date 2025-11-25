@@ -48,9 +48,7 @@ class TestBRHabitInstanceReordering:
     """
 
     @pytest.mark.skip(reason="TECH DEBT: Falta isolamento de testes")
-    def test_br_habit_reorder_001_adjust_without_time_change(
-        self, test_engine: object
-    ) -> None:
+    def test_br_habit_reorder_001_adjust_without_time_change(self, test_engine: object) -> None:
         """
         Integration: Ajuste sem mudança de horário não dispara reordering.
 
@@ -67,9 +65,7 @@ class TestBRHabitInstanceReordering:
         pass
 
     @pytest.mark.skip(reason="TECH DEBT: Falta isolamento de testes")
-    def test_br_habit_reorder_002_adjust_without_conflicts(
-        self, test_engine: object
-    ) -> None:
+    def test_br_habit_reorder_002_adjust_without_conflicts(self, test_engine: object) -> None:
         """
         Integration: Ajuste de horário sem conflitos não gera conflitos.
 
@@ -85,9 +81,7 @@ class TestBRHabitInstanceReordering:
         """
         pass
 
-    def test_br_habit_reorder_003_adjust_with_task_conflict(
-        self, test_engine: object
-    ) -> None:
+    def test_br_habit_reorder_003_adjust_with_task_conflict(self, test_engine: object) -> None:
         """
         Integration: Ajuste com conflito de task gera lista de conflitos.
 
@@ -134,9 +128,7 @@ class TestBRHabitInstanceReordering:
         assert conflicts is not None, "Deve retornar lista de conflitos"
         assert len(conflicts) > 0, "Lista deve conter conflito com task"
 
-    def test_br_habit_reorder_004_adjust_nonexistent(
-        self, test_engine: object
-    ) -> None:
+    def test_br_habit_reorder_004_adjust_nonexistent(self, test_engine: object) -> None:
         """
         Integration: Ajuste de instância inexistente lança ValueError.
 
@@ -152,9 +144,7 @@ class TestBRHabitInstanceReordering:
         with pytest.raises(ValueError, match="HabitInstance 99999 not found"):
             HabitInstanceService.adjust_instance_time(99999, new_start=time(10, 0))
 
-    def test_br_habit_reorder_005_mark_completed(
-        self, test_engine: object
-    ) -> None:
+    def test_br_habit_reorder_005_mark_completed(self, test_engine: object) -> None:
         """
         Integration: Marcar instância como completa atualiza status.
 

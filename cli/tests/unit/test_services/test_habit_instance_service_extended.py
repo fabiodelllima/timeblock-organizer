@@ -5,6 +5,7 @@ Estes testes aumentam cobertura de 43% para 83%+ testando:
 - Método mark_completed()
 - Método mark_skipped()
 """
+
 from datetime import date, time, timedelta
 
 import pytest
@@ -33,8 +34,7 @@ def mock_engine(monkeypatch, test_engine):
         yield test_engine
 
     monkeypatch.setattr(
-        "src.timeblock.services.habit_instance_service.get_engine_context",
-        mock_get_engine
+        "src.timeblock.services.habit_instance_service.get_engine_context", mock_get_engine
     )
 
 
@@ -52,7 +52,7 @@ def everyday_habit(test_engine):
             title="Exercício Matinal",
             scheduled_start=time(7, 0),
             scheduled_end=time(8, 0),
-            recurrence=Recurrence.EVERYDAY
+            recurrence=Recurrence.EVERYDAY,
         )
         session.add(habit)
         session.commit()
@@ -74,7 +74,7 @@ def weekdays_habit(test_engine):
             title="Revisão do Trabalho",
             scheduled_start=time(9, 0),
             scheduled_end=time(9, 30),
-            recurrence=Recurrence.WEEKDAYS
+            recurrence=Recurrence.WEEKDAYS,
         )
         session.add(habit)
         session.commit()
@@ -99,9 +99,7 @@ class TestGenerateInstances:
         end = start + timedelta(days=6)  # 7 dias total
 
         # Ação: Gera instâncias
-        instances = HabitInstanceService.generate_instances(
-            everyday_habit.id, start, end
-        )
+        instances = HabitInstanceService.generate_instances(everyday_habit.id, start, end)
 
         # Verificação: Deve criar 7 instâncias (uma por dia)
         assert len(instances) == 7
@@ -134,9 +132,7 @@ class TestGenerateInstances:
         sunday = monday + timedelta(days=6)
 
         # Ação: Gera para semana completa
-        instances = HabitInstanceService.generate_instances(
-            weekdays_habit.id, monday, sunday
-        )
+        instances = HabitInstanceService.generate_instances(weekdays_habit.id, monday, sunday)
 
         # Verificação: Apenas 5 instâncias (Seg-Sex)
         assert len(instances) == 5
@@ -157,9 +153,7 @@ class TestGenerateInstances:
         """
         with pytest.raises(ValueError, match="Habit 99999 not found"):
             HabitInstanceService.generate_instances(
-                99999,
-                date.today(),
-                date.today() + timedelta(days=7)
+                99999, date.today(), date.today() + timedelta(days=7)
             )
 
     def test_generate_single_day(self, everyday_habit):
