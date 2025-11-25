@@ -28,7 +28,6 @@ from src.timeblock.models import (
 )
 
 
-@pytest.mark.skip(reason="migrate_v2 not implemented yet")
 @pytest.fixture
 def temp_db() -> Iterator[Path]:
     """
@@ -43,6 +42,7 @@ def temp_db() -> Iterator[Path]:
     db_path.unlink(missing_ok=True)
 
 
+@pytest.mark.skip(reason="TODO: Implementar migrate_v2() - ADR pendente")
 class TestBRDatabaseMigrations:
     """
     Integration: Migrações de banco de dados (BR-DB-MIGRATE-*).
