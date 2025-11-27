@@ -19,15 +19,17 @@ def create_routine(name: str = typer.Argument(..., help="Nome da rotina")):
         with get_engine_context() as engine, Session(engine) as session:
             service = RoutineService(session)
             routine = service.create_routine(name)
+            session.commit()
 
             console.print("\n[green]✓ Rotina criada com sucesso![/green]\n")
             console.print(f"ID: {routine.id}")
             console.print(f"Nome: [bold]{routine.name}[/bold]")
             console.print(f"Status: {'Ativa' if routine.is_active else 'Inativa'}")
 
-            if not routine.is_active:
+            if not routine.is_active and routine.id is not None:
                 if typer.confirm("\nAtivar esta rotina agora?", default=True):
                     service.activate_routine(routine.id)
+                    session.commit()
                     console.print("[green]✓ Rotina ativada[/green]")
 
     except ValueError as e:
@@ -62,12 +64,17 @@ def activate_routine(routine_id: int = typer.Argument(..., help="ID da rotina"))
             service = RoutineService(session)
             routine = service.get_routine(routine_id)
 
+            if routine is None:
+                console.print(f"[red]✗ Erro: Rotina {routine_id} não encontrada[/red]")
+                raise typer.Exit(1)
+
             if routine.is_active:
                 console.print(f"[cyan]i[/cyan] [bold]{routine.name}[/bold] já está ativa")
                 return
 
             current_active = service.get_active_routine()
             service.activate_routine(routine_id)
+            session.commit()
 
             console.print(
                 f"\n[green]✓ Rotina ativada: [bold]{routine.name}[/bold] (ID: {routine.id})[/green]"
@@ -89,11 +96,16 @@ def deactivate_routine(routine_id: int = typer.Argument(..., help="ID da rotina"
             service = RoutineService(session)
             routine = service.get_routine(routine_id)
 
+            if routine is None:
+                console.print(f"[red]✗ Erro: Rotina {routine_id} não encontrada[/red]")
+                raise typer.Exit(1)
+
             if not routine.is_active:
                 console.print(f"[cyan]i[/cyan] [bold]{routine.name}[/bold] já está inativa")
                 return
 
             service.deactivate_routine(routine_id)
+            session.commit()
             console.print(
                 f"[green]✓ Rotina desativada: [bold]{routine.name}[/bold] (ID: {routine.id})[/green]"
             )
@@ -115,6 +127,11 @@ def delete_routine(
             habit_service = HabitService(session)
 
             routine = routine_service.get_routine(routine_id)
+
+            if routine is None:
+                console.print(f"[red]✗ Erro: Rotina {routine_id} não encontrada[/red]")
+                raise typer.Exit(1)
+
             habits = habit_service.list_habits(routine_id)
 
             if habits and not force:
@@ -137,6 +154,7 @@ def delete_routine(
                     return
 
             routine_service.delete_routine(routine_id)
+            session.commit()
 
             console.print(
                 f"\n[green]✓ Rotina deletada: [bold]{routine.name}[/bold] (ID: {routine.id})[/green]"
