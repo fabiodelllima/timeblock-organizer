@@ -28,25 +28,6 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-@pytest.fixture
-def routine_id(runner: CliRunner, isolated_db: None) -> str:
-    """
-    Cria rotina de teste e retorna seu ID.
-
-    Args:
-        runner: CLI runner fixture
-        isolated_db: Banco de dados isolado
-
-    Returns:
-        ID da rotina criada como string.
-    """
-    result = runner.invoke(app, ["routine", "create", "Test Routine"], input="y\n")
-    # Extrair ID da saída (remover códigos ANSI)
-    id_lines = [line for line in result.stdout.split("\n") if "ID:" in line]
-    clean = re.sub(r"\x1b\[[0-9;]*m", "", id_lines[0])
-    return clean.split(":")[1].strip()
-
-
 class TestBRHabitCreation:
     """
     Integration: Criação de hábitos via CLI (BR-HABIT-CREATE-*).
@@ -62,18 +43,19 @@ class TestBRHabitCreation:
     """
 
     def test_br_habit_create_001_monday_recurrence(
-        self, runner: CliRunner, isolated_db: None, routine_id: str
+        self, runner: CliRunner, isolated_db: None, active_routine_id: str
     ) -> None:
         """
         Integration: Sistema cria hábito com recorrência específica (MONDAY).
 
-        DADO: Rotina válida existente
+        DADO: Rotina válida existente e ATIVA (BR-ROUTINE-001, BR-ROUTINE-004)
         QUANDO: Usuário cria hábito com recorrência MONDAY
         ENTÃO: Sistema cria hábito com sucesso
         E: Hábito é associado à rotina correta
 
         Referências:
             - BR-HABIT-CREATE-001: Criação com recorrência específica
+            - BR-ROUTINE-001: Rotina ativa como contexto
         """
         # ACT
         result = runner.invoke(
@@ -82,7 +64,7 @@ class TestBRHabitCreation:
                 "habit",
                 "create",
                 "--routine",
-                routine_id,
+                active_routine_id,
                 "-t",
                 "Monday Run",
                 "-r",
@@ -94,21 +76,22 @@ class TestBRHabitCreation:
             ],
         )
         # ASSERT
-        assert result.exit_code == 0, "Criação de hábito MONDAY deve ter sucesso"
+        assert result.exit_code == 0, f"Criação de hábito MONDAY deve ter sucesso. Output: {result.output}"
 
     def test_br_habit_create_002_weekdays_recurrence(
-        self, runner: CliRunner, isolated_db: None, routine_id: str
+        self, runner: CliRunner, isolated_db: None, active_routine_id: str
     ) -> None:
         """
         Integration: Sistema cria hábito com recorrência múltipla (WEEKDAYS).
 
-        DADO: Rotina válida existente
+        DADO: Rotina válida existente e ATIVA (BR-ROUTINE-001, BR-ROUTINE-004)
         QUANDO: Usuário cria hábito com recorrência WEEKDAYS
         ENTÃO: Sistema cria hábito com sucesso
         E: Hábito será gerado em dias úteis (Seg-Sex)
 
         Referências:
             - BR-HABIT-CREATE-002: Criação com recorrência múltipla
+            - BR-ROUTINE-001: Rotina ativa como contexto
         """
         # ACT
         result = runner.invoke(
@@ -117,7 +100,7 @@ class TestBRHabitCreation:
                 "habit",
                 "create",
                 "--routine",
-                routine_id,
+                active_routine_id,
                 "-t",
                 "Meditation",
                 "-r",
@@ -129,21 +112,22 @@ class TestBRHabitCreation:
             ],
         )
         # ASSERT
-        assert result.exit_code == 0, "Criação de hábito WEEKDAYS deve ter sucesso"
+        assert result.exit_code == 0, f"Criação de hábito WEEKDAYS deve ter sucesso. Output: {result.output}"
 
     def test_br_habit_create_003_with_color(
-        self, runner: CliRunner, isolated_db: None, routine_id: str
+        self, runner: CliRunner, isolated_db: None, active_routine_id: str
     ) -> None:
         """
         Integration: Sistema cria hábito com cor personalizada.
 
-        DADO: Rotina válida e cor hexadecimal válida
+        DADO: Rotina válida ATIVA e cor hexadecimal válida
         QUANDO: Usuário especifica cor com flag -c
         ENTÃO: Sistema cria hábito com sucesso
         E: Cor é persistida corretamente
 
         Referências:
             - BR-HABIT-CREATE-003: Criação com cor personalizada
+            - BR-ROUTINE-001: Rotina ativa como contexto
         """
         # ACT
         result = runner.invoke(
@@ -152,7 +136,7 @@ class TestBRHabitCreation:
                 "habit",
                 "create",
                 "--routine",
-                routine_id,
+                active_routine_id,
                 "-t",
                 "Gym",
                 "-r",
@@ -166,7 +150,7 @@ class TestBRHabitCreation:
             ],
         )
         # ASSERT
-        assert result.exit_code == 0, "Criação com cor deve ter sucesso"
+        assert result.exit_code == 0, f"Criação com cor deve ter sucesso. Output: {result.output}"
 
     def test_br_habit_create_004_invalid_routine(
         self, runner: CliRunner, isolated_db: None
@@ -217,37 +201,39 @@ class TestBRHabitListing:
     """
 
     def test_br_habit_list_001_empty_routine(
-        self, runner: CliRunner, isolated_db: None, routine_id: str
+        self, runner: CliRunner, isolated_db: None, active_routine_id: str
     ) -> None:
         """
         Integration: Sistema lista rotina vazia sem erros.
 
-        DADO: Rotina existente sem hábitos
+        DADO: Rotina existente ATIVA sem hábitos (BR-ROUTINE-004)
         QUANDO: Usuário lista hábitos da rotina
         ENTÃO: Sistema retorna sucesso (exit_code 0)
         E: Nenhum hábito é exibido
 
         Referências:
             - BR-HABIT-LIST-001: Listagem de rotina vazia
+            - BR-ROUTINE-004: Rotina ativa como contexto
         """
         # ACT
-        result = runner.invoke(app, ["habit", "list", "--routine", routine_id])
+        result = runner.invoke(app, ["habit", "list", "--routine", active_routine_id])
         # ASSERT
-        assert result.exit_code == 0, "Listagem de rotina vazia deve ter sucesso"
+        assert result.exit_code == 0, f"Listagem de rotina vazia deve ter sucesso. Output: {result.output}"
 
     def test_br_habit_list_002_with_habits(
-        self, runner: CliRunner, isolated_db: None, routine_id: str
+        self, runner: CliRunner, isolated_db: None, active_routine_id: str
     ) -> None:
         """
         Integration: Sistema lista múltiplos hábitos corretamente.
 
-        DADO: Rotina com 2 hábitos criados
+        DADO: Rotina ATIVA com 2 hábitos criados (BR-ROUTINE-004)
         QUANDO: Usuário lista hábitos da rotina
         ENTÃO: Sistema exibe ambos os hábitos
         E: Títulos dos hábitos aparecem na saída
 
         Referências:
             - BR-HABIT-LIST-002: Listagem com múltiplos hábitos
+            - BR-ROUTINE-004: Rotina ativa como contexto
         """
         # ARRANGE
         runner.invoke(
@@ -256,7 +242,7 @@ class TestBRHabitListing:
                 "habit",
                 "create",
                 "--routine",
-                routine_id,
+                active_routine_id,
                 "-t",
                 "Habit 1",
                 "-r",
@@ -273,7 +259,7 @@ class TestBRHabitListing:
                 "habit",
                 "create",
                 "--routine",
-                routine_id,
+                active_routine_id,
                 "-t",
                 "Habit 2",
                 "-r",
@@ -285,9 +271,9 @@ class TestBRHabitListing:
             ],
         )
         # ACT
-        result = runner.invoke(app, ["habit", "list", "--routine", routine_id])
+        result = runner.invoke(app, ["habit", "list", "--routine", active_routine_id])
         # ASSERT
-        assert result.exit_code == 0, "Listagem deve ter sucesso"
+        assert result.exit_code == 0, f"Listagem deve ter sucesso. Output: {result.output}"
         assert "Habit 1" in result.stdout, "Habit 1 deve aparecer na listagem"
         assert "Habit 2" in result.stdout, "Habit 2 deve aparecer na listagem"
 
@@ -305,18 +291,19 @@ class TestBRHabitDeletion:
     """
 
     def test_br_habit_delete_001_with_force(
-        self, runner: CliRunner, isolated_db: None, routine_id: str
+        self, runner: CliRunner, isolated_db: None, active_routine_id: str
     ) -> None:
         """
         Integration: Sistema deleta hábito com flag --force (sem confirmação).
 
-        DADO: Hábito existente
+        DADO: Hábito existente em rotina ATIVA (BR-ROUTINE-004)
         QUANDO: Usuário executa delete com --force
         ENTÃO: Sistema deleta sem pedir confirmação
         E: Comando retorna sucesso
 
         Referências:
             - BR-HABIT-DELETE-001: Deleção forçada sem confirmação
+            - BR-ROUTINE-004: Rotina ativa como contexto
         """
         # ARRANGE - Criar hábito
         create_result = runner.invoke(
@@ -325,7 +312,7 @@ class TestBRHabitDeletion:
                 "habit",
                 "create",
                 "--routine",
-                routine_id,
+                active_routine_id,
                 "-t",
                 "Delete Me",
                 "-r",
@@ -336,28 +323,33 @@ class TestBRHabitDeletion:
                 "07:00",
             ],
         )
+        assert create_result.exit_code == 0, f"Criação do hábito falhou: {create_result.output}"
+
         # Extrair habit_id
         id_lines = [line for line in create_result.stdout.split("\n") if "ID:" in line]
+        assert id_lines, f"ID não encontrado na saída: {create_result.output}"
         clean = re.sub(r"\x1b\[[0-9;]*m", "", id_lines[0])
         habit_id = clean.split(":")[1].strip()
+
         # ACT
         result = runner.invoke(app, ["habit", "delete", habit_id, "--force"])
         # ASSERT
-        assert result.exit_code == 0, "Deleção com --force deve ter sucesso"
+        assert result.exit_code == 0, f"Deleção com --force deve ter sucesso. Output: {result.output}"
 
     def test_br_habit_delete_002_cancel(
-        self, runner: CliRunner, isolated_db: None, routine_id: str
+        self, runner: CliRunner, isolated_db: None, active_routine_id: str
     ) -> None:
         """
         Integration: Sistema preserva hábito quando usuário cancela deleção.
 
-        DADO: Hábito existente
+        DADO: Hábito existente em rotina ATIVA (BR-ROUTINE-004)
         QUANDO: Usuário executa delete e responde 'n' (não)
         ENTÃO: Sistema cancela operação
         E: Hábito não é deletado
 
         Referências:
             - BR-HABIT-DELETE-002: Cancelamento de deleção
+            - BR-ROUTINE-004: Rotina ativa como contexto
         """
         # ARRANGE - Criar hábito
         create_result = runner.invoke(
@@ -366,7 +358,7 @@ class TestBRHabitDeletion:
                 "habit",
                 "create",
                 "--routine",
-                routine_id,
+                active_routine_id,
                 "-t",
                 "Keep Me",
                 "-r",
@@ -377,11 +369,15 @@ class TestBRHabitDeletion:
                 "07:00",
             ],
         )
+        assert create_result.exit_code == 0, f"Criação do hábito falhou: {create_result.output}"
+
         # Extrair habit_id
         id_lines = [line for line in create_result.stdout.split("\n") if "ID:" in line]
+        assert id_lines, f"ID não encontrado na saída: {create_result.output}"
         clean = re.sub(r"\x1b\[[0-9;]*m", "", id_lines[0])
         habit_id = clean.split(":")[1].strip()
+
         # ACT
         result = runner.invoke(app, ["habit", "delete", habit_id], input="n\n")
         # ASSERT
-        assert result.exit_code == 0, "Cancelamento deve retornar sucesso"
+        assert result.exit_code == 0, f"Cancelamento deve retornar sucesso. Output: {result.output}"

@@ -13,12 +13,11 @@ console = Console()
 
 
 def list_events(
-    weeks: int = typer.Option(2, "--weeks", "-w", help="Show next N weeks"),
     all_events: bool = typer.Option(False, "--all", "-a", help="Show all events"),
     limit: int = typer.Option(None, "--limit", "-l", help="Max number of events"),
     month: str = typer.Option(None, "--month", "-m", help="Month: 1-12 or +/-N"),
-    week: str = typer.Option(None, "--week", help="Week: 0 for this week, +/-N"),
-    day: str = typer.Option(None, "--day", "-d", help="Day: 0 for today, +/-N"),
+    week: str = typer.Option(None, "--week", "-w", help="Week: 0 (this), +N (next N), -N (last N)"),
+    day: str = typer.Option(None, "--day", "-d", help="Day: 0 (today), +/-N"),
 ) -> None:
     """List scheduled events with flexible filtering.
 
@@ -26,10 +25,11 @@ def list_events(
 
     Examples:
         timeblock list                    # Next 2 weeks (default)
-        timeblock list --weeks 4          # Next 4 weeks
+        timeblock list --week 0           # This week only
+        timeblock list --week +4          # Next 4 weeks
+        timeblock list --week -1          # Last week
         timeblock list --all              # All events
         timeblock list --month +1         # Next month
-        timeblock list --week 0           # This week
         timeblock list --day 0            # Today
         timeblock list --limit 10         # Just 10 events
     """
@@ -37,7 +37,6 @@ def list_events(
         # Build date filter from CLI arguments
         filter_builder = DateFilterBuilder()
         start, end, limit_val = filter_builder.build_from_args(
-            weeks=weeks,
             all_events=all_events,
             limit=limit,
             month=month,
@@ -59,9 +58,8 @@ def list_events(
 
         # Present results
         presenter = ListPresenter(console)
-
         if not events:
-            filter_desc = _describe_filter(weeks, all_events, limit, month, week, day)
+            filter_desc = _describe_filter(all_events, limit, month, week, day)
             presenter.show_no_events(filter_desc)
             return
 
@@ -80,7 +78,7 @@ def list_events(
         raise typer.Exit(code=1) from None
 
 
-def _describe_filter(weeks, all_events, limit, month, week, day) -> str:
+def _describe_filter(all_events, limit, month, week, day) -> str:
     """Generate human-readable filter description."""
     if limit:
         return f" (showing latest {limit})"
@@ -92,4 +90,4 @@ def _describe_filter(weeks, all_events, limit, month, week, day) -> str:
         return f" for week {week}"
     if day:
         return f" for day {day}"
-    return f" for next {weeks} weeks"
+    return " for next 2 weeks"
