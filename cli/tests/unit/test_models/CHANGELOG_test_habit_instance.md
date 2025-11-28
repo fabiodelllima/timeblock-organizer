@@ -4,17 +4,20 @@
 
 ### Correções
 
-**Bug 1: Comparação de Enum**
+#### **Bug 1: Comparação de Enum**
+
 - Antes: `assert instance.status == "planned"`
 - Depois: `assert instance.status == HabitInstanceStatus.PLANNED`
 - Razão: Status é enum, não string
 
-**Bug 2: Teste Obsoleto Removido**
+#### **Bug 2: Teste Obsoleto Removido**
+
 - Removido: `test_habit_instance_with_actuals`
 - Razão: Campos `actual_start`/`actual_end` não existem no modelo atual
 - Feature tracking pode ser v1.3.0+ usando TimeLog table
 
-**Bug 3: ResourceWarnings**
+#### **Bug 3: ResourceWarnings**
+
 - Adicionado: `engine.dispose()` no fixture
 - Razão: Fechar conexões DB após testes
 

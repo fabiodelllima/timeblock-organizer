@@ -3,7 +3,8 @@
 CLI para gerenciar hábitos recorrentes e resolver conflitos de agenda.
 
 ## Documentação em Página Estática
-```shell
+
+```bash
 # Instalação
 pip install mkdocs mkdocs-material
 
@@ -28,7 +29,7 @@ Informações sobre o estado atual do projeto e planejamento:
 - [**Arquitetura**](01-architecture/README.md) - arc42 completo
 - [**Diagramas**](02-diagrams/README.md) - C4, sequências, estados
 - [**Decisões**](03-decisions/README.md) - ADRs
-- [**Setup**](06-development/README.md) - Ambiente DEV
+- [**Setup**](14-development/README.md) - Ambiente DEV
 
 ### Especificações
 
@@ -50,12 +51,14 @@ Informações sobre o estado atual do projeto e planejamento:
 ## Status Tradução
 
 **Completo:**
+
 - Meta documentos (project-status, roadmap, technical-debt)
 - Filosofia (Hábitos Atômicos)
 - Research topics (habit-formation, scheduling, time-management)
 - Workflows v1.0
 
 **Pendente:**
+
 - Architecture (16 arquivos)
 - ADRs (15+ arquivos)
 - API Reference

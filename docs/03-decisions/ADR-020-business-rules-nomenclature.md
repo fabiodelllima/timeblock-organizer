@@ -90,7 +90,7 @@ Novo:   BR-TASK-CREATE-001 (criação de task - claro!)
 
 1. Atualizar `docs/04-specifications/business-rules/*.md`
 2. Criar `docs/04-specifications/business-rules/MIGRATION-MAP.md`
-3. Atualizar índice em `docs/05-testing/README.md`
+3. Atualizar índice em `docs/07-testing/README.md`
 
 ### **Fase 2: Verificação**
 

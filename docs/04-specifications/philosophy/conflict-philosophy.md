@@ -185,7 +185,7 @@ Situação:
 
 Usuário:
 - Rejeita proposta automática
-- Executa: timeblock habit adjust <id> -s 8h30 -e 9h30
+- Executa: timeblock habit edit <id> -s 8h30 -e 9h30
 - Sistema marca user_override=True
 
 Resultado:

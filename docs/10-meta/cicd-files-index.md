@@ -534,7 +534,7 @@ def test_br_habit_001_rejects_empty_title(self):
 - [ROADMAP](../ROADMAP.md)
 - [Architecture](../03-architecture/)
 - [Business Rules](../04-specifications/business-rules/)
-- [Testing](../05-testing/)
+- [Testing](../07-testing/)
 
 ---
 

@@ -662,7 +662,7 @@ grep -n "def.*timer" cli/src/timeblock/commands/timer.py
 
 **Resultado:**
 
-```
+```terminal
 cli/src/timeblock/commands/timer.py
 36:def _display_timer(timelog_id: int):
 103:def start_timer(

@@ -163,7 +163,7 @@ sequenceDiagram
 
     Note over User,DB: Dia anterior: usuário ajustou manualmente
 
-    User->>CLI: habit adjust <id> -s 7:00 -e 8:00
+    User->>CLI: habit edit <id> -s 7:00 -e 8:00
     CLI->>HIS: adjust_instance(id, new_times)
     HIS->>DB: UPDATE instance SET user_override=true
 
