@@ -114,7 +114,7 @@ Situação: Usuário precisa ajustar "Meditar" de 6h para 6h30 apenas na terça-
 Fluxo Arquitetural:
 
 1. Usuário identifica ID da instância específica através de listagem
-2. Executa comando: `timeblock habit adjust 42 --start 06:30`
+2. Executa comando: `timeblock habit edit 42 --start 06:30`
 3. HabitInstanceService.adjust_instance_time() modifica apenas instância 42
 4. Habit na Routine permanece inalterado (continua marcando 6h como ideal)
 5. Outras instâncias de "Meditar" não são afetadas

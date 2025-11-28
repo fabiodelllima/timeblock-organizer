@@ -302,7 +302,7 @@ MANTIDO:
 │ ├─ 02-diagrams/            │                            │
 │ ├─ 03-decisions/           │                            │
 │ ├─ 04-specifications/      │                            │
-│ ├─ 05-testing/             │                            │
+│ ├─ 07-testing/             │                            │
 │ └─ ... (189 arquivos)      │                            │
 │     ~15MB                  │     0 bytes                │
 ├────────────────────────────┼────────────────────────────┤

@@ -1,10 +1,10 @@
 # Integração da Documentação Completa
 
-**Versão:** 2.1.0
-**Data de Criação:** 30 de Outubro de 2025
-**Última Atualização:** 30 de Outubro de 2025
-**Autores:** Equipe TimeBlock + Análise Automatizada
-**Status:** Documento Mestre Ativo
+- **Versão:** 2.1.0
+- **Data de Criação:** 30 de Outubro de 2025
+- **Última Atualização:** 30 de Outubro de 2025
+- **Autores:** Equipe TimeBlock + Análise Automatizada
+- **Status:** Documento Mestre Ativo
 
 ---
 
@@ -37,18 +37,18 @@ Este é o **documento mestre único** que deve ser consultado antes de iniciar q
 
 ### 1.1 Visão Geral
 
-**Versão Atual:** v1.0.0 (estável)
-**Versão em Desenvolvimento:** v2.0.0 (45% concluído)
-**Branch Principal:** `feat/event-reordering-core`
-**Último Commit Verificado:** `6e5cde4`
-**Último Sprint Completado:** Sprint 2.1 (TaskService Integration)
+- **Versão Atual:** v1.0.0 (estável)
+- **Versão em Desenvolvimento:** v2.0.0 (45% concluído)
+- **Branch Principal:** `feat/event-reordering-core`
+- **Último Commit Verificado:** `6e5cde4`
+- **Último Sprint Completado:** Sprint 2.1 (TaskService Integration)
 
 ### 1.2 Progresso por Fase
 
 #### Fase 0: Fundação (100% Completa)
 
-**Período:** Até 25 de Outubro de 2025
-**Status:** CONCLUÍDA
+- **Período:** Até 25 de Outubro de 2025
+- **Status:** CONCLUÍDA
 
 **Entregas:**
 
@@ -67,9 +67,9 @@ Este é o **documento mestre único** que deve ser consultado antes de iniciar q
 
 #### Fase 1: Event Reordering Core (75% Completa, BLOQUEADA)
 
-**Período:** 25-28 de Outubro de 2025
-**Status:** COMPLETA - Sprint 1.4 resolvido
-**Branch:** `feat/event-reordering-core`
+- **Período:** 25-28 de Outubro de 2025
+- **Status:** COMPLETA - Sprint 1.4 resolvido
+- **Branch:** `feat/event-reordering-core`
 
 **Entregas Completadas:**
 
@@ -80,6 +80,7 @@ Este é o **documento mestre único** que deve ser consultado antes de iniciar q
 **Bloqueador Crítico:**
 [RESOLVIDO] Sprint 1.4 completo
 [RESOLVIDO] Sprint 1.4 completo
+
 ```python
 # BUG ATUAL (linha ~294 de event_reordering_service.py):
 ProposedChange(
@@ -114,8 +115,8 @@ ProposedChange(
 
 #### Fase 2: Event Reordering Integration (0%, Aguardando)
 
-**Status:** AGUARDANDO conclusão da Fase 1
-**Dependência:** Bug Sprint 1.4 corrigido
+- **Status:** AGUARDANDO conclusão da Fase 1
+- **Dependência:** Bug Sprint 1.4 corrigido
 
 **Sprints Planejados:**
 
@@ -130,9 +131,9 @@ ProposedChange(
 
 #### Fase 3: HabitAtom Refactor (0%, Planejada)
 
-**Status:** PLANEJADA
-**Dependência:** Fases 1 e 2 completas
-**Decisão:** Renomear HabitInstance → HabitAtom
+- **Status:** PLANEJADA
+- **Dependência:** Fases 1 e 2 completas
+- **Decisão:** Renomear HabitInstance → HabitAtom
 
 **Rationale:**
 Baseado no livro "Atomic Habits" de James Clear:
@@ -155,8 +156,8 @@ Baseado no livro "Atomic Habits" de James Clear:
 
 #### Fase 4: Living Documentation (0%, Futura)
 
-**Status:** FUTURA
-**Conceito:** Testes como documentação viva
+- **Status:** FUTURA
+- **Conceito:** Testes como documentação viva
 
 **Objetivos:**
 
@@ -597,9 +598,9 @@ Para listagem completa das 51 regras, consultar:
 
 #### P001: Bug Sprint 1.4 - ProposedChange com Campos Incorretos
 
-**Severidade:** CRÍTICA
-**Status: RESOLVIDO
-**Descoberto:** 25 de Outubro de 2025
+- **Severidade:** CRÍTICA
+- **Status:** RESOLVIDO
+- **Descoberto:** 25 de Outubro de 2025
 
 **Descrição:**
 Método `propose_reordering()` cria `ProposedChange` com campos que não existem no modelo.
@@ -647,9 +648,9 @@ ProposedChange(
 
 #### P002: Estado CANCELLED Ausente no Enum
 
-**Severidade:** CRÍTICA
-**Status:** PENDENTE
-**Impacto:** Violação da regra RN-HI02 e RN-R03
+- **Severidade:** CRÍTICA
+- **Status:** PENDENTE
+- **Impacto:** Violação da regra RN-HI02 e RN-R03
 
 **Descrição:**
 Estado `CANCELLED` está documentado mas não existe no código.
@@ -725,9 +726,9 @@ def deactivate_routine(routine_id: int) -> tuple[Routine, int]:
 
 #### P003: Flags Redundantes (user_override vs manually_adjusted)
 
-**Severidade:** ALTA
-**Status:** PENDENTE
-**Impacto:** Confusão no código, possível inconsistência
+- **Severidade:** ALTA
+- **Status:** PENDENTE
+- **Impacto:** Confusão no código, possível inconsistência
 
 **Descrição:**
 Modelo `HabitInstance` tem dois flags similares sem diferenciação clara.
@@ -778,8 +779,8 @@ class HabitInstance(SQLModel, table=True):
 
 #### P004: Estado PAUSED Não Documentado
 
-**Severidade:** MÉDIA
-**Status:** PENDENTE
+- **Severidade:** MÉDIA
+- **Status:** PENDENTE
 
 **Descrição:**
 Estado `PAUSED` existe no código mas não está documentado formalmente.
@@ -794,8 +795,8 @@ Estado `PAUSED` existe no código mas não está documentado formalmente.
 
 #### P005: Campo scheduled_duration_minutes Ausente
 
-**Severidade:** MÉDIA
-**Status:** PENDENTE
+- **Severidade:** MÉDIA
+- **Status:** PENDENTE
 
 **Descrição:**
 Documentação especifica `scheduled_duration_minutes` mas campo não existe no modelo.
@@ -811,8 +812,8 @@ Documentação especifica `scheduled_duration_minutes` mas campo não existe no 
 
 #### P006: Modelo de Recorrência Inconsistente
 
-**Severidade:** MÉDIA
-**Status:** PENDENTE
+- **Severidade:** MÉDIA
+- **Status:** PENDENTE
 
 **Descrição:**
 Documentação especifica `WEEKLY_ON` com `recurrence_days`, mas código usa dias individuais (MONDAY, TUESDAY, etc).
@@ -825,9 +826,9 @@ Documentação especifica `WEEKLY_ON` com `recurrence_days`, mas código usa dia
 
 #### P007: Emojis Presentes no Código e Documentação
 
-**Severidade:** BAIXA
-**Status:** PENDENTE
-**Violação:** Padrões de código estabelecidos
+- **Severidade:** BAIXA
+- **Status:** PENDENTE
+- **Violação:** Padrões de código estabelecidos
 
 **Localizações Identificadas:**
 
@@ -856,9 +857,9 @@ Múltiplos emojis em exemplos: [INVÁLIDO] [VÁLIDO] [AVISO] [CONFIG] [NOTA]
 
 #### P008: Links Quebrados (404)
 
-**Severidade:** MÉDIA
-**Status:** PENDENTE
-**Total:** 10 arquivos ausentes
+- **Severidade:** MÉDIA
+- **Status:** PENDENTE
+- **Total:** 10 arquivos ausentes
 
 **Arquivos Ausentes:**
 
@@ -887,9 +888,9 @@ Múltiplos emojis em exemplos: [INVÁLIDO] [VÁLIDO] [AVISO] [CONFIG] [NOTA]
 
 ### 5.1 MkDocs Configurado
 
-**Status:** OPERACIONAL
-**Framework:** MkDocs Material
-**Idioma:** Português (pt-BR)
+- **Status:** OPERACIONAL
+- **Framework:** MkDocs Material
+- **Idioma:** Português (pt-BR)
 
 **Arquivo de Configuração:** `mkdocs.yml` (201 linhas)
 
@@ -1090,9 +1091,9 @@ linkchecker http://127.0.0.1:8000
 
 ### 6.1 Visão Geral
 
-**Tempo Total Estimado:** 32 horas
-**Distribuição:** 3 fases ao longo de 2-3 semanas
-**Paralelização:** Algumas tarefas podem ser executadas em paralelo
+- **Tempo Total Estimado:** 32 horas
+- **Distribuição:** 3 fases ao longo de 2-3 semanas
+- **Paralelização:** Algumas tarefas podem ser executadas em paralelo
 
 ### 6.2 Fase Imediata (8 horas)
 
@@ -1595,7 +1596,7 @@ Este documento integra três meses de trabalho, múltiplas conversas e análises
 
 1. **Progresso Sólido:** Fase 0 completa, v1.0.0 estável, 99% de cobertura de testes
 
-2. **Sprint 1.4: Resolvido
+2. **Sprint 1.4:** Resolvido
 
 3. **Filosofia Clara:** Sistema não bloqueia conflitos - decisão fundamental que guia design
 
@@ -1620,7 +1621,7 @@ Este documento vive e evolui com o projeto. Mantenha-o atualizado e ele será o 
 
 ---
 
-**Documento Criado:** 30 de Outubro de 2025
-**Versão:** 2.1.0
-**Próxima Revisão:** 14 de Novembro de 2025 (após execução do plano)
-**Localização:** `docs/10-meta/INTEGRACAO-DOCUMENTACAO-COMPLETA.md`
+- **Documento Criado:** 30 de Outubro de 2025
+- **Versão:** 2.1.0
+- **Próxima Revisão:** 14 de Novembro de 2025 (após execução do plano)
+- **Localização:** `docs/10-meta/INTEGRACAO-DOCUMENTACAO-COMPLETA.md`

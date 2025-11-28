@@ -4,6 +4,7 @@
 - **Domínio:** Habit
 - **Status:** [ATIVO]
 - **Criado em:** 13 de novembro de 2025
+- **Atualizado em:** 27 de novembro de 2025
 
 ---
 
@@ -15,32 +16,19 @@ O sistema deve gerar instâncias (eventos agendados) de um hábito para um perí
 
 ## Regras
 
-### R1: Período de Geração Obrigatório
+### R1: Geração Integrada na Criação
 
-1. **Condição:** Ao gerar instâncias de um hábito
-2. **Então:** Usuário DEVE especificar período de tempo (início e fim)
+1. **Condição:** Ao criar um hábito com flag `--generate N`
+2. **Então:** Sistema gera automaticamente instâncias para os próximos N meses
 
-### R2: Formatos de Data Aceitos
+### R2: Período de Geração
 
-**O sistema DEVE aceitar múltiplos formatos:**
+**O sistema calcula o período automaticamente:**
 
-1. **ISO 8601 (YYYY-MM-DD):**
+- Data início: hoje (`date.today()`)
+- Data fim: hoje + N meses (usando `relativedelta`)
 
-   - `--from 2025-11-13 --to 2025-11-20`
-
-2. **Shortcuts textuais:**
-
-   - `--from today --to tomorrow`
-   - `--from this-week --to next-week`
-
-3. **Offsets relativos:**
-
-   - `--from +0days --to +7days` (hoje até 7 dias)
-   - `--from +1week --to +2week` (próximas 2 semanas)
-
-4. **Combinações:**
-   - `--from today --to +7days`
-   - `--from 2025-11-13 --to +1week`
+**Exemplo:** `--generate 1` gera instâncias para os próximos 30-31 dias.
 
 ### R3: Geração Baseada em Recorrência
 
@@ -54,74 +42,66 @@ O sistema deve gerar instâncias (eventos agendados) de um hábito para um perí
 - `WEEKENDS`: Sábado e domingo do período
 - `MONDAY,WEDNESDAY,FRIDAY`: Apenas esses dias da semana
 
-### R4: Validação de Período
-
-**Condição:** Data inicial posterior à data final
-**Então:** Sistema rejeita com erro "Data inicial deve ser anterior à data final"
-
-**Condição:** Período muito extenso (> 365 dias)
-**Então:** Sistema avisa usuário sobre alto número de instâncias
-
-### R5: Feedback ao Usuário
+### R4: Feedback ao Usuário
 
 **Após geração bem-sucedida:**
 
 - Número de instâncias geradas
 - Nome do hábito
-- Período coberto (data início → data fim)
+- Confirmação visual com Rich
 
 ---
 
 ## Exemplos de Uso
 
-### Exemplo 1: Gerar para próxima semana (ISO)
+### Exemplo 1: Criar hábito e gerar instâncias para 1 mês
 
 ```bash
-schedule generate 1 --from 2025-11-13 --to 2025-11-20
-# Output: 7 instâncias geradas para "Meditação"
-#         Período: 13/11/2025 a 20/11/2025
+habit create --title "Meditação" --start 06:00 --end 06:30 --repeat EVERYDAY --generate 1
+# Output: Hábito criado: "Meditação" (ID: 1)
+#         ✓ 31 instâncias geradas
 ```
 
-### Exemplo 2: Gerar para hoje usando shortcut
+### Exemplo 2: Criar hábito para dias úteis com geração
 
 ```bash
-schedule generate 1 --from today --to today
-# Output: 1 instância gerada para "Meditação"
-#         Período: 13/11/2025 a 13/11/2025
+habit create --title "Standup" --start 09:00 --end 09:15 --repeat WEEKDAYS --generate 2
+# Output: Hábito criado: "Standup" (ID: 2)
+#         ✓ 44 instâncias geradas
 ```
 
-### Exemplo 3: Gerar para próximos 7 dias
+### Exemplo 3: Criar hábito sem geração automática
 
 ```bash
-schedule generate 1 --from today --to +7days
-# Output: 7 instâncias geradas para "Meditação"
-#         Período: 13/11/2025 a 20/11/2025
+habit create --title "Review Semanal" --start 17:00 --end 18:00 --repeat FRIDAY
+# Output: Hábito criado: "Review Semanal" (ID: 3)
+#         (sem instâncias geradas - use habit renew para gerar depois)
 ```
 
-### Exemplo 4: Gerar para esta semana
+### Exemplo 4: Gerar instâncias para hábito existente
 
 ```bash
-schedule generate 1 --from this-week --to this-week
-# Output: 7 instâncias geradas para "Meditação"
-#         Período: 11/11/2025 (seg) a 17/11/2025 (dom)
+schedule generate 1 --from 2025-12-01 --to 2025-12-31
+# Output: 31 instâncias geradas para "Meditação"
+#         Período: 01/12/2025 a 31/12/2025
 ```
+
+> **Nota:** O comando `schedule generate` está **depreciado** e será removido na v2.0.0.
+> Prefira usar `--generate N` durante a criação do hábito.
 
 ---
 
 ## Validações
 
-### V1: Hábito Existe
+### V1: Hábito Existe (para schedule generate)
 
 - Sistema verifica se `habit_id` existe antes de gerar
 - Se não existe: erro "Hábito não encontrado"
 
-### V2: Formato de Data Válido
+### V2: Valor de --generate Válido
 
-- Sistema tenta parsear data em ordem:
-  1. Shortcuts textuais (`today`, `tomorrow`)
-  2. Offsets relativos (`+7days`, `+1week`)
-  3. ISO 8601 (`YYYY-MM-DD`)
-- Se nenhum formato reconhecido: erro "Formato de data inválido"
+- Deve ser inteiro positivo (1-12 meses recomendado)
+- Sistema avisa se período muito extenso (> 12 meses)
 
 ### V3: Não Duplicar Instâncias
 
@@ -132,29 +112,27 @@ schedule generate 1 --from this-week --to this-week
 
 ## Implementação
 
-### Comando CLI
+### API Principal (Recomendada)
+
+```bash
+habit create --title TITLE --start TIME --end TIME --repeat PATTERN --generate N
+```
+
+**Parâmetros:**
+
+- `--title`: Nome do hábito (string, obrigatório)
+- `--start`: Horário início (string, obrigatório)
+- `--end`: Horário fim (string, obrigatório)
+- `--repeat`: Padrão de recorrência (string, obrigatório)
+- `--generate N`: Gerar instâncias para N meses (int, opcional)
+
+### API Legada (Depreciada)
 
 ```bash
 schedule generate HABIT_ID --from DATE --to DATE
 ```
 
-**Parâmetros:**
-
-- `HABIT_ID`: ID do hábito (int, obrigatório)
-- `--from DATE`: Data início (string, obrigatório)
-- `--to DATE`: Data fim (string, obrigatório)
-
-### Parser de Datas (Prioridade)
-
-```python
-def parse_flexible_date(date_str: str) -> date:
-    """
-    Ordem de tentativa:
-    1. parse_date_shortcut() - shortcuts textuais
-    2. parse_relative_offset() - +7days, +1week
-    3. date.fromisoformat() - YYYY-MM-DD
-    """
-```
+> **Depreciado:** Será removido na v2.0.0. Ver `docs/10-meta/deprecation-notices.md`.
 
 ---
 
@@ -162,28 +140,25 @@ def parse_flexible_date(date_str: str) -> date:
 
 ### Casos de Teste Obrigatórios
 
-1. **test_br_habit_002_generate_with_iso_dates**
-   - Gerar com datas ISO explícitas
-2. **test_br_habit_002_generate_with_shortcuts**
-   - Gerar com `today`, `tomorrow`, `this-week`
-3. **test_br_habit_002_generate_with_offsets**
-   - Gerar com `+7days`, `+1week`
-4. **test_br_habit_002_mixed_formats**
-   - Gerar com `--from today --to +7days`
-5. **test_br_habit_002_respects_recurrence**
+1. **test_br_habit_002_generate_on_create**
+   - Criar hábito com `--generate 1` gera instâncias
+2. **test_br_habit_002_generate_respects_recurrence**
    - WEEKDAYS gera apenas seg-sex
-6. **test_br_habit_002_invalid_period_rejected**
-   - Data início > data fim deve falhar
+3. **test_br_habit_002_generate_counts_instances**
+   - Feedback mostra número correto de instâncias
+4. **test_br_habit_002_no_duplicate_instances**
+   - Geração não duplica instâncias existentes
+5. **test_br_habit_002_create_without_generate**
+   - Criar sem `--generate` não gera instâncias
 
 ---
 
 ## Referências
 
-- **Helpers:** `src/timeblock/utils/date_helpers.py`
-- **Parser:** `src/timeblock/utils/date_parser.py`
 - **Service:** `src/timeblock/services/habit_instance_service.py`
-- **ADR-XXX:** Date Parsing Strategy (a criar)
+- **Command:** `src/timeblock/commands/habit.py` (linhas 32, 98-107)
+- **Depreciação:** `docs/10-meta/deprecation-notices.md`
 
 ---
 
-**Última atualização:** 2025-11-13
+**Última atualização:** 27-11-2025

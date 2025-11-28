@@ -488,7 +488,7 @@ instances = HabitInstanceService.generate_instances(
 ```
 Usuario ajusta horário de HabitInstance
     │
-    │ timeblock habit adjust <id> --start 09:00
+    │ timeblock habit edit <id> --start 09:00
     ↓
 ┌────────────────────────────┐
 │ HabitInstanceService       │  1. Atualiza horário

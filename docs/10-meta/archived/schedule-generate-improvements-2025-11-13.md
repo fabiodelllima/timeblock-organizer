@@ -113,7 +113,7 @@ def generate_instances(
 
 ### 3.4 Parser Unificado
 
-_(mesmo conteúdo do parser anterior)_
+- Mesmo conteúdo do parser anterior
 
 ---
 

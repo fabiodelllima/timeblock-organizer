@@ -77,13 +77,13 @@ Problema: Testes validam código mas não documentam BRs explicitamente
 
 ### 2.1 Objetivos Primários
 
-**1. E2E Tests Completos**
+#### **1. E2E Tests Completos**
 
 - [DONE] 2 scenarios existentes (habit-generation, conflict-detection)
 - [TODO] 3 scenarios novos (event-creation, timer-lifecycle, event-reordering)
 - **Meta:** 5 scenarios E2E cobrindo workflows críticos
 
-**2. Refatoração Sistemática**
+#### **2. Refatoração Sistemática**
 
 - [TODO] Renomear 45 arquivos de teste para padrão `test_br_*`
 - [TODO] Adicionar docstrings com referências explícitas a BRs

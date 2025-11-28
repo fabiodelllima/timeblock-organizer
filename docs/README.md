@@ -29,7 +29,7 @@ Informações sobre o estado atual do projeto e planejamento:
 - [**Arquitetura**](01-architecture/README.md) - arc42 completo
 - [**Diagramas**](02-diagrams/README.md) - C4, sequências, estados
 - [**Decisões**](03-decisions/README.md) - ADRs
-- [**Setup**](06-development/README.md) - Ambiente DEV
+- [**Setup**](14-development/README.md) - Ambiente DEV
 
 ### Especificações
 

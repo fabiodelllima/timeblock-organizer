@@ -1,6 +1,6 @@
 # BDD Scenarios - End-to-End Tests
 
-- **Última Atualização:** 13 de novembro de 2025
+- **Última Atualização:** 27 de novembro de 2025
 - **Status:** [ATIVO]
 - **Cobertura:** 5 workflows críticos de usuário
 
@@ -49,19 +49,18 @@ Feature: Workflow Completo de Hábitos
   Scenario: Criar hábito diário e marcar como completo
     Given eu tenho uma rotina ativa chamada "Rotina Matinal"
     When eu executo comando "habit create" com parâmetros:
-      | parâmetro | valor      |
-      | --title   | Meditação  |
-      | --start   | 06:00      |
-      | --end     | 06:20      |
-      | --repeat  | EVERYDAY   |
+      | parâmetro  | valor      |
+      | --title    | Meditação  |
+      | --start    | 06:00      |
+      | --end      | 06:20      |
+      | --repeat   | EVERYDAY   |
+      | --generate | 1          |
     Then sistema confirma "Hábito criado com sucesso"
     And hábito "Meditação" é salvo no banco de dados
+    And sistema gera ~31 instâncias (um mês)
+    And confirma "instâncias geradas"
 
-    When eu executo comando "schedule generate --days 7"
-    Then sistema gera 7 instâncias (uma por dia)
-    And confirma "7 instâncias geradas"
-
-    When eu executo comando "list today"
+    When eu executo comando "list --day 0"
     Then vejo hábito "Meditação" na lista
     And horário mostrado é "06:00"
     And status é "PLANNED"
@@ -69,7 +68,7 @@ Feature: Workflow Completo de Hábitos
     When eu executo comando "habit complete 1"
     Then sistema confirma "Hábito marcado como completo"
 
-    When eu executo comando "list today" novamente
+    When eu executo comando "list --day 0" novamente
     Then vejo indicador visual de conclusão
     And status mudou para "COMPLETED"
 ```
@@ -86,7 +85,7 @@ Feature: Workflow Completo de Hábitos
 ```python
 assert result.exit_code == 0, "Comando deve executar com sucesso"
 assert "criado" in result.output.lower(), "Feedback deve confirmar criação"
-assert "7" in result.output, "Deve gerar exatamente 7 instâncias"
+assert "instância" in result.output.lower(), "Deve confirmar geração de instâncias"
 assert "Meditação" in result.output, "Nome do hábito deve aparecer"
 assert (
     "✓" in result.output
@@ -119,23 +118,24 @@ Feature: Detecção e Resolução de Conflitos
     Given eu tenho uma rotina ativa
 
     When eu crio hábito "Exercício" com:
-      | --title  | Exercício |
-      | --start  | 09:00     |
-      | --end    | 10:00     |
-      | --repeat | EVERYDAY  |
+      | --title    | Exercício |
+      | --start    | 09:00     |
+      | --end      | 10:00     |
+      | --repeat   | EVERYDAY  |
+      | --generate | 1         |
     Then hábito é criado com sucesso
+    And instâncias são geradas
 
     When eu crio hábito "Leitura" com:
-      | --title  | Leitura |
-      | --start  | 09:30   |
-      | --end    | 10:30   |
-      | --repeat | EVERYDAY |
+      | --title    | Leitura  |
+      | --start    | 09:30    |
+      | --end      | 10:30    |
+      | --repeat   | EVERYDAY |
+      | --generate | 1        |
     Then hábito é criado com sucesso
+    And instâncias são geradas
 
-    When eu executo "schedule generate --days 1"
-    Then sistema gera 2 instâncias
-
-    When eu executo "habit adjust 1 --start 09:00 --end 10:00"
+    When eu executo "habit edit 1 --start 09:00 --end 10:00"
     Then sistema detecta conflito de horário
     And exibe mensagem contendo "conflito" ou "overlap"
     And sistema propõe reorganização automática
@@ -250,8 +250,36 @@ class TestBR[Domain][Number][Context]:
 
 ---
 
-**Data:** 13 de novembro de 2025
+## 6. REFERÊNCIA DE API
 
-**Versão:** 1.0
+### 6.1 Comandos Utilizados nos Scenarios
+
+| Comando          | Descrição                        | Exemplo                                                                             |
+| ---------------- | -------------------------------- | ----------------------------------------------------------------------------------- |
+| `habit create`   | Cria hábito com geração opcional | `habit create --title "X" --start 06:00 --end 07:00 --repeat EVERYDAY --generate 1` |
+| `habit edit`     | Edita instância específica       | `habit edit 42 --start 18:00`                                                       |
+| `habit complete` | Marca instância como completa    | `habit complete 42`                                                                 |
+| `habit skip`     | Marca instância como pulada      | `habit skip 42 --reason "viagem"`                                                   |
+| `list --day 0`   | Lista eventos de hoje            | `list --day 0`                                                                      |
+| `list --week 0`  | Lista eventos desta semana       | `list --week 0`                                                                     |
+| `list --week +N` | Lista próximas N semanas         | `list --week +4`                                                                    |
+
+### 6.2 APIs Depreciadas
+
+> **Nota:** As seguintes APIs estão depreciadas e serão removidas na v2.0.0.
+> Ver `docs/10-meta/deprecation-notices.md` para detalhes de migração.
+
+| Depreciado                                         | Substituição                    |
+| -------------------------------------------------- | ------------------------------- |
+| `schedule generate HABIT_ID --from DATE --to DATE` | `habit create ... --generate N` |
+| `list today`                                       | `list --day 0`                  |
+| `list week`                                        | `list --week 0`                 |
+| `habit adjust`                                     | `habit edit`                    |
+
+---
+
+**Data:** 27 de novembro de 2025
+
+**Versão:** 1.1
 
 **Status:** [ATIVO]

@@ -107,7 +107,7 @@
 1. [CONCLUIDO] Criar este mapa (MIGRATION-MAP.md)
 2. [PENDENTE] Atualizar arquivos existentes (tasks.md, habit-instances.md, event-reordering.md)
 3. [PENDENTE] Criar arquivos novos para BRs faltantes
-4. [PENDENTE] Atualizar índice em `docs/05-testing/README.md`
+4. [PENDENTE] Atualizar índice em `docs/07-testing/README.md`
 5. [PENDENTE] Atualizar RTM
 
 ---

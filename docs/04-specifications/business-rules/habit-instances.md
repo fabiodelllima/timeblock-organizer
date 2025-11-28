@@ -1,7 +1,8 @@
 # Regras de Negócio: Habit Instances
 
-- **Versão:** 1.0
+- **Versão:** 1.1
 - **Data:** 06 de Novembro de 2025
+- **Atualizado em:** 27 de Novembro de 2025
 - **Status:** Especificação Formal
 
 ---
@@ -41,29 +42,32 @@ O objetivo do TimeBlock é ajudar o usuário a aproximar a realidade do ideal. O
 
 Um usuário pode criar hábito "Academia" que ocorre segundas, quartas e sextas às 7h com duração de 60 minutos. Outro exemplo seria "Inglês" que ocorre terças e quintas às 19h com duração de 45 minutos. Um terceiro caso seria "Meditar" que ocorre todos os dias da semana às 6h com duração de 20 minutos.
 
-**Comportamento:** Após a criação do Habit na Routine, o sistema está pronto para gerar instâncias, mas não gera automaticamente até que o usuário execute o comando de geração ou especifique período durante a criação.
+**Comportamento:** Após a criação do Habit na Routine, o sistema está pronto para gerar instâncias. O usuário pode gerar automaticamente usando `--generate N` durante a criação.
 
 ### BR-HABIT-002: Geração de Instâncias
 
-**Descrição:** Após criar um Habit em uma Routine, o sistema gera HabitInstances baseado em um período especificado pelo usuário.
+**Descrição:** O sistema gera HabitInstances durante a criação do hábito (com `--generate`) ou posteriormente.
 
-**Períodos Disponíveis:**
+**API Atual:**
 
-- Semanal: gera instâncias apenas para a próxima semana (7 dias)
-- Mensal: gera instâncias para o próximo mês (aproximadamente 30 dias)
-- Trimestral: gera instâncias para os próximos 3 meses (padrão)
-- Semestral: gera instâncias para os próximos 6 meses
-- Anual: gera instâncias para o próximo ano
-- Dias específicos: gera instâncias apenas para dias da semana selecionados no período escolhido
-- Finais de semana: gera instâncias apenas para sábados e domingos no período escolhido
+```bash
+# Gerar durante criação (recomendado)
+habit create --title "Academia" --start 07:00 --end 08:00 --repeat WEEKDAYS --generate 3
 
-**Comportamento Padrão:** Se o usuário não especificar período, o sistema gera instâncias para os próximos 3 meses (trimestral).
+# Gerar posteriormente (API legada, depreciada)
+schedule generate HABIT_ID --from DATE --to DATE
+```
+
+**Períodos com --generate N:**
+
+- `--generate 1`: próximo mês (~30 dias)
+- `--generate 3`: próximos 3 meses (~90 dias)
+- `--generate 6`: próximos 6 meses (~180 dias)
+- `--generate 12`: próximo ano (~365 dias)
+
+**Comportamento Padrão:** Se o usuário não especificar `--generate`, nenhuma instância é criada automaticamente.
 
 **Cálculo de Instâncias:** Para um hábito que ocorre 3 vezes por semana durante 3 meses, o cálculo seria aproximadamente 3 instâncias por semana multiplicado por 12 semanas, resultando em 36 instâncias. O sistema distribui estas instâncias nos dias da semana especificados pelo usuário ao criar o Habit.
-
-**Exemplo Concreto:**
-
-Um usuário cria hábito "Academia" para segundas, quartas e sextas às 7h. Ao gerar instâncias com período trimestral, o sistema cria uma HabitInstance para cada segunda-feira, quarta-feira e sexta-feira nos próximos 3 meses. Se hoje é 6 de novembro de 2025, o sistema gera instâncias até aproximadamente 6 de fevereiro de 2026, totalizando cerca de 36 instâncias.
 
 **Importante:** A geração respeita exatamente os dias da semana definidos pelo usuário. Se o usuário especificou apenas segunda, quarta e sexta, instâncias não serão criadas para terça, quinta, sábado ou domingo, independentemente do período escolhido.
 
@@ -71,21 +75,21 @@ Um usuário cria hábito "Academia" para segundas, quartas e sextas às 7h. Ao g
 
 **Descrição:** Cada HabitInstance possui um identificador único (ID) que permite operações específicas sobre aquela ocorrência particular do hábito.
 
-**Uso do ID:** O ID da instância é usado para ajustar horários, marcar como complete, iniciar timer, ou dar skip naquela execução específica. Comandos que operam sobre instâncias sempre requerem o ID para garantir que apenas a instância desejada seja afetada.
+**Uso do ID:** O ID da instância é usado para editar horários, marcar como complete, iniciar timer, ou dar skip naquela execução específica. Comandos que operam sobre instâncias sempre requerem o ID para garantir que apenas a instância desejada seja afetada.
 
 **Diferenciação:** Múltiplas instâncias do mesmo hábito em dias diferentes possuem IDs diferentes. Por exemplo, "Academia" de segunda-feira dia 4 tem ID 42, enquanto "Academia" de quarta-feira dia 6 tem ID 43. Isto permite que o usuário ajuste cada dia independentemente.
 
-### BR-HABIT-004: Ajuste de Horário de Instância
+### BR-HABIT-004: Edição de Horário de Instância
 
-**Descrição:** O usuário pode ajustar o horário de uma HabitInstance específica através de seu ID. Este ajuste afeta apenas aquela instância, não o Habit na Routine nem outras instâncias futuras.
+**Descrição:** O usuário pode editar o horário de uma HabitInstance específica através de seu ID. Esta edição afeta apenas aquela instância, não o Habit na Routine nem outras instâncias futuras.
 
 **Comportamento Padrão:**
 
-Quando o usuário ajusta uma instância através do comando de ajuste especificando o ID, o novo horário é aplicado apenas àquela instância específica. Todas as outras instâncias do mesmo hábito mantêm o horário ideal definido na Routine. Na próxima ocorrência do hábito, o sistema gera ou utiliza a instância com o horário ideal, não o horário ajustado.
+Quando o usuário edita uma instância através do comando `habit edit` especificando o ID, o novo horário é aplicado apenas àquela instância específica. Todas as outras instâncias do mesmo hábito mantêm o horário ideal definido na Routine. Na próxima ocorrência do hábito, o sistema gera ou utiliza a instância com o horário ideal, não o horário editado.
 
-**Detecção de Ajuste:**
+**Detecção de Edição:**
 
-Para identificar se uma instância foi ajustada, basta comparar seus horários com os horários ideais do Habit na Routine. Se os horários diferem, a instância foi ajustada. Esta verificação é feita dinamicamente quando necessário, sem necessidade de campo adicional no modelo.
+Para identificar se uma instância foi editada, basta comparar seus horários com os horários ideais do Habit na Routine. Se os horários diferem, a instância foi editada. Esta verificação é feita dinamicamente quando necessário, sem necessidade de campo adicional no modelo.
 
 ```python
 def is_adjusted(instance: HabitInstance) -> bool:
@@ -96,11 +100,11 @@ def is_adjusted(instance: HabitInstance) -> bool:
     )
 ```
 
-**Justificativa:** Ajustes pontuais são necessários devido a imprevistos do dia a dia, como reuniões inesperadas, compromissos médicos ou mudanças na rotina diária. No entanto, estes ajustes não devem alterar o plano ideal que o usuário estabeleceu na Routine. Cada dia é uma nova tentativa de seguir o plano ideal.
+**Justificativa:** Edições pontuais são necessárias devido a imprevistos do dia a dia, como reuniões inesperadas, compromissos médicos ou mudanças na rotina diária. No entanto, estas edições não devem alterar o plano ideal que o usuário estabeleceu na Routine. Cada dia é uma nova tentativa de seguir o plano ideal.
 
 **Exemplo:**
 
-O usuário tem "Academia" planejada para 7h todas as segundas, quartas e sextas. Na segunda-feira dia 4, surge uma reunião urgente às 7h. O usuário executa o comando ajustando a instância daquele dia específico para 18h. Na quarta-feira dia 6, o sistema apresenta "Academia" às 7h novamente, pois este é o horário ideal da Routine e o ajuste de segunda-feira foi pontual apenas para aquele dia.
+O usuário tem "Academia" planejada para 7h todas as segundas, quartas e sextas. Na segunda-feira dia 4, surge uma reunião urgente às 7h. O usuário executa `habit edit 42 --start 18:00` para aquele dia específico. Na quarta-feira dia 6, o sistema apresenta "Academia" às 7h novamente, pois este é o horário ideal da Routine e a edição de segunda-feira foi pontual apenas para aquele dia.
 
 **Mudanças Permanentes:** Se o usuário percebe que o horário ideal precisa ser alterado permanentemente, ele deve editar o Habit na Routine, não as instâncias individuais. Esta separação clara mantém a Routine como fonte de verdade do plano ideal.
 
@@ -138,11 +142,11 @@ Para o hábito "Academia" na última semana, o usuário poderia ver que teve 100
 
 **Descrição:** A Routine é a fonte de verdade para o plano ideal. HabitInstances referenciam o Habit na Routine mas não modificam este plano.
 
-**Propagação de Mudanças:** Se o usuário edita o Habit na Routine alterando o horário ideal, esta mudança afeta apenas instâncias futuras ainda não ajustadas manualmente. Instâncias já ajustadas pelo usuário mantêm seus horários ajustados. Instâncias passadas mantêm os horários que tinham quando foram geradas, preservando o histórico.
+**Propagação de Mudanças:** Se o usuário edita o Habit na Routine alterando o horário ideal, esta mudança afeta apenas instâncias futuras ainda não editadas manualmente. Instâncias já editadas pelo usuário mantêm seus horários editados. Instâncias passadas mantêm os horários que tinham quando foram geradas, preservando o histórico.
 
 **Exemplo:**
 
-O usuário tem "Meditar" às 6h definido na Routine e 50 instâncias geradas para os próximos meses. Decide que 6h30 seria melhor e edita o Habit na Routine. Instâncias futuras que ainda não foram ajustadas individualmente passam a refletir 6h30. Instâncias de dias que já passaram mantêm 6h para preservar histórico. Instâncias futuras que o usuário já havia ajustado manualmente para outro horário (por exemplo, 7h em datas específicas por conflitos conhecidos) mantêm seus ajustes manuais.
+O usuário tem "Meditar" às 6h definido na Routine e 50 instâncias geradas para os próximos meses. Decide que 6h30 seria melhor e edita o Habit na Routine. Instâncias futuras que ainda não foram editadas individualmente passam a refletir 6h30. Instâncias de dias que já passaram mantêm 6h para preservar histórico. Instâncias futuras que o usuário já havia editado manualmente para outro horário (por exemplo, 7h em datas específicas por conflitos conhecidos) mantêm suas edições manuais.
 
 **Deletar Habit:** Se o usuário deleta um Habit da Routine, todas as HabitInstances futuras daquele hábito são também deletadas. Instâncias passadas já executadas são mantidas para preservar histórico de tracking.
 
@@ -150,11 +154,11 @@ O usuário tem "Meditar" às 6h definido na Routine e 50 instâncias geradas par
 
 **Descrição:** O usuário pode gerar instâncias adicionais a qualquer momento se perceber que as instâncias atuais estão terminando.
 
-**Comportamento:** Se o usuário gerou inicialmente apenas 1 mês de instâncias e percebe que este período está chegando ao fim, pode executar novamente o comando de geração especificando um novo período. O sistema verifica quais instâncias já existem e gera apenas as novas, evitando duplicatas.
+**Comportamento:** O sistema verifica quais instâncias já existem e gera apenas as novas, evitando duplicatas.
 
 **Exemplo:**
 
-Em 6 de novembro, o usuário gera instâncias para 1 mês (até 6 de dezembro). Em 25 de novembro, percebe que faltam poucas instâncias e decide gerar mais. Executa comando gerando instâncias para mais 2 meses. O sistema identifica que já existem instâncias até 6 de dezembro e gera apenas de 7 de dezembro até 7 de fevereiro, evitando criar instâncias duplicadas para dezembro.
+Em 6 de novembro, o usuário cria hábito com `--generate 1` (até 6 de dezembro). Em 25 de novembro, percebe que faltam poucas instâncias. Pode usar `schedule generate HABIT_ID --from 2025-12-07 --to 2025-02-07` para gerar mais 2 meses, evitando duplicatas.
 
 ## Implementação
 
@@ -176,7 +180,7 @@ class HabitInstance(SQLModel, table=True):
     timelogs: list[TimeLog] = Relationship(back_populates="habit_instance")
 ```
 
-**Nota sobre Campos Removidos:** Os campos `user_override` e `manually_adjusted` foram removidos por serem redundantes. Para verificar se uma instância foi ajustada, basta comparar seus horários com os horários ideais do Habit na Routine. Esta verificação dinâmica é mais simples e não adiciona complexidade desnecessária ao modelo.
+**Nota sobre Campos Removidos:** Os campos `user_override` e `manually_adjusted` foram removidos por serem redundantes. Para verificar se uma instância foi editada, basta comparar seus horários com os horários ideais do Habit na Routine. Esta verificação dinâmica é mais simples e não adiciona complexidade desnecessária ao modelo.
 
 ### Serviços
 
@@ -187,8 +191,8 @@ class HabitInstanceService:
     @staticmethod
     def generate_instances(
         habit_id: int,
-        period: str = "trimestral",
-        start_date: date = None,
+        start_date: date,
+        end_date: date,
     ) -> list[HabitInstance]:
         """
         Gera instâncias para um hábito no período especificado.
@@ -199,17 +203,17 @@ class HabitInstanceService:
         pass
 
     @staticmethod
-    def adjust_instance_time(
+    def edit_instance_time(
         instance_id: int,
         new_start: time,
         new_end: time,
     ) -> HabitInstance:
         """
-        Ajusta horário de uma instância específica.
+        Edita horário de uma instância específica.
 
         Retorna a instância atualizada.
         Não afeta outras instâncias do mesmo hábito.
-        Para verificar se foi ajustada, compare com horário ideal do Habit.
+        Para verificar se foi editada, compare com horário ideal do Habit.
         """
         pass
 
@@ -239,26 +243,29 @@ class HabitInstanceService:
 ### Comandos CLI
 
 ```bash
-# Criar hábito e gerar instâncias
-timeblock habit create "Academia" \
+# Criar hábito com geração de instâncias (API atual)
+habit create --title "Academia" \
   --routine 1 \
-  --days monday,wednesday,friday \
   --start 07:00 \
-  --duration 60 \
-  --period trimestral
+  --end 08:00 \
+  --repeat MONDAY,WEDNESDAY,FRIDAY \
+  --generate 3
 
-# Ajustar instância específica
-timeblock habit adjust 42 --start 18:00
+# Editar instância específica
+habit edit 42 --start 18:00
 
 # Marcar como completa
-timeblock habit complete 42
+habit complete 42
 
 # Marcar como skip
-timeblock habit skip 42 --reason "viagem"
+habit skip 42 --reason "viagem"
 
-# Gerar instâncias adicionais
-timeblock habit generate 1 --period mensal
+# Gerar instâncias adicionais (API legada, depreciada)
+schedule generate 1 --from 2025-12-01 --to 2025-02-28
 ```
+
+> **Nota:** O comando `schedule generate` está depreciado. Prefira usar `--generate N` durante a criação.
+> Ver `docs/10-meta/deprecation-notices.md` para detalhes.
 
 ## Testes
 
@@ -271,12 +278,12 @@ Os testes para HabitInstances devem validar:
 - Não gera duplicatas ao executar comando múltiplas vezes
 - Respeita data de início se especificada
 
-**Ajuste:**
+**Edição:**
 
 - Apenas instância especificada é modificada
 - Outras instâncias do mesmo hábito não são afetadas
 - Horário ideal na Routine permanece inalterado
-- Verificação dinâmica de ajuste funciona corretamente
+- Verificação dinâmica de edição funciona corretamente
 
 **Tracking:**
 
@@ -287,14 +294,14 @@ Os testes para HabitInstances devem validar:
 
 **Relação com Routine:**
 
-- Mudanças na Routine afetam apenas instâncias futuras não ajustadas
+- Mudanças na Routine afetam apenas instâncias futuras não editadas
 - Deleção de Habit remove instâncias futuras mas preserva passadas
 - Instâncias referenciam Habit corretamente
-- Comparação com horário ideal identifica ajustes
+- Comparação com horário ideal identifica edições
 
 ## Conclusão
 
-HabitInstances são a ponte entre o plano ideal (Routine) e a realidade da execução. Ao separar claramente estes conceitos e permitir ajustes pontuais sem alterar o plano de referência, o TimeBlock ajuda o usuário a manter o foco no objetivo de longo prazo enquanto adapta-se às necessidades do dia a dia.
+HabitInstances são a ponte entre o plano ideal (Routine) e a realidade da execução. Ao separar claramente estes conceitos e permitir edições pontuais sem alterar o plano de referência, o TimeBlock ajuda o usuário a manter o foco no objetivo de longo prazo enquanto adapta-se às necessidades do dia a dia.
 
 O sistema deve sempre facilitar o retorno ao plano ideal, mas reconhecer que a vida real requer flexibilidade. Esta filosofia guia todas as decisões de implementação relacionadas a HabitInstances.
 

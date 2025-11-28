@@ -42,7 +42,7 @@
 
 - `docs/03-decisions/README.md`
 - `docs/04-specifications/README.md`
-- `docs/06-development/README.md`
+- `docs/14-development/README.md`
 
 **Status:** RESOLVIDO
 

@@ -152,7 +152,7 @@ def test_br_habit_001_creates_successfully(self, test_routine):
 ### Neutras
 
 1. Requer atualização de ADR-018 (Language Standards)
-2. Nova seção em `docs/05-testing/README.md`
+2. Nova seção em `docs/07-testing/README.md`
 3. Criação de Requirements Traceability Matrix (ADR-021)
 
 ---
@@ -396,8 +396,8 @@ Criar `scripts/validate-test-naming.py` para validar conformidade.
 
 ### Documentação Relacionada
 
-- `docs/05-testing/README.md`: Atualizar com novos padrões
-- `docs/05-testing/requirements-traceability-matrix.md`: Criar RTM
+- `docs/07-testing/README.md`: Atualizar com novos padrões
+- `docs/07-testing/requirements-traceability-matrix.md`: Criar RTM
 - `docs/07-testing/test-naming-examples.md`: Criar guia de exemplos
 
 ---
