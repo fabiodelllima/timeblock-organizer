@@ -68,6 +68,266 @@ Regras de negócio são políticas, restrições e lógicas que definem comporta
 
 **Controle do Usuário:** Sistema NUNCA altera agenda automaticamente. Apenas detecta, informa e sugere.
 
+### 1.4. Filosofia: Atomic Habits
+
+**Base teórica:** "Atomic Habits" de James Clear (2018)
+
+#### O Que São Hábitos Atômicos
+
+**Definição:** Uma prática ou rotina regular que é:
+
+1. **Pequena** - Fácil de fazer
+2. **Específica** - Claramente definida
+3. **Parte de um sistema maior** - Compõe com outros hábitos
+
+**A Matemática dos Hábitos:**
+
+- Melhora de 1% ao dia: 1.01^365 = 37.78x melhor em um ano
+- Piora de 1% ao dia: 0.99^365 = 0.03x (quase zero)
+
+TimeBlock torna essa matemática visível e acionável.
+
+**Por que "Atômico":**
+
+- Átomo = Menor unidade que mantém propriedades do sistema
+- HabitInstance = Menor unidade que mantém propriedades do hábito
+
+#### As Quatro Leis
+
+| Lei                   | Princípio       | Implementação TimeBlock       |
+| --------------------- | --------------- | ----------------------------- |
+| 1. Torne Óbvio        | Notar o hábito  | Agenda visual, horários fixos |
+| 2. Torne Atraente     | Querer fazer    | Streaks, progresso visível    |
+| 3. Torne Fácil        | Reduzir fricção | Recorrência automática        |
+| 4. Torne Satisfatório | Recompensa      | Feedback imediato, relatórios |
+
+#### Lei 1: Torne Óbvio (Cue)
+
+**Princípio:** Você precisa notar o hábito antes de fazê-lo.
+
+**Implementação:**
+
+```
+┌──────────────────────────────────┐
+│  HOJE - 03 Nov 2025              │
+├──────────────────────────────────┤
+│ 07:00-08:00  Exercício Matinal   │ ← ÓBVIO
+│ 09:00-10:00  Deep Work           │
+│ 15:00-15:30  Leitura             │
+└──────────────────────────────────┘
+```
+
+**Técnicas:**
+
+- Agenda visual: Hábitos aparecem no seu dia
+- Implementation Intention: "Quando for [HORA], eu vou [HÁBITO]"
+- Rotina diária: Consistência cria pistas ambientais
+
+#### Lei 2: Torne Atraente (Craving)
+
+**Princípio:** Você precisa querer fazer o hábito.
+
+**Implementação:**
+
+**1. Progresso Visível:**
+
+```
+Exercício Matinal:
+████████████████░░░░  15/20 dias este mês (75%)
+```
+
+**2. Streak Tracking:**
+
+```
+Sequência atual: 7 dias
+Melhor sequência: 23 dias
+```
+
+Cada dia completado reforça a identidade: "Sou uma pessoa que se exercita".
+
+#### Lei 3: Torne Fácil (Response)
+
+**Princípio:** Reduza fricção para começar.
+
+**Implementação:**
+
+**1. Regra dos Dois Minutos:**
+
+```python
+habit = Habit(
+    title="Escrever",
+    scheduled_start=time(9, 0),
+    scheduled_end=time(9, 2)  # Apenas 2 minutos!
+)
+```
+
+**2. Recorrência Automática:**
+
+```python
+habit = Habit(
+    title="Meditação",
+    recurrence=Recurrence.EVERYDAY
+)
+# TimeBlock gera instâncias automaticamente
+# Você só marca: feito ou não feito
+```
+
+**3. Event Reordering:**
+
+Quando conflito surge, sistema detecta e informa:
+
+```
+CONFLITO DETECTADO:
+┌─────────────────────────────────────┐
+│ 09:00  Reunião inesperada (nova)    │
+│ 09:00  Leitura (planejada)          │ ← Conflito!
+└─────────────────────────────────────┘
+```
+
+Sistema remove fricção: você decide, não precisa repensar toda agenda.
+
+#### Lei 4: Torne Satisfatório (Reward)
+
+**Princípio:** Recompensa imediata reforça hábito.
+
+**Implementação:**
+
+**1. Gratificação Visual Instantânea:**
+
+```
+[ ] Exercício 7:00-8:00
+
+ ↓ (ao completar)
+
+[✓] Exercício 7:00-8:00  ← Dopamina!
+```
+
+**2. Relatórios de Progresso:**
+
+```
+SEMANA 1: ███████ 7/7 dias (100%)
+SEMANA 2: ██████░ 6/7 dias (86%)
+SEMANA 3: ███████ 7/7 dias (100%)
+```
+
+**3. Identity Reinforcement:**
+
+Cada instância completada reforça: "Sou o tipo de pessoa que [FAZ ISSO]"
+
+#### Arquitetura Conceitual
+
+```
+┌──────────────────────────────────────────────┐
+│              ATOMIC HABITS                   │
+│                                              │
+│  Cue → Craving → Response → Reward           │
+│   ↓       ↓         ↓         ↓              │
+│  Óbvio  Atraente  Fácil   Satisfatório       │
+└──────────────────────────────────────────────┘
+                     ↓
+┌──────────────────────────────────────────────┐
+│             TIMEBLOCK SYSTEM                 │
+│                                              │
+│  Habit → HabitInstance → Completion →        │
+│           (scheduled)      (tracked)         │
+│                ↓                             │
+│        EventReordering                       │
+│       (remove friction)                      │
+└──────────────────────────────────────────────┘
+```
+
+#### Componentes e Princípios
+
+**1. Habit (Template) - Identity-based habits:**
+
+```python
+class Habit:
+    """Não é apenas uma tarefa, é quem você é."""
+    title: str  # "Exercício" não "Preciso me exercitar"
+    recurrence: Recurrence  # Sistema, não objetivo
+    routine_id: int  # Parte de identidade maior
+```
+
+Identidade > Objetivos:
+
+- "Exercício" → identidade: "Sou atleta"
+- "Preciso me exercitar" → objetivo: "Quero estar em forma"
+
+**2. HabitInstance (Átomo) - Smallest actionable unit:**
+
+```python
+class HabitInstance:
+    """Um átomo: menor unidade do sistema."""
+    date: date  # Hoje, específico
+    scheduled_start: time  # Hora exata
+    scheduled_end: time  # Duração definida
+    status: Status  # Rastreável
+```
+
+Você não "cria um hábito" (abstrato), você "faz hoje às 7h" (concreto).
+
+**3. TimeLog (Feedback) - Measurement = visibility = improvement:**
+
+```python
+class TimeLog:
+    """Track para feedback."""
+    start_time: datetime
+    end_time: datetime
+    habit_instance_id: int
+```
+
+"O que é medido é gerenciado"
+
+#### Exemplo Prático: Construir Hábito de Leitura
+
+**Objetivo:** Ler 30min/dia
+
+**1. Torne Óbvio:**
+
+```bash
+timeblock habit create "Leitura" \
+  --start 21:00 \
+  --duration 30 \
+  --recurrence EVERYDAY
+```
+
+Aparece na agenda todo dia, mesmo horário.
+
+**2. Torne Atraente:**
+
+- Lista de livros interessantes preparada
+- Local confortável (sofá favorito)
+- Chá quente como ritual
+
+**3. Torne Fácil:**
+
+- Apenas 30min (pequeno)
+- Horário fixo (sem decisão)
+- Livro já na mesinha (sem fricção)
+
+**4. Torne Satisfatório:**
+
+```bash
+timeblock habit complete <instance_id>
+```
+
+Marca concluído, vê progresso visual.
+
+**Resultado após 30 dias:**
+
+```
+Leitura Diária:
+███████████████████████████░░░ 27/30 dias (90%)
+Sequência atual: 12 dias
+Livros completados: 2
+```
+
+#### Referências
+
+- **Livro:** "Atomic Habits" - James Clear (2018), ISBN 978-0735211292
+- **Site:** <https://jamesclear.com/atomic-habits>
+- **Conceitos:** Aggregation of marginal gains, Identity-based habits, Two-Minute Rule, Habit stacking
+
 ---
 
 ## 2. Conceitos do Domínio
@@ -125,7 +385,7 @@ Task (Dentista 14:30 - independente de routine)
 1. Campo `is_active` é booleano (não NULL)
 2. Apenas 1 rotina com `is_active = True` por vez
 3. Ativar rotina A desativa automaticamente rotina B
-4. Criar rotina NAO ativa automaticamente (requer `activate()`)
+4. Criar rotina NÃO ativa automaticamente (requer `activate()`)
 5. Primeira rotina criada e ativada automaticamente
 6. Deletar rotina ativa não deixa nenhuma ativa
 
@@ -197,14 +457,14 @@ Routine (1) ----< Habits (N)
 
 ### BR-ROUTINE-003: Task Independent of Routine
 
-**Descrição:** Task NAO pertence a rotina. É entidade independente.
+**Descrição:** Task NÃO pertence a rotina. É entidade independente.
 
 **Regras:**
 
-1. Task NAO possui campo `routine_id`
+1. Task NÃO possui campo `routine_id`
 2. Task visível independente de rotina ativa
 3. `task list` mostra todas tasks (não filtra por rotina)
-4. Deletar rotina NAO afeta tasks
+4. Deletar rotina NÃO afeta tasks
 
 **Justificativa:** Tasks são eventos pontuais que não fazem parte de rotinas recorrentes.
 
@@ -661,14 +921,14 @@ habit edit INSTANCE_ID --start 08:00 --end 09:30
 
 ```python
 class SkipReason(str, Enum):
-    HEALTH = "saude"              # Saude (doenca, consulta)
-    WORK = "trabalho"             # Trabalho (reuniao, deadline)
-    FAMILY = "familia"            # Familia (evento, emergencia)
-    TRAVEL = "viagem"             # Viagem/Deslocamento
-    WEATHER = "clima"             # Clima (chuva, frio)
+    HEALTH = "saude"                   # Saude (doenca, consulta)
+    WORK = "trabalho"                  # Trabalho (reuniao, deadline)
+    FAMILY = "familia"                 # Familia (evento, emergencia)
+    TRAVEL = "viagem"                  # Viagem/Deslocamento
+    WEATHER = "clima"                  # Clima (chuva, frio)
     LACK_RESOURCES = "falta_recursos"  # Falta de recursos
-    EMERGENCY = "emergencia"      # Emergencias
-    OTHER = "outro"               # Outros
+    EMERGENCY = "emergencia"           # Emergencias
+    OTHER = "outro"                    # Outros
 ```
 
 **Comando:**
@@ -750,13 +1010,13 @@ $ habit skip 42
 
 Por que você esta pulando Academia hoje?
 
-[1] Saude
+[1] Saúde
 [2] Trabalho
-[3] Familia
+[3] Família
 [4] Viagem
 [5] Clima
 [6] Falta de recursos
-[7] Emergencia
+[7] Emergência
 [8] Outro
 [9] Sem justificativa
 
@@ -893,21 +1153,21 @@ def calculate_streak(habit_id: int) -> int:
 ```python
 class Task(SQLModel, table=True):
     id: int | None
-    title: str                         # 1-200 chars
-    scheduled_datetime: datetime       # Quando executar
+    title: str                           # 1-200 chars
+    scheduled_datetime: datetime         # Quando executar
     completed_datetime: datetime | None  # Quando foi concluido
-    description: str | None            # Texto opcional
-    color: str | None                  # Cor hexadecimal
-    tag_id: int | None                 # FK opcional para Tag
+    description: str | None              # Texto opcional
+    color: str | None                    # Cor hexadecimal
+    tag_id: int | None                   # FK opcional para Tag
 ```
 
 **Características:**
 
-- NAO tem status enum (usa completed_datetime)
-- NAO tem priority
-- NAO tem timer
-- NAO tem deadline separado
-- NAO pertence a routine
+- NÃO tem status enum (usa completed_datetime)
+- NÃO tem priority
+- NÃO tem timer
+- NÃO tem deadline separado
+- NÃO pertence a routine
 
 **Testes:**
 
@@ -1018,7 +1278,7 @@ task list --all        # Todas
 
 **Descrição:** Tasks são intencionalmente simples no MVP.
 
-**NAO implementado:**
+**NÃO implementado:**
 
 - Timer tracking
 - Subtasks
@@ -1259,7 +1519,7 @@ Conflito se: (T1 < T4) AND (T3 < T2)
 
 **Descrição:** Detecção de conflitos ocorre dentro do mesmo dia (00:00-23:59).
 
-**Regra:** Eventos de dias diferentes NAO podem conflitar, mesmo que horários se sobreponham numericamente.
+**Regra:** Eventos de dias diferentes NÃO podem conflitar, mesmo que horários se sobreponham numericamente.
 
 **Testes:**
 
@@ -1296,7 +1556,7 @@ Conflito detectado:
 
 ### BR-REORDER-004: Conflitos Não Bloqueiam
 
-**Descrição:** Conflitos são informativos, NAO impeditivos.
+**Descrição:** Conflitos são informativos, NÃO impeditivos.
 
 **Comportamento:**
 
@@ -1322,7 +1582,7 @@ Iniciar timer mesmo assim? [Y/n]: y
 
 ### BR-REORDER-005: Persistencia de Conflitos
 
-**Descrição:** Conflitos NAO são persistidos no banco. São calculados dinamicamente.
+**Descrição:** Conflitos NÃO são persistidos no banco. São calculados dinamicamente.
 
 **Justificativa:** Conflitos são resultado de relação temporal entre eventos. Como eventos podem mudar, conflitos devem ser recalculados.
 
@@ -1335,13 +1595,13 @@ Iniciar timer mesmo assim? [Y/n]: y
 
 ### BR-REORDER-006: Algoritmo de Reordenamento
 
-**Descrição:** Algoritmo de sugestão de reordenamento NAO está no MVP.
+**Descrição:** Algoritmo de sugestão de reordenamento NÃO está no MVP.
 
 **Status Atual:**
 
 - Sistema detecta conflitos
 - Sistema apresenta conflitos
-- Sistema NAO sugere novos horários automaticamente
+- Sistema NÃO sugere novos horários automaticamente
 
 **Futuro:** Algoritmo Simple Cascade planejado para v2.0.
 

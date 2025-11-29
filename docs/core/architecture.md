@@ -185,7 +185,7 @@ if conflicts_detected:
     for c in conflicts:
         print(f"  - {c.description}")
 
-    if click.confirm("Continuar mesmo assim?"):
+    if typer.confirm("Continuar mesmo assim?"):
         proceed()
 ```
 
@@ -519,6 +519,18 @@ utils/
 │ name        │
 │ color       │
 └─────────────┘
+
+┌─────────────┐
+│   TimeLog   │
+│─────────────│
+│ id          │
+│ event_id    │
+│ task_id     │
+│ instance_id │
+│ start_time  │
+│ end_time    │
+│ duration    │
+└─────────────┘
 ```
 
 ### 5.2. Entidades Core
@@ -549,6 +561,7 @@ class Habit(SQLModel, table=True):
 
     routine: "Routine" = Relationship(back_populates="habits")
     instances: list["HabitInstance"] = Relationship(back_populates="habit")
+
 ```
 
 **HabitInstance (Ocorrência):**
@@ -581,6 +594,22 @@ class Task(SQLModel, table=True):
     description: str | None = None
     color: str | None = None
     tag_id: int | None = Field(foreign_key="tags.id")
+```
+
+**TimeLog (Rastreamento de Tempo):**
+
+```python
+class TimeLog(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    event_id: int | None = Field(foreign_key="event.id")
+    task_id: int | None = Field(foreign_key="tasks.id")
+    habit_instance_id: int | None = Field(foreign_key="habitinstance.id")
+    start_time: datetime
+    end_time: datetime | None = None
+    duration_seconds: int | None = None
+    paused_duration: int | None = Field(default=0)
+    notes: str | None = Field(max_length=500)
+
 ```
 
 ### 5.3. Enums
