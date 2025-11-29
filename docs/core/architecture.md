@@ -1,6 +1,6 @@
 # Arquitetura TimeBlock Organizer
 
-**Versao:** 2.0.0
+**Versão:** 2.0.0
 
 **Data:** 28 de Novembro de 2025
 
@@ -8,46 +8,46 @@
 
 ---
 
-## Indice
+## Índice
 
-1. [Visao Geral](#1-visao-geral)
-2. [Filosofia de Controle do Usuario](#2-filosofia-de-controle-do-usuario)
-3. [Stack Tecnologica](#3-stack-tecnologica)
-4. [Camadas da Aplicacao](#4-camadas-da-aplicacao)
+1. [Visão Geral](#1-visão-geral)
+2. [Filosofia de Controle do Usuário](#2-filosofia-de-controle-do-usuário)
+3. [Stack Tecnológica](#3-stack-tecnológica)
+4. [Camadas da Aplicação](#4-camadas-da-aplicação)
 5. [Modelos de Dados](#5-modelos-de-dados)
 6. [Fluxos Principais](#6-fluxos-principais)
-7. [Decisoes Arquiteturais](#7-decisoes-arquiteturais)
-8. [Padroes e Convencoes](#8-padroes-e-convencoes)
-9. [Evolucao Futura](#9-evolucao-futura)
+7. [Decisões Arquiteturais](#7-decisões-arquiteturais)
+8. [Padrões e Convenções](#8-padrões-e-convenções)
+9. [Evolução Futura](#9-evolução-futura)
 
 ---
 
-## 1. Visao Geral
+## 1. Visão Geral
 
-TimeBlock Organizer e uma aplicacao CLI para gerenciamento de tempo baseada nos principios de "Atomic Habits" de James Clear.
+TimeBlock Organizer é uma aplicação CLI para gerenciamento de tempo baseada nos princípios de "Atomic Habits" de James Clear.
 
-### 1.1. Principios Arquiteturais
+### 1.1. Princípios Arquiteturais
 
 1. **Simplicidade** - Arquitetura direta sem over-engineering
-2. **Separacao de Responsabilidades** - Service pattern claro
+2. **Separação de Responsabilidades** - Service pattern claro
 3. **Testabilidade** - Design orientado a testes
-4. **Stateless** - Operacoes sem estado persistente em memoria
+4. **Stateless** - Operações sem estado persistente em memória
 5. **Database-First** - SQLite como fonte de verdade
-6. **User Control** - Sistema informa, usuario decide
+6. **User Control** - Sistema informa, usuário decide
 
-### 1.2. Caracteristicas Principais
+### 1.2. Características Principais
 
-- **CLI-First**: Interface de linha de comando como cidadao de primeira classe
+- **CLI-First**: Interface de linha de comando como cidadão de primeira classe
 - **Embedded Database**: SQLite sem servidor externo
-- **Offline-First**: Funciona perfeitamente sem conexao
-- **Sync-Ready**: Arquitetura preparada para sincronizacao futura
-- **Logging Estruturado**: Observabilidade desde o inicio
+- **Offline-First**: Funciona perfeitamente sem conexão
+- **Sync-Ready**: Arquitetura preparada para sincronização futura
+- **Logging Estruturado**: Observabilidade desde o início
 
-### 1.3. Diagrama de Alto Nivel
+### 1.3. Diagrama de Alto Nível
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                      Usuario (CLI)                          │
+│                      Usuário (CLI)                          │
 └─────────────────────────┬───────────────────────────────────┘
                           │
                           v
@@ -77,58 +77,58 @@ TimeBlock Organizer e uma aplicacao CLI para gerenciamento de tempo baseada nos 
 
 ---
 
-## 2. Filosofia de Controle do Usuario
+## 2. Filosofia de Controle do Usuário
 
-### 2.1. Principio Fundamental
+### 2.1. Princípio Fundamental
 
-O TimeBlock e construido sobre o principio de que sua funcao e **informar, sugerir e facilitar, mas NUNCA decidir**. Cada alteracao na agenda do usuario requer aprovacao explicita.
+O TimeBlock é construído sobre o princípio de que sua função é **informar, sugerir e facilitar, mas NUNCA decidir**. Cada alteração na agenda do usuário requer aprovação explícita.
 
 ### 2.2. O Problema que Evitamos
 
-Muitos sistemas de produtividade tentam ser "inteligentes" tomando decisoes automaticas. Eles reordenam tarefas, ajustam prioridades e movem eventos baseados em algoritmos que presumem entender o contexto completo da vida do usuario.
+Muitos sistemas de produtividade tentam ser "inteligentes" tomando decisões automáticas. Eles reordenam tarefas, ajustam prioridades e movem eventos baseados em algoritmos que presumem entender o contexto completo da vida do usuário.
 
 **Exemplo do problema:**
 
-- Sistema detecta que usuario executa "Academia" as 18h em vez das 7h planejadas
-- Sistema "inteligente" move automaticamente futuras instancias para 18h
-- **Problema:** Usuario esta temporariamente ajustando devido a projeto com deadline, mas seu objetivo real continua sendo ir a academia de manha
-- Sistema reforcou comportamento nao desejado
+- Sistema detecta que usuário executa "Academia" às 18h em vez do horário planejado às 7h
+- Sistema "inteligente" move automaticamente futuras instâncias para 18h
+- **Problema:** Usuário está temporariamente ajustando devido a projeto com deadline, mas seu objetivo real continua sendo ir a academia de manhã
+- Sistema reforçou comportamento não desejado
 
-### 2.3. Nossa Solucao: Informacao sem Imposicao
+### 2.3. Nossa Solução: Informação sem Imposição
 
-**Deteccao de Conflitos:**
+**Detecção de Conflitos:**
 
-- Sistema detecta sobreposicao temporal
-- Apresenta informacoes claras
-- NAO propoe solucao automaticamente
+- Sistema detecta sobreposição temporal
+- Apresenta informações claras
+- NÃO propõe solução automaticamente
 
-**Ajuste de Horarios:**
+**Ajuste de Horários:**
 
 - Ajuste em um dia afeta apenas aquele dia
 - Plano ideal (Routine) permanece intocado
-- Cada dia e nova oportunidade de seguir a Routine
+- Cada dia é nova oportunidade de seguir a Routine
 
-**Priorizacao:**
+**Priorização:**
 
-- Sistema NAO aplica regras de priorizacao automatica
-- Apresenta eventos e permite usuario escolher
+- Sistema NÃO aplica regras de priorização automática
+- Apresenta eventos e permite usuário escolher
 
 ### 2.4. Routine como Norte Verdadeiro
 
 ```
 ┌─────────────────────────────────────────────────────┐
 │                    ROUTINE                          │
-│              (Plano Ideal - Imutavel)               │
+│              (Plano Ideal - Imutável)               │
 │                                                     │
 │   Academia: 07:00-08:00 WEEKDAYS                    │
-│   Meditacao: 06:30-07:00 EVERYDAY                   │
+│   Meditação: 06:30-07:00 EVERYDAY                   │
 └─────────────────────────────────────────────────────┘
                           │
                           │ Gera instancias
                           v
 ┌─────────────────────────────────────────────────────┐
 │               HABIT INSTANCES                       │
-│            (Realidade - Flexivel)                   │
+│            (Realidade - Flexível)                   │
 │                                                     │
 │   Seg 25/11: Academia 07:00 [DONE]                  │
 │   Ter 26/11: Academia 18:00 [DONE] (ajustado)       │
@@ -136,36 +136,36 @@ Muitos sistemas de produtividade tentam ser "inteligentes" tomando decisoes auto
 └─────────────────────────────────────────────────────┘
 ```
 
-**Separacao:**
+**Separação:**
 
-- **Routine:** Intencoes e objetivos (o que usuario aspira)
+- **Routine:** Intenções e objetivos (o que usuário aspira)
 - **HabitInstance:** O que realmente acontece (ajustes, atrasos)
 
-### 2.5. Implicacoes no Codigo
+### 2.5. Implicações no Código
 
-#### **Principio 1: Deteccao sem Acao**
+#### **Princípio 1: Detecção sem Ação**
 
 ```python
-# CORRETO: Detecta e retorna informacoes
+# CORRETO: Detecta e retorna informações
 def detect_conflicts(event_id: int) -> list[Conflict]:
     conflicts = query_overlapping_events(event_id)
     return conflicts  # Apenas retorna, NAO modifica
 
-# CORRETO: Acao separada que requer confirmacao
+# CORRETO: Ação separada que requer confirmação
 def apply_user_resolution(conflict_id: int, user_choice: Resolution):
     if user_choice.confirmed:
         apply_changes(user_choice.changes)
 ```
 
 ```python
-# INCORRETO: Deteccao e acao misturadas
+# INCORRETO: Detecção e ação misturadas
 def detect_and_resolve_conflicts(event_id: int):
     conflicts = query_overlapping_events(event_id)
     for conflict in conflicts:
         auto_resolve(conflict)  # NUNCA fazer isso
 ```
 
-#### **Principio 2: Preservacao de Template**
+#### **Princípio 2: Preservação de Template**
 
 ```python
 # CORRETO: Ajuste afeta apenas instancia
@@ -176,10 +176,10 @@ def adjust_instance(instance_id: int, new_start: time):
     save(instance)
 ```
 
-#### **Principio 3: Confirmacao Explicita**
+#### **Princípio 3: Confirmação Explicita**
 
 ```python
-# CORRETO: Requer confirmacao
+# CORRETO: Requer confirmação
 if conflicts_detected:
     print("Conflitos encontrados:")
     for c in conflicts:
@@ -191,29 +191,29 @@ if conflicts_detected:
 
 ---
 
-## 3. Stack Tecnologica
+## 3. Stack Tecnológica
 
 ### 3.1. Core
 
-| Componente | Tecnologia | Versao | Razao                     |
+| Componente | Tecnologia | Versão | Razão                     |
 | ---------- | ---------- | ------ | ------------------------- |
 | Linguagem  | Python     | 3.13+  | Produtividade, ecosystem  |
 | CLI        | Typer      | 0.x    | Type hints, auto-complete |
 | ORM        | SQLModel   | 0.0.x  | Pydantic + SQLAlchemy     |
-| Database   | SQLite     | 3.x    | Zero-config, portavel     |
+| Database   | SQLite     | 3.x    | Zero-config, portável     |
 | Output     | Rich       | 13.x   | Terminal formatting       |
 
 ### 3.2. Desenvolvimento
 
-| Componente | Tecnologia | Razao                  |
+| Componente | Tecnologia | Razão                  |
 | ---------- | ---------- | ---------------------- |
-| Testes     | pytest     | Padrao de facto Python |
-| Coverage   | pytest-cov | Metricas de cobertura  |
-| Linting    | ruff       | Rapido, moderno        |
-| Type Check | mypy       | Seguranca de tipos     |
+| Testes     | pytest     | Padrão de facto Python |
+| Coverage   | pytest-cov | Métricas de cobertura  |
+| Linting    | ruff       | Rápido, moderno        |
+| Type Check | mypy       | Segurança de tipos     |
 | VCS        | Git        | Gitflow workflow       |
 
-### 3.3. Dependencias Principais
+### 3.3. Dependências Principais
 
 ```
 sqlmodel>=0.0.14
@@ -222,36 +222,36 @@ rich>=13.0.0
 python-dateutil>=2.8.0
 ```
 
-**Filosofia:** Minimas dependencias, maxima estabilidade.
+**Filosofia:** Mínimas dependências, máxima estabilidade.
 
 ---
 
-## 4. Camadas da Aplicacao
+## 4. Camadas da Aplicação
 
 ### 4.1. CLI Commands Layer
 
-**Localizacao:** `cli/src/timeblock/commands/`
+**Localização:** `cli/src/timeblock/commands/`
 
-**Responsabilidade:** Interface com usuario, parsing de argumentos.
+**Responsabilidade:** Interface com usuário, parsing de argumentos.
 
 **Estrutura:**
 
 ```
 commands/
-├── habit.py       # Comandos de habitos
+├── habit.py       # Comandos de hábitos
 ├── task.py        # Comandos de tarefas
 ├── routine.py     # Comandos de rotinas
 ├── timer.py       # Comandos de timer
-├── report.py      # Relatorios
+├── report.py      # Relatórios
 └── ...
 ```
 
-**Principios:**
+**Princípios:**
 
-- Commands sao thin wrappers
-- Validacao basica de input
+- Commands são thin wrappers
+- Validação básica de input
 - Delegam para Services
-- Formatam output para usuario
+- Formatam output para usuário
 
 **Exemplo:**
 
@@ -261,10 +261,10 @@ def create(
     title: str = typer.Argument(...),
     start: str = typer.Option(..., "--start"),
 ):
-    """Cria novo habito."""
-    # 1. Valida input basico
+    """Cria novo hábito."""
+    # 1. Valida input básico
     if not title:
-        console.print("[ERROR] Titulo obrigatorio")
+        console.print("[ERROR] Titulo obrigatório")
         raise typer.Exit(1)
 
     # 2. Delega para service
@@ -274,40 +274,40 @@ def create(
     )
 
     # 3. Formata output
-    console.print(f"[OK] Habito criado: {habit.title}")
+    console.print(f"[OK] Hábito criado: {habit.title}")
 ```
 
 ### 4.2. Services Layer
 
-**Localizacao:** `cli/src/timeblock/services/`
+**Localização:** `cli/src/timeblock/services/`
 
-**Responsabilidade:** Logica de negocio, orquestracao.
+**Responsabilidade:** Lógica de negócio, orquestração.
 
 **Estrutura:**
 
 ```
 services/
-├── habit_service.py             # CRUD habitos
-├── habit_instance_service.py    # Gestao de instancias
-├── event_reordering_service.py  # Deteccao de conflitos
-├── task_service.py              # Gestao de tarefas
-├── routine_service.py           # Gestao de rotinas
+├── habit_service.py             # CRUD hábitos
+├── habit_instance_service.py    # Gestão de instancias
+├── event_reordering_service.py  # Detecção de conflitos
+├── task_service.py              # Gestão de tarefas
+├── routine_service.py           # Gestão de rotinas
 ├── timer_service.py             # Timer tracking
 └── ...
 ```
 
-**Principios:**
+**Princípios:**
 
 - Stateless (sem estado interno)
-- Metodos estaticos ou de classe
-- Transacoes DB isoladas
+- Métodos estáticos ou de classe
+- Transações DB isoladas
 - Business rules centralizadas
 
 **Exemplo:**
 
 ```python
 class HabitInstanceService:
-    """Service para gestao de instancias de habitos."""
+    """Service para gestão de instancias de hábitos."""
 
     @staticmethod
     def generate_instances(
@@ -315,10 +315,10 @@ class HabitInstanceService:
         start_date: date,
         end_date: date
     ) -> list[HabitInstance]:
-        """Gera instancias baseadas em recorrencia.
+        """Gera instancias baseadas em recorrência.
 
         Args:
-            habit_id: ID do habito template
+            habit_id: ID do hábito template
             start_date: Data inicial
             end_date: Data final
 
@@ -347,12 +347,12 @@ class HabitInstanceService:
 **Por que Stateless:**
 
 - Testabilidade (sem setup/teardown complexo)
-- Concorrencia (sem race conditions)
-- Simplicidade (facil entender fluxo)
+- Concorrência (sem race conditions)
+- Simplicidade (fácil entender fluxo)
 
 ### 4.3. Models Layer
 
-**Localizacao:** `cli/src/timeblock/models/`
+**Localização:** `cli/src/timeblock/models/`
 
 **Responsabilidade:** Estrutura de dados, relacionamentos.
 
@@ -371,18 +371,18 @@ models/
 └── event.py              # Union type Event
 ```
 
-**Principios:**
+**Princípios:**
 
 - SQLModel (Pydantic + SQLAlchemy)
 - Type hints completos
-- Validacao automatica
-- Relationships explicitos
+- Validação automática
+- Relationships explícitos
 
 **Exemplo:**
 
 ```python
 class HabitInstance(SQLModel, table=True):
-    """Instancia de habito em data especifica."""
+    """Instancia de habito em data específica."""
 
     __tablename__ = "habit_instances"
 
@@ -400,7 +400,7 @@ class HabitInstance(SQLModel, table=True):
 
     @property
     def is_overdue(self) -> bool:
-        """Verifica se instancia esta atrasada."""
+        """Verifica se instância está atrasada."""
         if self.status != Status.PENDING:
             return False
         now = datetime.now()
@@ -410,9 +410,9 @@ class HabitInstance(SQLModel, table=True):
 
 ### 4.4. Database Layer
 
-**Localizacao:** `cli/src/timeblock/database/`
+**Localização:** `cli/src/timeblock/database/`
 
-**Responsabilidade:** Gerenciamento de conexoes, migrations.
+**Responsabilidade:** Gerenciamento de conexões, migrations.
 
 **Estrutura:**
 
@@ -433,11 +433,11 @@ DB_PATH = Path.home() / ".timeblock" / "timeblock.db"
 
 @contextmanager
 def get_session():
-    """Context manager para sessao SQLite.
+    """Context manager para sessão SQLite.
 
     Garante:
-    - Conexao unica por operacao
-    - Cleanup automatico
+    - Conexão única por operação
+    - Cleanup automático
     - Thread-safety
     """
     engine = create_engine(
@@ -453,7 +453,7 @@ def get_session():
 
 ### 4.5. Utils Layer
 
-**Localizacao:** `cli/src/timeblock/utils/`
+**Localização:** `cli/src/timeblock/utils/`
 
 **Responsabilidade:** Funcionalidades transversais.
 
@@ -469,12 +469,12 @@ utils/
 └── event_date_filters.py   # Filtros de eventos
 ```
 
-**Principios:**
+**Princípios:**
 
-- Pure functions quando possivel
+- Pure functions quando possível
 - Sem side effects
-- Altamente testaveis
-- Reutilizaveis
+- Altamente testáveis
+- Reutilizáveis
 
 ---
 
@@ -551,7 +551,7 @@ class Habit(SQLModel, table=True):
     instances: list["HabitInstance"] = Relationship(back_populates="habit")
 ```
 
-**HabitInstance (Ocorrencia):**
+**HabitInstance (Ocorrência):**
 
 ```python
 class HabitInstance(SQLModel, table=True):
@@ -570,7 +570,7 @@ class HabitInstance(SQLModel, table=True):
     habit: "Habit" = Relationship(back_populates="instances")
 ```
 
-**Task (Evento Unico):**
+**Task (Evento Único):**
 
 ```python
 class Task(SQLModel, table=True):
@@ -629,10 +629,10 @@ class SkipReason(str, Enum):
 
 ## 6. Fluxos Principais
 
-### 6.1. Criacao e Geracao de Instancias
+### 6.1. Criação e Geração de Instâncias
 
 ```
-Usuario CLI
+Usuário CLI
     │
     │ timeblock habit create "Academia" --start 07:00 --generate 3
     v
@@ -648,7 +648,7 @@ Usuario CLI
          v
 ┌──────────────────────────┐
 │ HabitInstanceService     │  5. Gera instancias
-└────────┬─────────────────┘  6. Para proximos 3 meses
+└────────┬─────────────────┘  6. Para próximos 3 meses
          │
          v
 ┌──────────────────────┐
@@ -656,39 +656,39 @@ Usuario CLI
 └──────────────────────┘
 ```
 
-### 6.2. Deteccao de Conflitos
+### 6.2. Detecção de Conflitos
 
 ```
-Usuario ajusta horario
+Usuário ajusta horário
     │
     │ timeblock habit edit <id> --start 09:00
     v
 ┌────────────────────────────┐
-│ HabitInstanceService       │  1. Atualiza horario
+│ HabitInstanceService       │  1. Atualiza horário
 └──────────┬─────────────────┘
            │
            v
 ┌────────────────────────────┐
 │ EventReorderingService     │  2. Detecta conflitos
-└──────────┬─────────────────┘  3. Lista sobreposicoes
+└──────────┬─────────────────┘  3. Lista sobreposições
            │
            v
       Conflitos?
        /      \
-    Sim       Nao
+    Sim       Não
      │         │
      v         └──→ [OK] Atualizado
 ┌──────────────────────┐
-│ Apresenta conflitos  │  4. Mostra ao usuario
-└──────────┬───────────┘  5. Pede confirmacao
+│ Apresenta conflitos  │  4. Mostra ao usuário
+└──────────┬───────────┘  5. Pede confirmação
            │
            v
-    Usuario confirma?
+    Usuário confirma?
        /      \
-    Sim       Nao
+    Sim       Não
      │         │
      v         └──→ Cancelado
-  Salva
+   Salva
 ```
 
 ### 6.3. Timer Workflow
@@ -717,83 +717,83 @@ Usuario ajusta horario
 
 ---
 
-## 7. Decisoes Arquiteturais
+## 7. Decisões Arquiteturais
 
 ### ADR-001: SQLModel como ORM
 
-**Decisao:** Usar SQLModel ao inves de SQLAlchemy puro.
+**Decisão:** Usar SQLModel ao invés de SQLAlchemy puro.
 
-**Razao:**
+**Razão:**
 
-- Pydantic integrado (validacao gratis)
+- Pydantic integrado (validação grátis)
 - Type hints nativos
 - API mais simples
-- Serializacao JSON automatica
+- Serialização JSON automática
 
 **Trade-offs:**
 
 - [-] Comunidade menor
-- [-] Alguns features avancados nao disponiveis
+- [-] Alguns features avançados não disponíveis
 
 ### ADR-002: Stateless Services
 
-**Decisao:** Services sem estado interno, metodos estaticos.
+**Decisão:** Services sem estado interno, métodos estáticos.
 
-**Razao:**
+**Razão:**
 
 - Testabilidade superior
 - Sem race conditions
-- Fluxo facil de entender
+- Fluxo fácil de entender
 
 ### ADR-003: SQLite Embedded
 
-**Decisao:** SQLite local sem servidor.
+**Decisão:** SQLite local sem servidor.
 
-**Razao:**
+**Razão:**
 
-- Zero configuracao
+- Zero configuração
 - Portabilidade total
 - Suficiente para single-user
 
 **Trade-offs:**
 
-- [-] Sem concorrencia multi-processo
+- [-] Sem concorrência multi-processo
 
 ### ADR-004: Typer para CLI
 
-**Decisao:** Usar Typer ao inves de Click puro.
+**Decisão:** Usar Typer ao invés de Click puro.
 
-**Razao:**
+**Razão:**
 
 - Type hints nativos
-- Auto-complete automatico
-- Baseado em Click (compativel)
+- Auto-complete automático
+- Baseado em Click (compatível)
 
 ### ADR-005: Offline-First
 
-**Decisao:** Sistema funciona 100% offline.
+**Decisão:** Sistema funciona 100% offline.
 
-**Razao:**
+**Razão:**
 
-- Independencia de conexao
+- Independência de conexão
 - Performance garantida
 - Privacidade total
 
 ### ADR-006: User Control Philosophy
 
-**Decisao:** Sistema informa mas NAO decide.
+**Decisão:** Sistema informa mas NAO decide.
 
-**Razao:**
+**Razão:**
 
-- Usuario conhece contexto completo
-- Evita automacoes indesejadas
-- Preserva intencao original
+- Usuário conhece contexto completo
+- Evita automações indesejadas
+- Preserva intenção original
 
 ---
 
-## 8. Padroes e Convencoes
+## 8. Padrões e Convenções
 
-### 8.1. Estrutura de Diretorios
+### 8.1. Estrutura de Diretórios
 
 ```
 cli/
@@ -805,17 +805,17 @@ cli/
 │       ├── database/      # DB management
 │       └── utils/         # Helpers
 ├── tests/
-│   ├── unit/              # Testes unitarios
-│   ├── integration/       # Testes integracao
+│   ├── unit/              # Testes unitários
+│   ├── integration/       # Testes integração
 │   └── e2e/               # Testes end-to-end
-└── docs/                  # Documentacao
+└── docs/                  # Documentação
 ```
 
 ### 8.2. Naming Conventions
 
 **Arquivos:**
 
-- `snake_case.py` para modulos
+- `snake_case.py` para módulos
 - `test_<module>.py` para testes
 
 **Classes:**
@@ -823,10 +823,10 @@ cli/
 - `PascalCase` para classes
 - `Test<Feature>` para classes de teste
 
-**Funcoes/Metodos:**
+**Funções/Métodos:**
 
-- `snake_case` para funcoes
-- `test_<behavior>` para metodos de teste
+- `snake_case` para funções
+- `test_<behavior>` para métodos de teste
 
 **Constantes:**
 
@@ -863,24 +863,24 @@ def generate_instances(
 
 ```python
 def calculate_streak(habit_id: int) -> int:
-    """Calcula streak atual do habito.
+    """Calcula streak atual do hábito.
 
     Conta dias consecutivos com status DONE,
-    do mais recente para tras.
+    do mais recente para trás.
 
     Args:
-        habit_id: ID do habito
+        habit_id: ID do hábito
 
     Returns:
-        Numero de dias consecutivos
+        Número de dias consecutivos
 
     Raises:
-        ValueError: Se habit_id invalido
+        ValueError: Se habit_id inválido
     """
     pass
 ```
 
-### 8.6. Padroes de Teste
+### 8.6. Padrões de Teste
 
 **Estrutura:**
 
@@ -900,17 +900,17 @@ tests/
 **Naming:**
 
 - Classes: `TestBR<Domain><Number>`
-- Metodos: `test_br_<domain>_<number>_<scenario>`
+- Métodos: `test_br_<domain>_<number>_<scenario>`
 
-**Padrao BDD:**
+**Padrão BDD:**
 
 ```python
 def test_br_streak_001_counts_done(self):
     """Streak conta dias consecutivos DONE.
 
-    DADO: Habito com 5 instancias DONE consecutivas
+    DADO: Hábito com 5 instancias DONE consecutivas
     QUANDO: Calcular streak
-    ENTAO: Deve retornar 5
+    ENTÃO: Deve retornar 5
 
     BR: BR-STREAK-001
     """
@@ -923,16 +923,16 @@ def test_br_streak_001_counts_done(self):
 
 **Branches:**
 
-- `main` - producao
+- `main` - produção
 - `develop` - desenvolvimento
 - `feat/*` - features
 - `fix/*` - bugfixes
-- `refactor/*` - refatoracoes
+- `refactor/*` - refatorações
 
 **Commits:**
 
 ```
-type(scope): Descricao em Portugues
+type(scope): Descrição em Português
 
 Corpo opcional
 
@@ -943,15 +943,15 @@ Footer opcional
 
 ---
 
-## 9. Evolucao Futura
+## 9. Evolução Futura
 
-### v1.4.0 - Consolidacao
+### v1.4.0 - Consolidação
 
-- Documentacao consolidada
+- Documentação consolidada
 - Testes reorganizados
 - CI/CD pipeline
 
-### v2.0.0 - Sincronizacao
+### v2.0.0 - Sincronização
 
 - Sync Linux <-> Android (Termux)
 - UUID como primary keys
@@ -960,13 +960,13 @@ Footer opcional
 
 ### v3.0.0 - Analytics
 
-- Dashboard de metricas
-- Streak tracking avancado
-- Reports automaticos
+- Dashboard de métricas
+- Streak tracking avançado
+- Reports automáticos
 
 ---
 
-## Referencias
+## Referências
 
 - **SQLModel:** <https://sqlmodel.tiangolo.com/>
 - **Typer:** <https://typer.tiangolo.com/>
@@ -977,4 +977,4 @@ Footer opcional
 ---
 
 - **Documento consolidado em:** 28 de Novembro de 2025
-- **Este e o SSOT para arquitetura do sistema**
+- **Este é o SSOT para arquitetura do sistema**

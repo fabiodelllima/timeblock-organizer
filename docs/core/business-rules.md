@@ -1,15 +1,17 @@
 # Business Rules - TimeBlock Organizer
 
-**Versao:** 3.0.0
+**Versão:** 3.0.0
+
 **Data:** 28 de Novembro de 2025
+
 **Status:** Consolidado (SSOT)
 
 ---
 
-## Indice
+## Índice
 
-1. [Introducao e Fundamentos](#1-introducao-e-fundamentos)
-2. [Conceitos do Dominio](#2-conceitos-do-dominio)
+1. [Introdução e Fundamentos](#1-introdução-e-fundamentos)
+2. [Conceitos do Domínio](#2-conceitos-do-domínio)
 3. [Routine](#3-routine)
 4. [Habit](#4-habit)
 5. [HabitInstance](#5-habitinstance)
@@ -18,66 +20,66 @@
 8. [Task](#8-task)
 9. [Timer](#9-timer)
 10. [Event Reordering](#10-event-reordering)
-11. [Validacoes Globais](#11-validacoes-globais)
+11. [Validações Globais](#11-validações-globais)
 
 ---
 
-## 1. Introducao e Fundamentos
+## 1. Introdução e Fundamentos
 
-### 1.1. O Que Sao Regras de Negocio?
+### 1.1. O Que São Regras de Negócio?
 
-Regras de negocio sao politicas, restricoes e logicas que definem comportamento do sistema:
+Regras de negócio são políticas, restrições e lógicas que definem comportamento do sistema:
 
-- **O que e permitido:** Operacoes validas
-- **O que e obrigatorio:** Campos e operacoes mandatorios
-- **Como o sistema reage:** Comportamento automatico
-- **O que e calculado:** Derivacoes automaticas
-- **Como conflitos sao resolvidos:** Logica de resolucao
+- **O que é permitido:** Operações válidas
+- **O que é obrigatório:** Campos e operações mandatórios
+- **Como o sistema reage:** Comportamento automático
+- **O que é calculado:** Derivações automáticas
+- **Como conflitos são resolvidos:** Lógica de resolução
 
 ### 1.2. Hierarquia de Regras
 
-**Nivel 1 - Estruturais (Sempre Aplicadas):**
+**Nível 1 - Estruturais (Sempre Aplicadas):**
 
 - Garantem integridade estrutural
 - Viola-las torna sistema inconsistente
 - Ex: "Todo HabitInstance deve ter um Habit pai"
 
-**Nivel 2 - Dominio (Operacoes Normais):**
+**Nível 2 - Domínio (Operações Normais):**
 
-- Implementam logica de time blocking
+- Implementam lógica de time blocking
 - Podem ser sobrescritas com justificativa
-- Ex: "Eventos nao devem conflitar"
+- Ex: "Eventos não devem conflitar"
 
-**Nivel 3 - Preferencia (Sugestoes):**
+**Nível 3 - Preferência (Sugestões):**
 
-- Guiam comportamento padrao
+- Guiam comportamento padrão
 - Facilmente ignoradas
-- Ex: "Sugerir cor padrao baseada em categoria"
+- Ex: "Sugerir cor padrão baseada em categoria"
 
-### 1.3. Principios Fundamentais
+### 1.3. Princípios Fundamentais
 
-**Adaptabilidade:** Sistema se adapta a realidade do usuario. Quando algo atrasa, informa e permite reorganizacao.
+**Adaptabilidade:** Sistema se adapta a realidade do usuário. Quando algo atrasa, informa e permite reorganização.
 
-**Preservacao de Intencao:** Mudancas manuais preservam intencao original. Se planejou 30min de meditacao, duracao e mantida mesmo que horario mude.
+**Preservação de Intenção:** Mudanças manuais preservam intenção original. Se planejou 30min de meditação, duração é mantida mesmo que horário mude.
 
-**Transparencia:** Toda mudanca e explicavel e reversivel. Usuario sempre tem controle final.
+**Transparência:** Toda mudança é explicável e reversível. Usuário sempre tem controle final.
 
-**Simplicidade Progressiva:** Funcionalidade basica simples, sofisticacao quando necessario.
+**Simplicidade Progressiva:** Funcionalidade básica simples, sofisticação quando necessário.
 
-**Controle do Usuario:** Sistema NUNCA altera agenda automaticamente. Apenas detecta, informa e sugere.
+**Controle do Usuário:** Sistema NUNCA altera agenda automaticamente. Apenas detecta, informa e sugere.
 
 ---
 
-## 2. Conceitos do Dominio
+## 2. Conceitos do Domínio
 
 ### 2.1. Entidades Principais
 
-| Entidade          | Descricao                                              |
+| Entidade          | Descrição                                              |
 | ----------------- | ------------------------------------------------------ |
-| **Routine**       | Template semanal que agrupa habitos relacionados       |
+| **Routine**       | Template semanal que agrupa hábitos relacionados       |
 | **Habit**         | Evento recorrente, template do "ideal"                 |
-| **HabitInstance** | Ocorrencia real em data especifica, o "real"           |
-| **Task**          | Evento pontual nao-recorrente (checkbox com data/hora) |
+| **HabitInstance** | Ocorrência real em data específica, o "real"           |
+| **Task**          | Evento pontual não-recorrente (checkbox com data/hora) |
 | **Timer**         | Rastreador de tempo ativo                              |
 | **TimeLog**       | Registro de tempo efetivamente gasto                   |
 | **Tag**           | Categoria para organizar habits e tasks                |
@@ -99,15 +101,15 @@ Routine (Morning Routine)
 Task (Dentista 14:30 - independente de routine)
 ```
 
-### 2.3. Glossario
+### 2.3. Glossário
 
-| Termo                | Definicao                                               |
+| Termo                | Definição                                               |
 | -------------------- | ------------------------------------------------------- |
 | **Conflito**         | Dois eventos ocupam mesmo intervalo de tempo            |
 | **Event Reordering** | Processo de reorganizar eventos quando um atrasa        |
 | **Streak**           | Dias consecutivos com habito DONE                       |
 | **Skip**             | Pular habito conscientemente (com ou sem justificativa) |
-| **Substatus**        | Qualificacao adicional de DONE ou NOT_DONE              |
+| **Substatus**        | Qualificação adicional de DONE ou NOT_DONE              |
 | **Completion %**     | Percentual de tempo realizado vs planejado              |
 
 ---
@@ -116,18 +118,18 @@ Task (Dentista 14:30 - independente de routine)
 
 ### BR-ROUTINE-001: Single Active Constraint
 
-**Descricao:** Apenas UMA rotina pode estar ativa por vez. Ativar uma rotina desativa automaticamente todas as outras.
+**Descrição:** Apenas UMA rotina pode estar ativa por vez. Ativar uma rotina desativa automaticamente todas as outras.
 
 **Regras:**
 
-1. Campo `is_active` e booleano (nao NULL)
+1. Campo `is_active` é booleano (não NULL)
 2. Apenas 1 rotina com `is_active = True` por vez
 3. Ativar rotina A desativa automaticamente rotina B
 4. Criar rotina NAO ativa automaticamente (requer `activate()`)
 5. Primeira rotina criada e ativada automaticamente
-6. Deletar rotina ativa nao deixa nenhuma ativa
+6. Deletar rotina ativa não deixa nenhuma ativa
 
-**Implementacao:**
+**Implementação:**
 
 ```python
 def activate_routine(routine_id: int, session: Session) -> Routine:
@@ -160,7 +162,7 @@ $ routine activate "Rotina Trabalho"
 
 ### BR-ROUTINE-002: Habit Belongs to Routine
 
-**Descricao:** Todo Habit DEVE pertencer a exatamente UMA rotina. Campo `routine_id` e obrigatorio (NOT NULL).
+**Descrição:** Todo Habit DEVE pertencer a exatamente UMA rotina. Campo `routine_id` é obrigatório (NOT NULL).
 
 **Modelo:**
 
@@ -180,10 +182,10 @@ Routine (1) ----< Habits (N)
 
 **Regras:**
 
-1. `routine_id` obrigatorio (NOT NULL)
-2. Foreign key valida (rotina deve existir)
-3. Habit nao pode existir sem rotina
-4. Deletar rotina com habits e bloqueado (RESTRICT)
+1. `routine_id` obrigatório (NOT NULL)
+2. Foreign key válida (rotina deve existir)
+3. Habit não pode existir sem rotina
+4. Deletar rotina com habits é bloqueado (RESTRICT)
 
 **Testes:**
 
@@ -195,16 +197,16 @@ Routine (1) ----< Habits (N)
 
 ### BR-ROUTINE-003: Task Independent of Routine
 
-**Descricao:** Task NAO pertence a rotina. E entidade independente.
+**Descrição:** Task NAO pertence a rotina. É entidade independente.
 
 **Regras:**
 
 1. Task NAO possui campo `routine_id`
-2. Task visivel independente de rotina ativa
-3. `task list` mostra todas tasks (nao filtra por rotina)
+2. Task visível independente de rotina ativa
+3. `task list` mostra todas tasks (não filtra por rotina)
 4. Deletar rotina NAO afeta tasks
 
-**Justificativa:** Tasks sao eventos pontuais que nao fazem parte de rotinas recorrentes.
+**Justificativa:** Tasks são eventos pontuais que não fazem parte de rotinas recorrentes.
 
 **Testes:**
 
@@ -216,7 +218,7 @@ Routine (1) ----< Habits (N)
 
 ### BR-ROUTINE-004: Activation Cascade
 
-**Descricao:** Ativar rotina define contexto padrao para comandos `habit`.
+**Descrição:** Ativar rotina define contexto padrão para comandos `habit`.
 
 **Regras:**
 
@@ -264,24 +266,24 @@ task list          # Mostra TODAS tasks
 
 ---
 
-### BR-ROUTINE-005: Validacao de Nome
+### BR-ROUTINE-005: Validação de Nome
 
-**Descricao:** Nome da rotina deve atender requisitos de validacao.
+**Descrição:** Nome da rotina deve atender requisitos de validação.
 
 **Regras:**
 
-1. Nome nao pode ser vazio (apos trim)
+1. Nome não pode ser vazio (após trim)
 2. Nome deve ter 1-200 caracteres
-3. Nome deve ser unico (case-insensitive)
+3. Nome deve ser único (case-insensitive)
 
-**Validacao:**
+**Validação:**
 
 ```python
 name = name.strip()
 if not name:
-    raise ValueError("Nome da rotina nao pode ser vazio")
+    raise ValueError("Nome da rotina não pode ser vazio")
 if len(name) > 200:
-    raise ValueError("Nome nao pode ter mais de 200 caracteres")
+    raise ValueError("Nome não pode ter mais de 200 caracteres")
 ```
 
 **Testes:**
@@ -294,14 +296,14 @@ if len(name) > 200:
 
 ### BR-ROUTINE-006: Soft Delete e Purge
 
-**Descricao:** Rotinas podem ser desativadas (soft delete) ou removidas permanentemente (purge).
+**Descrição:** Rotinas podem ser desativadas (soft delete) ou removidas permanentemente (purge).
 
-**Soft Delete (padrao):**
+**Soft Delete (padrão):**
 
 ```bash
 $ routine delete 1
 [WARN] Desativar rotina "Rotina Matinal"?
-       - 8 habitos permanecem vinculados
+       - 8 hábitos permanecem vinculados
        - Rotina pode ser reativada depois
 Confirmar? (s/N): s
 [OK] Rotina "Rotina Matinal" desativada
@@ -316,7 +318,7 @@ $ routine delete 1 --purge
 
 # Com habits - bloqueado
 $ routine delete 1 --purge
-[ERROR] Nao e possivel deletar rotina com habitos
+[ERROR] Não é possível deletar rotina com hábitos
 ```
 
 **Testes:**
@@ -331,25 +333,25 @@ $ routine delete 1 --purge
 
 ### BR-HABIT-001: Estrutura de Habito
 
-**Descricao:** Habit e template de evento recorrente vinculado a Routine.
+**Descrição:** Habit é template de evento recorrente vinculado a Routine.
 
 **Campos:**
 
 ```python
 class Habit(SQLModel, table=True):
     id: int | None
-    routine_id: int                    # FK obrigatorio
+    routine_id: int                    # FK obrigatório
     title: str                         # 1-200 chars
-    scheduled_start: time              # Horario inicio
-    scheduled_end: time                # Horario fim
-    recurrence: Recurrence             # Padrao recorrencia
+    scheduled_start: time              # Horário inicio
+    scheduled_end: time                # Horário fim
+    recurrence: Recurrence             # Padrão recorrência
     color: str | None                  # Cor hexadecimal
     tag_id: int | None                 # FK opcional para Tag
 ```
 
-**Validacoes:**
+**Validações:**
 
-- Title vazio apos trim → ValueError
+- Title vazio após trim → ValueError
 - Title > 200 chars → ValueError
 - start >= end → ValueError
 
@@ -361,9 +363,9 @@ class Habit(SQLModel, table=True):
 
 ---
 
-### BR-HABIT-002: Padroes de Recorrencia
+### BR-HABIT-002: Padrões de Recorrência
 
-**Descricao:** Habit define quando se repete usando enum Recurrence.
+**Descrição:** Habit define quando se repete usando enum Recurrence.
 
 **Enum Recurrence:**
 
@@ -385,8 +387,8 @@ class Recurrence(Enum):
 
 ```bash
 habit create --title "Academia" --repeat WEEKDAYS
-habit create --title "Meditacao" --repeat EVERYDAY
-habit create --title "Revisao" --repeat FRIDAY
+habit create --title "Meditação" --repeat EVERYDAY
+habit create --title "Revisão" --repeat FRIDAY
 ```
 
 **Testes:**
@@ -397,9 +399,9 @@ habit create --title "Revisao" --repeat FRIDAY
 
 ---
 
-### BR-HABIT-003: Geracao de Instancias
+### BR-HABIT-003: Geração de Instâncias
 
-**Descricao:** Sistema gera HabitInstances durante criacao do habito com `--generate N`.
+**Descrição:** Sistema gera HabitInstances durante criação do habito com `--generate N`.
 
 **Comando:**
 
@@ -408,19 +410,19 @@ habit create --title "Academia" --start 07:00 --end 08:30 \
   --repeat WEEKDAYS --generate 3
 ```
 
-**Parametros:**
+**Parâmetros:**
 
-- `--generate N`: Gerar instancias para proximos N meses
-- Se omitido: nao gera instancias automaticamente
+- `--generate N`: Gerar instâncias para próximos N meses
+- Se omitido: não gera instâncias automaticamente
 
 **Comportamento:**
 
 - Data inicio: hoje (`date.today()`)
 - Data fim: hoje + N meses (`relativedelta`)
-- Respeita padrao de recorrencia
-- Nao duplica instancias existentes
+- Respeita padrão de recorrência
+- Não duplica instâncias existentes
 
-**Validacoes:**
+**Validações:**
 
 - N deve ser inteiro positivo
 - Recomendado: 1-12 meses
@@ -434,9 +436,9 @@ habit create --title "Academia" --start 07:00 --end 08:30 \
 
 ---
 
-### BR-HABIT-004: Modificacao de Habito
+### BR-HABIT-004: Modificação de Habito
 
-**Descricao:** Modificar Habit afeta apenas instancias futuras (PENDING).
+**Descrição:** Modificar Habit afeta apenas instâncias futuras (PENDING).
 
 **Comando:**
 
@@ -446,10 +448,10 @@ habit update ID --start 08:00 --end 09:30
 
 **Comportamento:**
 
-1. Usuario modifica Habit (ex: muda horario)
-2. Sistema identifica instancias PENDING com date >= hoje
-3. Atualiza essas instancias
-4. Instancias DONE/NOT_DONE nao mudam
+1. Usuário modifica Habit (ex: muda horário)
+2. Sistema identifica instâncias PENDING com date >= hoje
+3. Atualiza essas instâncias
+4. Instâncias DONE/NOT_DONE não mudam
 
 **Testes:**
 
@@ -458,22 +460,22 @@ habit update ID --start 08:00 --end 09:30
 
 ---
 
-### BR-HABIT-005: Delecao de Habito
+### BR-HABIT-005: Deleção de Habito
 
-**Descricao:** Deletar Habit deleta instancias futuras mas preserva historico.
+**Descrição:** Deletar Habit deleta instâncias futuras mas preserva histórico.
 
 **Comportamento:**
 
-1. Instancias PENDING sao deletadas
-2. Instancias DONE/NOT_DONE sao preservadas (para reports)
-3. Habit e removido
+1. Instâncias PENDING são deletadas
+2. Instâncias DONE/NOT_DONE são preservadas (para reports)
+3. Habit é removido
 
 **Cascade:**
 
 ```python
 instances: list[HabitInstance] = Relationship(
     back_populates="habit",
-    cascade_delete=True  # Deleta instancias automaticamente
+    cascade_delete=True  # Deleta instâncias automaticamente
 )
 ```
 
@@ -488,18 +490,18 @@ instances: list[HabitInstance] = Relationship(
 
 ### BR-HABITINSTANCE-001: Status Principal
 
-**Descricao:** HabitInstance possui 3 status principais.
+**Descrição:** HabitInstance possui 3 status principais.
 
 **Enum Status:**
 
 ```python
 class Status(str, Enum):
-    PENDING = "pending"      # Agendado, nao iniciado
+    PENDING = "pending"      # Agendado, não iniciado
     DONE = "done"            # Realizado
-    NOT_DONE = "not_done"    # Nao realizado
+    NOT_DONE = "not_done"    # Não realizado
 ```
 
-**Transicoes:**
+**Transições:**
 
 ```plaintext
 PENDING
@@ -517,9 +519,9 @@ NOT_DONE → [FINAL]
 
 ---
 
-### BR-HABITINSTANCE-002: Substatus Obrigatorio
+### BR-HABITINSTANCE-002: Substatus Obrigatório
 
-**Descricao:** Status finais requerem substatus correspondente.
+**Descrição:** Status finais requerem substatus correspondente.
 
 **DoneSubstatus (quando DONE):**
 
@@ -537,23 +539,23 @@ class DoneSubstatus(str, Enum):
 class NotDoneSubstatus(str, Enum):
     SKIPPED_JUSTIFIED = "skipped_justified"
     SKIPPED_UNJUSTIFIED = "skipped_unjustified"
-    IGNORED = "ignored"      # Timeout sem acao
+    IGNORED = "ignored"      # Timeout sem ação
 ```
 
-**Regras de Consistencia:**
+**Regras de Consistência:**
 
 1. DONE requer done_substatus preenchido
 2. NOT_DONE requer not_done_substatus preenchido
-3. PENDING nao pode ter substatus
-4. Substatus sao mutuamente exclusivos
+3. PENDING não pode ter substatus
+4. Substatus são mutuamente exclusivos
 
-**Validacao:**
+**Validação:**
 
 ```python
 def validate_status_consistency(self) -> None:
     if self.status == Status.DONE:
         if self.done_substatus is None:
-            raise ValueError("done_substatus obrigatorio quando status=DONE")
+            raise ValueError("done_substatus obrigatório quando status=DONE")
         if self.not_done_substatus is not None:
             raise ValueError("not_done_substatus deve ser None quando status=DONE")
     # ... similar para NOT_DONE e PENDING
@@ -570,7 +572,7 @@ def validate_status_consistency(self) -> None:
 
 ### BR-HABITINSTANCE-003: Completion Thresholds
 
-**Descricao:** DoneSubstatus e calculado baseado em completion percentage.
+**Descrição:** DoneSubstatus é calculado baseado em completion percentage.
 
 **Thresholds:**
 
@@ -596,13 +598,13 @@ completion = (actual_duration / expected_duration) * 100
 
 ---
 
-### BR-HABITINSTANCE-004: Timeout Automatico
+### BR-HABITINSTANCE-004: Timeout Automático
 
-**Descricao:** Instancia PENDING sem acao apos prazo e marcada como IGNORED.
+**Descrição:** Instancia PENDING sem ação após prazo é marcada como IGNORED.
 
 **Regra:**
 
-- Instancia PENDING > 48h apos scheduled_start
+- Instancia PENDING > 48h após scheduled_start
 - Automaticamente: NOT_DONE + IGNORED
 
 **Property:**
@@ -617,7 +619,7 @@ def is_overdue(self) -> bool:
     return now > scheduled
 ```
 
-**Nota:** Timeout automatico esta documentado mas ainda nao implementado no MVP. Property `is_overdue` apenas verifica atraso.
+**Nota:** Timeout automático está documentado mas ainda não implementado no MVP. Property `is_overdue` apenas verifica atraso.
 
 **Testes:**
 
@@ -626,9 +628,9 @@ def is_overdue(self) -> bool:
 
 ---
 
-### BR-HABITINSTANCE-005: Edicao de Instancia
+### BR-HABITINSTANCE-005: Edição de Instancia
 
-**Descricao:** Usuario pode editar horario de uma HabitInstance especifica.
+**Descrição:** Usuário pode editar horário de uma HabitInstance específica.
 
 **Comando:**
 
@@ -638,9 +640,9 @@ habit edit INSTANCE_ID --start 08:00 --end 09:30
 
 **Comportamento:**
 
-- Novo horario aplicado apenas aquela instancia
-- Outras instancias mantem horario do template
-- Nao afeta Habit (template)
+- Novo horário aplicado apenas àquela instância
+- Outras instâncias mantêm horário do template
+- Não afeta Habit (template)
 
 **Testes:**
 
@@ -651,9 +653,9 @@ habit edit INSTANCE_ID --start 08:00 --end 09:30
 
 ## 6. Skip
 
-### BR-SKIP-001: Categorizacao de Skip
+### BR-SKIP-001: Categorização de Skip
 
-**Descricao:** Skip de habit deve ser categorizado usando enum SkipReason.
+**Descrição:** Skip de habit deve ser categorizado usando enum SkipReason.
 
 **Enum SkipReason:**
 
@@ -684,30 +686,30 @@ habit skip INSTANCE_ID --reason HEALTH --note "Consulta medica"
 
 ### BR-SKIP-002: Campos de Skip
 
-**Descricao:** HabitInstance possui campos para rastrear skip.
+**Descrição:** HabitInstance possui campos para rastrear skip.
 
 **Campos:**
 
 ```python
-skip_reason: SkipReason | None    # Categoria (obrigatorio se justified)
+skip_reason: SkipReason | None    # Categoria (obrigatório se justified)
 skip_note: str | None             # Nota opcional (max 500 chars)
 ```
 
 **Regras:**
 
 1. SKIPPED_JUSTIFIED requer skip_reason
-2. SKIPPED_UNJUSTIFIED nao tem skip_reason
-3. skip_note e sempre opcional
+2. SKIPPED_UNJUSTIFIED não tem skip_reason
+3. skip_note é sempre opcional
 
-**Validacao:**
+**Validação:**
 
 ```python
 if self.not_done_substatus == NotDoneSubstatus.SKIPPED_JUSTIFIED:
     if self.skip_reason is None:
-        raise ValueError("skip_reason obrigatorio para SKIPPED_JUSTIFIED")
+        raise ValueError("skip_reason obrigatório para SKIPPED_JUSTIFIED")
 else:
     if self.skip_reason is not None:
-        raise ValueError("skip_reason so permitido com SKIPPED_JUSTIFIED")
+        raise ValueError("skip_reason só permitido com SKIPPED_JUSTIFIED")
 ```
 
 **Testes:**
@@ -720,15 +722,15 @@ else:
 
 ### BR-SKIP-003: Prazo para Justificar
 
-**Descricao:** Usuario tem 48h apos horario planejado para justificar skip.
+**Descrição:** Usuário tem 48h após horário planejado para justificar skip.
 
 **Comportamento:**
 
 - Dentro de 48h: pode adicionar/editar justificativa
-- Apos 48h: instancia marcada como IGNORED automaticamente
-- IGNORED nao pode receber justificativa retroativa
+- Apos 48h: instância marcada como IGNORED automaticamente
+- IGNORED não pode receber justificativa retroativa
 
-**Nota:** Timeout automatico documentado, implementacao pendente.
+**Nota:** Timeout automático documentado, implementação pendente.
 
 **Testes:**
 
@@ -739,14 +741,14 @@ else:
 
 ### BR-SKIP-004: CLI Prompt Interativo
 
-**Descricao:** Ao dar skip, CLI oferece prompt interativo para categorizar.
+**Descrição:** Ao dar skip, CLI oferece prompt interativo para categorizar.
 
 **Fluxo:**
 
 ```bash
 $ habit skip 42
 
-Por que voce esta pulando Academia hoje?
+Por que você esta pulando Academia hoje?
 
 [1] Saude
 [2] Trabalho
@@ -763,8 +765,8 @@ Escolha [1-9]: _
 
 **Comportamento:**
 
-- Opcoes 1-8: SKIPPED_JUSTIFIED + skip_reason
-- Opcao 9: SKIPPED_UNJUSTIFIED + skip_reason=None
+- Opções 1-8: SKIPPED_JUSTIFIED + skip_reason
+- Opção 9: SKIPPED_UNJUSTIFIED + skip_reason=None
 
 **Testes:**
 
@@ -775,15 +777,15 @@ Escolha [1-9]: _
 
 ## 7. Streak
 
-### BR-STREAK-001: Algoritmo de Calculo
+### BR-STREAK-001: Algoritmo de Cálculo
 
-**Descricao:** Streak conta dias consecutivos com `status = DONE`, do mais recente para tras.
+**Descrição:** Streak conta dias consecutivos com `status = DONE`, do mais recente para trás.
 
 **Algoritmo:**
 
 ```python
 def calculate_streak(habit_id: int) -> int:
-    instances = get_instances_by_date(habit_id)  # Ordem cronologica
+    instances = get_instances_by_date(habit_id)  # Ordem cronológica
     streak = 0
 
     for instance in reversed(instances):  # Mais recente primeiro
@@ -791,14 +793,14 @@ def calculate_streak(habit_id: int) -> int:
             streak += 1
         elif instance.status == Status.NOT_DONE:
             break  # Para no primeiro NOT_DONE
-        # PENDING nao conta nem quebra
+        # PENDING não conta nem quebra
 
     return streak
 ```
 
 **Regras:**
 
-1. Direcao: presente → passado
+1. Direção: presente → passado
 2. Conta: apenas DONE (qualquer substatus)
 3. Para: no primeiro NOT_DONE
 4. Ignora: PENDING (futuro)
@@ -811,13 +813,13 @@ def calculate_streak(habit_id: int) -> int:
 
 ---
 
-### BR-STREAK-002: Condicoes de Quebra
+### BR-STREAK-002: Condições de Quebra
 
-**Descricao:** Streak SEMPRE quebra quando `status = NOT_DONE`, independente do substatus.
+**Descrição:** Streak SEMPRE quebra quando `status = NOT_DONE`, independente do substatus.
 
 **Todos quebram:**
 
-| Substatus           | Quebra? | Impacto Psicologico |
+| Substatus           | Quebra? | Impacto Psicológico |
 | ------------------- | ------- | ------------------- |
 | SKIPPED_JUSTIFIED   | Sim     | Baixo               |
 | SKIPPED_UNJUSTIFIED | Sim     | Medio               |
@@ -825,10 +827,10 @@ def calculate_streak(habit_id: int) -> int:
 
 **Filosofia (Atomic Habits - James Clear):**
 
-- Consistencia > Perfeicao
+- Consistência > Perfeição
 - "Nunca pule dois dias seguidos"
-- Skip consciente ainda e quebra
-- Diferenciamos impacto psicologico, nao o fato da quebra
+- Skip consciente ainda é quebra
+- Diferenciamos impacto psicológico, não o fato da quebra
 
 **Testes:**
 
@@ -838,13 +840,13 @@ def calculate_streak(habit_id: int) -> int:
 
 ---
 
-### BR-STREAK-003: Condicoes de Manutencao
+### BR-STREAK-003: Condições de Manutenção
 
-**Descricao:** Streak SEMPRE mantem quando `status = DONE`, independente do substatus.
+**Descrição:** Streak SEMPRE mantêm quando `status = DONE`, independente do substatus.
 
-**Todos mantem:**
+**Todos mantêm:**
 
-| Substatus | Mantem? | Feedback      |
+| Substatus | Mantém? | Feedback      |
 | --------- | ------- | ------------- |
 | FULL      | Sim     | [OK] Perfeito |
 | PARTIAL   | Sim     | Encorajador   |
@@ -863,15 +865,15 @@ def calculate_streak(habit_id: int) -> int:
 
 ### BR-STREAK-004: Dias Sem Instancia
 
-**Descricao:** Dias sem instancia nao quebram streak.
+**Descrição:** Dias sem instância não quebram streak.
 
 **Exemplo:**
 
-- Habit e WEEKDAYS (seg-sex)
-- Hoje e sabado (sem instancia)
-- Streak continua valido
+- Habit é WEEKDAYS (seg-sex)
+- Hoje é sábado (sem instância)
+- Streak continua válido
 
-**Regra:** Apenas instancias NOT_DONE quebram streak. Ausencia de instancia e neutra.
+**Regra:** Apenas instâncias NOT_DONE quebram streak. Ausência de instância é neutra.
 
 **Testes:**
 
@@ -884,7 +886,7 @@ def calculate_streak(habit_id: int) -> int:
 
 ### BR-TASK-001: Estrutura de Task
 
-**Descricao:** Task e evento pontual nao-recorrente. Funciona como checkbox com data/hora.
+**Descrição:** Task é evento pontual não-recorrente. Funciona como checkbox com data/hora.
 
 **Campos:**
 
@@ -899,7 +901,7 @@ class Task(SQLModel, table=True):
     tag_id: int | None                 # FK opcional para Tag
 ```
 
-**Caracteristicas:**
+**Características:**
 
 - NAO tem status enum (usa completed_datetime)
 - NAO tem priority
@@ -914,9 +916,9 @@ class Task(SQLModel, table=True):
 
 ---
 
-### BR-TASK-002: Conclusao de Task
+### BR-TASK-002: Conclusão de Task
 
-**Descricao:** Task e marcada como concluida via `completed_datetime`.
+**Descrição:** Task é marcada como concluída via `completed_datetime`.
 
 **Estados:**
 
@@ -927,14 +929,14 @@ class Task(SQLModel, table=True):
 
 ```bash
 $ task complete 42
-[OK] Task "Dentista" marcada como concluida
+[OK] Task "Dentista" marcada como concluída
 ```
 
 **Comportamento:**
 
 - Sistema registra timestamp atual
 - Task sai da lista de pendentes
-- Aparece em historico
+- Aparece em histórico
 
 **Testes:**
 
@@ -943,16 +945,16 @@ $ task complete 42
 
 ---
 
-### BR-TASK-003: Independencia de Routine
+### BR-TASK-003: Independência de Routine
 
-**Descricao:** Tasks sao independentes de routines.
+**Descrição:** Tasks são independentes de routines.
 
 **Regras:**
 
-1. Task nao tem campo routine_id
+1. Task não tem campo routine_id
 2. `task list` mostra todas tasks
-3. Mudar rotina ativa nao afeta tasks
-4. Deletar rotina nao afeta tasks
+3. Mudar rotina ativa não afeta tasks
+4. Deletar rotina não afeta tasks
 
 **Testes:**
 
@@ -962,17 +964,17 @@ $ task complete 42
 
 ---
 
-### BR-TASK-004: Visualizacao e Listagem
+### BR-TASK-004: Visualização e Listagem
 
-**Descricao:** Tasks podem ser listadas com filtros.
+**Descrição:** Tasks podem ser listadas com filtros.
 
 **Filtros:**
 
-- Por status (pendentes, concluidas)
+- Por status (pendentes, concluídas)
 - Por data (hoje, semana, mes)
 - Por tag
 
-**Ordenacao:** Cronologica por scheduled_datetime
+**Ordenação:** Cronológica por scheduled_datetime
 
 **Comandos:**
 
@@ -991,11 +993,11 @@ task list --all        # Todas
 
 ---
 
-### BR-TASK-005: Atualizacao de Task
+### BR-TASK-005: Atualização de Task
 
-**Descricao:** Task pendente pode ser atualizada.
+**Descrição:** Task pendente pode ser atualizada.
 
-**Campos Atualizaveis:**
+**Campos Atualizáveis:**
 
 - title
 - description
@@ -1003,7 +1005,7 @@ task list --all        # Todas
 - color
 - tag_id
 
-**Restricao:** Task concluida nao pode ser editada.
+**Restrição:** Task concluída não pode ser editada.
 
 **Testes:**
 
@@ -1014,17 +1016,17 @@ task list --all        # Todas
 
 ### BR-TASK-006: Simplicidade Mantida
 
-**Descricao:** Tasks sao intencionalmente simples no MVP.
+**Descrição:** Tasks são intencionalmente simples no MVP.
 
 **NAO implementado:**
 
 - Timer tracking
 - Subtasks
 - Dependencias entre tasks
-- Priorizacao explicita
+- Priorização explícita
 - Checklist interno
 
-**Justificativa:** Foco do TimeBlock esta em habitos e rotinas. Tasks sao complemento para atividades pontuais.
+**Justificativa:** Foco do TimeBlock está em hábitos e rotinas. Tasks são complemento para atividades pontuais.
 
 ---
 
@@ -1032,7 +1034,7 @@ task list --all        # Todas
 
 ### BR-TIMER-001: Single Active Timer
 
-**Descricao:** Apenas UM timer pode estar ATIVO (RUNNING ou PAUSED) por vez.
+**Descrição:** Apenas UM timer pode estar ATIVO (RUNNING ou PAUSED) por vez.
 
 **Constraint:**
 
@@ -1043,8 +1045,8 @@ assert len(active_timers) <= 1
 
 **Comportamento:**
 
-- Timer finalizado nao bloqueia novo start
-- Multiplas sessoes permitidas (start → stop → start)
+- Timer finalizado não bloqueia novo start
+- Múltiplas sessões permitidas (start → stop → start)
 
 **Erro:**
 
@@ -1052,12 +1054,12 @@ assert len(active_timers) <= 1
 $ timer start Academia
 [OK] Timer iniciado: Academia (00:00 / 01:30)
 
-$ timer start Meditacao
-[ERROR] Timer ja ativo: Academia (15min decorridos)
+$ timer start Meditação
+[ERROR] Timer já ativo: Academia (15min decorridos)
 
-Opcoes:
-  [1] Pausar Academia e iniciar Meditacao
-  [2] Cancelar Academia (reset) e iniciar Meditacao
+Opções:
+  [1] Pausar Academia e iniciar Meditação
+  [2] Cancelar Academia (reset) e iniciar Meditação
   [3] Continuar com Academia
 ```
 
@@ -1069,9 +1071,9 @@ Opcoes:
 
 ---
 
-### BR-TIMER-002: Estados e Transicoes
+### BR-TIMER-002: Estados e Transições
 
-**Descricao:** Timer possui estados RUNNING e PAUSED.
+**Descrição:** Timer possui estados RUNNING e PAUSED.
 
 **Maquina de Estados:**
 
@@ -1107,14 +1109,14 @@ Opcoes:
 
 ### BR-TIMER-003: Stop vs Reset
 
-**Descricao:** `stop` e `reset` finalizam timer com comportamentos diferentes.
+**Descrição:** `stop` e `reset` finalizam timer com comportamentos diferentes.
 
 **stop:**
 
-- Fecha sessao atual e SALVA no banco
+- Fecha sessão atual e SALVA no banco
 - Marca instance como DONE
 - Calcula completion percentage
-- Permite start novamente (nova sessao)
+- Permite start novamente (nova sessão)
 
 **reset:**
 
@@ -1130,25 +1132,25 @@ Opcoes:
 
 ---
 
-### BR-TIMER-004: Multiplas Sessoes
+### BR-TIMER-004: Múltiplas Sessóes
 
-**Descricao:** Usuario pode fazer multiplas sessoes do mesmo habit no mesmo dia.
+**Descrição:** Usuário pode fazer múltiplas sessões do mesmo habit no mesmo dia.
 
 **Workflow:**
 
 ```python
-# Sessao 1 (manha)
+# Sessão 1 (manhá)
 timer1 = start_timer(instance_id=42)
 timer1.stop()  # SALVA (60min)
 
-# Sessao 2 (tarde)
+# Sessão 2 (tarde)
 timer2 = start_timer(instance_id=42)
 timer2.stop()  # SALVA (30min)
 
 # Total: 90min (acumulado)
 ```
 
-**Substatus:** Calculado sobre tempo acumulado de todas sessoes.
+**Substatus:** Calculado sobre tempo acumulado de todas sessões.
 
 **Testes:**
 
@@ -1157,9 +1159,9 @@ timer2.stop()  # SALVA (30min)
 
 ---
 
-### BR-TIMER-005: Calculo de Completion
+### BR-TIMER-005: Cálculo de Completion
 
-**Descricao:** Completion percentage calculado ao parar timer.
+**Descrição:** Completion percentage calculado ao parar timer.
 
 **Formula:**
 
@@ -1177,7 +1179,7 @@ completion = (total_actual / expected_duration) * 100
 
 ### BR-TIMER-006: Pause Tracking
 
-**Descricao:** Sistema rastreia pausas via campo acumulado `paused_duration`.
+**Descrição:** Sistema rastreia pausas via campo acumulado `paused_duration`.
 
 **Fluxo:**
 
@@ -1188,7 +1190,7 @@ completion = (total_actual / expected_duration) * 100
 11:00 - stop_timer()    # duration = 60min - 15min = 45min
 ```
 
-**Calculo:**
+**Cálculo:**
 
 ```python
 effective_duration = total_duration - paused_duration
@@ -1204,7 +1206,7 @@ effective_duration = total_duration - paused_duration
 
 ### BR-TIMER-007: Log Manual
 
-**Descricao:** Usuario pode registrar tempo manualmente sem usar timer.
+**Descrição:** Usuário pode registrar tempo manualmente sem usar timer.
 
 **Comando:**
 
@@ -1214,7 +1216,7 @@ habit log INSTANCE_ID --start 07:00 --end 08:30
 habit log INSTANCE_ID --duration 90
 ```
 
-**Validacoes:**
+**Validações:**
 
 - start < end
 - duration > 0
@@ -1229,11 +1231,11 @@ habit log INSTANCE_ID --duration 90
 
 ## 10. Event Reordering
 
-### BR-REORDER-001: Definicao de Conflito
+### BR-REORDER-001: Definição de Conflito
 
-**Descricao:** Conflito ocorre quando dois eventos tem sobreposicao temporal no mesmo dia.
+**Descrição:** Conflito ocorre quando dois eventos tem sobreposição temporal no mesmo dia.
 
-**Deteccao:**
+**Detecção:**
 
 ```
 Evento A: [T1, T2]
@@ -1255,9 +1257,9 @@ Conflito se: (T1 < T4) AND (T3 < T2)
 
 ### BR-REORDER-002: Escopo Temporal
 
-**Descricao:** Deteccao de conflitos ocorre dentro do mesmo dia (00:00-23:59).
+**Descrição:** Detecção de conflitos ocorre dentro do mesmo dia (00:00-23:59).
 
-**Regra:** Eventos de dias diferentes NAO podem conflitar, mesmo que horarios se sobreponham numericamente.
+**Regra:** Eventos de dias diferentes NAO podem conflitar, mesmo que horários se sobreponham numericamente.
 
 **Testes:**
 
@@ -1266,14 +1268,14 @@ Conflito se: (T1 < T4) AND (T3 < T2)
 
 ---
 
-### BR-REORDER-003: Apresentacao de Conflitos
+### BR-REORDER-003: Apresentação de Conflitos
 
-**Descricao:** Sistema apresenta conflitos de forma clara ao usuario.
+**Descrição:** Sistema apresenta conflitos de forma clara ao usuário.
 
 **Quando Apresentar:**
 
 1. Apos criar/ajustar evento que resulta em conflito
-2. Quando usuario solicita visualizacao de conflitos
+2. Quando usuário solicita visualização de conflitos
 3. Antes de iniciar timer, se houver conflitos
 
 **Formato:**
@@ -1282,7 +1284,7 @@ Conflito se: (T1 < T4) AND (T3 < T2)
 Conflito detectado:
   - Academia: 07:00-08:00
   - Reuniao: 07:30-08:30
-  Sobreposicao: 30 minutos
+  Sobreposição: 30 minutos
 ```
 
 **Testes:**
@@ -1292,13 +1294,13 @@ Conflito detectado:
 
 ---
 
-### BR-REORDER-004: Conflitos Nao Bloqueiam
+### BR-REORDER-004: Conflitos Não Bloqueiam
 
-**Descricao:** Conflitos sao informativos, NAO impeditivos.
+**Descrição:** Conflitos são informativos, NAO impeditivos.
 
 **Comportamento:**
 
-- Timer start com conflito: apenas avisa, pergunta confirmacao
+- Timer start com conflito: apenas avisa, pergunta confirmação
 - Criar evento com conflito: apenas avisa, permite criar
 
 ```bash
@@ -1320,9 +1322,9 @@ Iniciar timer mesmo assim? [Y/n]: y
 
 ### BR-REORDER-005: Persistencia de Conflitos
 
-**Descricao:** Conflitos NAO sao persistidos no banco. Sao calculados dinamicamente.
+**Descrição:** Conflitos NAO são persistidos no banco. São calculados dinamicamente.
 
-**Justificativa:** Conflitos sao resultado de relacao temporal entre eventos. Como eventos podem mudar, conflitos devem ser recalculados.
+**Justificativa:** Conflitos são resultado de relação temporal entre eventos. Como eventos podem mudar, conflitos devem ser recalculados.
 
 **Testes:**
 
@@ -1333,27 +1335,27 @@ Iniciar timer mesmo assim? [Y/n]: y
 
 ### BR-REORDER-006: Algoritmo de Reordenamento
 
-**Descricao:** Algoritmo de sugestao de reordenamento NAO esta no MVP.
+**Descrição:** Algoritmo de sugestão de reordenamento NAO está no MVP.
 
 **Status Atual:**
 
 - Sistema detecta conflitos
 - Sistema apresenta conflitos
-- Sistema NAO sugere novos horarios automaticamente
+- Sistema NAO sugere novos horários automaticamente
 
 **Futuro:** Algoritmo Simple Cascade planejado para v2.0.
 
 ---
 
-## 11. Validacoes Globais
+## 11. Validações Globais
 
-### BR-VAL-001: Validacao de Horarios
+### BR-VAL-001: Validação de Horários
 
 **Regras:**
 
 - `start_time < end_time`
 - `duration_minutes > 0`
-- Horarios dentro do dia (00:00 - 23:59)
+- Horários dentro do dia (00:00 - 23:59)
 
 **Testes:**
 
@@ -1362,11 +1364,11 @@ Iniciar timer mesmo assim? [Y/n]: y
 
 ---
 
-### BR-VAL-002: Validacao de Datas
+### BR-VAL-002: Validação de Datas
 
 **Regras:**
 
-- Data nao anterior a 2025-01-01
+- Data não anterior a 2025-01-01
 - Sem limite de data futura
 - Formato ISO 8601
 
@@ -1377,7 +1379,7 @@ Iniciar timer mesmo assim? [Y/n]: y
 
 ---
 
-### BR-VAL-003: Validacao de Strings
+### BR-VAL-003: Validação de Strings
 
 | Campo       | Limite       |
 | ----------- | ------------ |
@@ -1386,7 +1388,7 @@ Iniciar timer mesmo assim? [Y/n]: y
 | name        | 1-200 chars  |
 | note        | 0-500 chars  |
 
-**Comportamento:** Trim de espacos antes da validacao.
+**Comportamento:** Trim de espaços antes da validação.
 
 **Testes:**
 
@@ -1395,7 +1397,7 @@ Iniciar timer mesmo assim? [Y/n]: y
 
 ---
 
-## Referencias
+## Referências
 
 - **ADRs:** `docs/decisions/`
 - **Livro:** "Atomic Habits" - James Clear
@@ -1405,6 +1407,6 @@ Iniciar timer mesmo assim? [Y/n]: y
 
 ---
 
-**Documento consolidado em:** 28 de Novembro de 2025
-**Total de regras:** 45 BRs
-**Este e o SSOT para regras de negocio**
+- **Documento consolidado em:** 28 de Novembro de 2025
+- **Total de regras:** 45 BRs
+- **Este é o SSOT para regras de negócio**
