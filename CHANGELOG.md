@@ -7,6 +7,20 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/spec/v2.0.
 
 ## [Não Lançado]
 
+### Alterado (Documentação)
+
+- **(2025-12-01)** Reorganização completa de docs/
+  - Consolidado 4 documentos principais em `docs/core/`:
+    - architecture.md (v2.0.0)
+    - business-rules.md (v3.0.0, 50 BRs)
+    - cli-reference.md (v1.4.0)
+    - workflows.md (v2.1.0)
+  - Padronizado 22 ADRs em `docs/decisions/` (formato ADR-XXX)
+  - Corrigido ADR-021 duplicado para ADR-022
+  - Movido 130+ docs obsoletos para `docs/archived/`
+  - Renomeado: 02-diagrams para diagrams, 07-testing para testing
+  - Atualizado links quebrados em ADRs e README
+
 ### BREAKING CHANGES
 
 - **(2025-11-19)** Refatoração Status+Substatus em HabitInstance (BR-HABIT-INSTANCE-STATUS-001)

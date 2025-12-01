@@ -40,7 +40,7 @@ Sistema detecta conflitos, propõe reorganização, mas **sempre permite** cria�
 
 ### Três Princípios Fundamentais
 
-Documentação completa em: [Filosofia de Conflitos](../04-specifications/philosophy/conflict-philosophy.md)
+Documentação completa em: [Filosofia de Conflitos](../core/architecture.md#filosofia-de-conflitos)
 
 #### 1. Vida Real Tem Conflitos
 
@@ -284,7 +284,7 @@ Reavaliar decisão se:
 
 **Especificação Completa:**
 
-- [Filosofia de Tratamento de Conflitos](../04-specifications/philosophy/conflict-philosophy.md)
+- [Filosofia de Tratamento de Conflitos](../core/architecture.md#filosofia-de-conflitos)
 
 **Regras de Negócio:**
 
@@ -294,8 +294,8 @@ Reavaliar decisão se:
 
 **Implementação:**
 
-- [EventReorderingService](../05-api/services/event-reordering.md)
-- [Diagrama de Sequência](../02-diagrams/sequences/event-reordering.md)
+- [EventReorderingService](../core/business-rules.md#br-reorder)
+- [Diagrama de Sequência](../diagrams/sequences/event-reordering.md)
 
 ---
 

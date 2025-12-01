@@ -366,8 +366,8 @@ def downgrade():
 
 **Documentação:**
 
-- [BR001: Habit Scheduling](../04-specifications/business-rules/BR001-habit-scheduling.md)
-- [Modelo Habit](../05-api/models/habit.md)
+- [BR001: Habit Scheduling](../core/business-rules.md#br-habit)
+- [Modelo Habit](../core/business-rules.md#habit)
 
 **Issues:**
 

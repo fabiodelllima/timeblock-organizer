@@ -238,8 +238,8 @@ Migration possui `downgrade()` que recria coluna. Dados podem não ser recuperad
 
 **Documentação:**
 
-- [Modelo HabitInstance](../05-api/models/habit-instance.md)
-- [Filosofia de Conflitos](../04-specifications/philosophy/conflict-philosophy.md)
+- [Modelo HabitInstance](../core/business-rules.md#habitinstance)
+- [Filosofia de Conflitos](../core/architecture.md#filosofia-de-conflitos)
 
 **Issues:**
 

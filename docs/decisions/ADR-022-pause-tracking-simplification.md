@@ -177,6 +177,6 @@ class PauseLog(SQLModel, table=True):
 
 ## Referências
 
-- [BR-TIMER-006: Pause Tracking](../../04-specifications/business-rules/timer.md#br-timer-006-pause-tracking)
+- [BR-TIMER-006: Pause Tracking](../core/business-rules.md#br-timer-006)
 - [TimeLog Model](../../cli/src/timeblock/models/time_log.py)
 - [TimerService](../../cli/src/timeblock/services/timer_service.py)

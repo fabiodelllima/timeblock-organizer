@@ -16,7 +16,7 @@ TimeBlock Organizer é uma ferramenta CLI para gerenciamento de tempo usando tim
 
 **Diferencial:** Sistema adaptativo que reorganiza sua agenda automaticamente quando surgem conflitos, respeitando prioridades e minimizando interrupções.
 
-**Roadmap v2.0:** Sincronização offline-first entre Linux e Android (Termux) - [Ver Roadmap](docs/10-meta/ROADMAP.md)
+**Roadmap v2.0:** Sincronização offline-first entre Linux e Android (Termux) - [Ver Roadmap](docs/archived/10-meta/ROADMAP.md)
 
 ## Status do Projeto
 
@@ -27,7 +27,7 @@ TimeBlock Organizer é uma ferramenta CLI para gerenciamento de tempo usando tim
   - Offline-First Schema (ADR-013)
   - Connect Command (ADR-014)
   - 26 E2E Tests
-- **Documentação:** [Architecture](docs/02-architecture/ARCHITECTURE.md) | [Philosophy](docs/01-guides/PHILOSOPHY.md) | [ADRs](docs/03-decisions/)
+- **Documentação:** [Architecture](docs/core/architecture.md) | [Philosophy](docs/core/architecture.md#filosofia) | [ADRs](docs/decisions/)
 
 ## Funcionalidades Principais
 
@@ -417,9 +417,9 @@ ruff format src/
 ## Documentação
 
 - [Documentação Completa](docs/)
-- [Guia de Arquitetura](docs/01-architecture/)
-- [Decisões Técnicas (ADRs)](docs/03-decisions/)
-- [Especificações](docs/04-specifications/)
+- [Guia de Arquitetura](docs/core/)
+- [Decisões Técnicas (ADRs)](docs/decisions/)
+- [Especificações](docs/core/business-rules.md)
 - [CHANGELOG](CHANGELOG.md)
 
 ## Filosofia
