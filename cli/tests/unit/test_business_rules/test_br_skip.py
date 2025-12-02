@@ -87,12 +87,12 @@ class HabitInstanceV2:
 class TestBRHabitSkip001:
     """Valida BR-HABIT-SKIP-001: Categorização com enum de 8 valores."""
 
-    def test_br_habit_skip_001_enum_has_8_categories(self):
+    def test_br_skip_001_enum_has_8_categories(self):
         """BR-HABIT-SKIP-001: SkipReason tem exatamente 8 categorias."""
         # Assert
         assert len(SkipReason) == 8, "SkipReason deve ter 8 categorias"
 
-    def test_br_habit_skip_001_enum_values_portuguese(self):
+    def test_br_skip_001_enum_values_portuguese(self):
         """BR-HABIT-SKIP-001: Valores do enum em português lowercase."""
         # Assert
         expected_values = {
@@ -108,7 +108,7 @@ class TestBRHabitSkip001:
         actual_values = {reason.value for reason in SkipReason}
         assert actual_values == expected_values, "Valores devem estar em português"
 
-    def test_br_habit_skip_001_all_categories_exist(self):
+    def test_br_skip_001_all_categories_exist(self):
         """BR-HABIT-SKIP-001: Todas 8 categorias específicas existem."""
         # Assert
         assert SkipReason.HEALTH.value == "saude"
@@ -125,7 +125,7 @@ class TestBRHabitSkip001:
 class TestBRHabitSkip002:
     """Valida BR-HABIT-SKIP-002: Campos skip_reason e skip_note."""
 
-    def test_br_habit_skip_002_fields_exist(self):
+    def test_br_skip_002_fields_exist(self):
         """BR-HABIT-SKIP-002: HabitInstance tem campos skip_reason e skip_note."""
         # Arrange
         instance = HabitInstanceV2(
@@ -136,7 +136,7 @@ class TestBRHabitSkip002:
         assert hasattr(instance, "skip_reason"), "Deve ter skip_reason"
         assert hasattr(instance, "skip_note"), "Deve ter skip_note"
 
-    def test_br_habit_skip_002_skip_reason_optional(self):
+    def test_br_skip_002_skip_reason_optional(self):
         """BR-HABIT-SKIP-002: skip_reason aceita None."""
         # Arrange & Act
         instance = HabitInstanceV2(
@@ -150,7 +150,7 @@ class TestBRHabitSkip002:
         # Assert
         assert instance.skip_reason is None
 
-    def test_br_habit_skip_002_skip_note_max_length(self):
+    def test_br_skip_002_skip_note_max_length(self):
         """BR-HABIT-SKIP-002: skip_note limitado a 200 caracteres."""
         # Arrange
         note_200 = "A" * 200
@@ -180,7 +180,7 @@ class TestBRHabitSkip002:
             if len(instance_invalid.skip_note) > 200:
                 raise ValueError("skip_note excede 200 caracteres")
 
-    def test_br_habit_skip_002_skip_fields_null_when_done(self):
+    def test_br_skip_002_skip_fields_null_when_done(self):
         """BR-HABIT-SKIP-002: skip_reason/skip_note NULL quando status DONE."""
         # Arrange & Act
         instance = HabitInstanceV2(
@@ -195,7 +195,7 @@ class TestBRHabitSkip002:
         assert instance.skip_reason is None
         assert instance.skip_note is None
 
-    def test_br_habit_skip_002_reason_required_for_justified(self):
+    def test_br_skip_002_reason_required_for_justified(self):
         """BR-HABIT-SKIP-002: skip_reason obrigatório para SKIPPED_JUSTIFIED."""
         # Arrange & Act
         instance = HabitInstanceV2(
@@ -215,7 +215,7 @@ class TestBRHabitSkip002:
 class TestBRHabitSkip003:
     """Valida BR-HABIT-SKIP-003: Prazo de 24h para justificar."""
 
-    def test_br_habit_skip_003_deadline_24h_calculation(self):
+    def test_br_skip_003_deadline_24h_calculation(self):
         """BR-HABIT-SKIP-003: Deadline é created_at + 24h."""
         # Arrange
         created_at = datetime(2025, 11, 14, 8, 0)  # 14/11 08:00
@@ -233,7 +233,7 @@ class TestBRHabitSkip003:
         # Assert
         assert deadline == datetime(2025, 11, 15, 8, 0), "Deadline deve ser +24h"
 
-    def test_br_habit_skip_003_within_deadline(self):
+    def test_br_skip_003_within_deadline(self):
         """BR-HABIT-SKIP-003: Pode justificar dentro de 24h."""
         # Arrange
         created_at = datetime(2025, 11, 14, 8, 0)
@@ -253,7 +253,7 @@ class TestBRHabitSkip003:
         # Assert
         assert within_deadline is True, "Deve estar dentro do prazo"
 
-    def test_br_habit_skip_003_after_deadline(self):
+    def test_br_skip_003_after_deadline(self):
         """BR-HABIT-SKIP-003: Não pode justificar após 24h."""
         # Arrange
         created_at = datetime(2025, 11, 14, 8, 0)
@@ -273,7 +273,7 @@ class TestBRHabitSkip003:
         # Assert
         assert after_deadline is True, "Deve estar após o prazo"
 
-    def test_br_habit_skip_003_change_to_justified_within_deadline(self):
+    def test_br_skip_003_change_to_justified_within_deadline(self):
         """BR-HABIT-SKIP-003: Permitir mudança UNJUSTIFIED→JUSTIFIED dentro prazo."""
         # Arrange
         created_at = datetime(2025, 11, 14, 8, 0)
@@ -303,13 +303,13 @@ class TestBRHabitSkip003:
 class TestBRHabitSkip004:
     """Valida BR-HABIT-SKIP-004: Prompt interativo."""
 
-    def test_br_habit_skip_004_prompt_has_9_options(self):
+    def test_br_skip_004_prompt_has_9_options(self):
         """BR-HABIT-SKIP-004: Prompt tem 9 opções (8 categorias + justificar depois)."""
         # Assert
         assert len(SkipReason) == 8, "8 categorias de skip_reason"
         # Opção 9 = "Justificar depois" (cria SKIPPED_UNJUSTIFIED)
 
-    def test_br_habit_skip_004_option_1_8_creates_justified(self):
+    def test_br_skip_004_option_1_8_creates_justified(self):
         """BR-HABIT-SKIP-004: Escolher opção 1-8 cria SKIPPED_JUSTIFIED."""
         # Arrange & Act - Simula escolha de opção 2 (WORK)
         instance = HabitInstanceV2(
@@ -324,7 +324,7 @@ class TestBRHabitSkip004:
         assert instance.not_done_substatus == NotDoneSubstatus.SKIPPED_JUSTIFIED
         assert instance.skip_reason == "trabalho"
 
-    def test_br_habit_skip_004_option_9_creates_unjustified(self):
+    def test_br_skip_004_option_9_creates_unjustified(self):
         """BR-HABIT-SKIP-004: Escolher opção 9 cria SKIPPED_UNJUSTIFIED."""
         # Arrange & Act - Simula escolha de opção 9 (Justificar depois)
         instance = HabitInstanceV2(

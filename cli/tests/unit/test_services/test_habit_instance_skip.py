@@ -49,7 +49,7 @@ def habit(session: Session, routine: Routine) -> Habit:
 class TestBRHabitSkip001BasicSkip:
     """Cenários 1-4: Skip básico com diferentes categorias."""
 
-    def test_br_habit_skip_001_scenario_001_skip_with_health_and_note(
+    def test_br_skip_001_scenario_001_skip_with_health_and_note(
         self, session: Session, habit: Habit
     ):
         """CENÁRIO 1: Skip com categoria HEALTH e nota."""
@@ -85,7 +85,7 @@ class TestBRHabitSkip001BasicSkip:
         assert result.done_substatus is None
         assert result.completion_percentage is None
 
-    def test_br_habit_skip_001_scenario_002_skip_work_without_note(
+    def test_br_skip_001_scenario_002_skip_work_without_note(
         self, session: Session, habit: Habit
     ):
         """CENÁRIO 2: Skip com categoria WORK sem nota."""
@@ -119,7 +119,7 @@ class TestBRHabitSkip001BasicSkip:
         assert result.skip_reason == SkipReason.WORK
         assert result.skip_note is None
 
-    def test_br_habit_skip_001_scenario_003_skip_family(self, session: Session, habit: Habit):
+    def test_br_skip_001_scenario_003_skip_family(self, session: Session, habit: Habit):
         """CENÁRIO 3: Skip com categoria FAMILY."""
         assert habit.id is not None
 
@@ -151,7 +151,7 @@ class TestBRHabitSkip001BasicSkip:
         assert result.skip_reason == SkipReason.FAMILY
         assert result.skip_note == "Aniversário do filho"
 
-    def test_br_habit_skip_001_scenario_004_skip_weather(self, session: Session, habit: Habit):
+    def test_br_skip_001_scenario_004_skip_weather(self, session: Session, habit: Habit):
         """CENÁRIO 4: Skip com categoria WEATHER."""
         assert habit.id is not None
 
@@ -187,7 +187,7 @@ class TestBRHabitSkip001BasicSkip:
 class TestBRHabitSkip001ReskipAndValidation:
     """Cenários 5-6: Re-skip e validação."""
 
-    def test_br_habit_skip_001_scenario_005_reskip_changes_category(
+    def test_br_skip_001_scenario_005_reskip_changes_category(
         self, session: Session, habit: Habit
     ):
         """CENÁRIO 5: Re-skip muda categoria."""
@@ -224,7 +224,7 @@ class TestBRHabitSkip001ReskipAndValidation:
         assert result.status == Status.NOT_DONE
         assert result.not_done_substatus == NotDoneSubstatus.SKIPPED_JUSTIFIED
 
-    def test_br_habit_skip_001_scenario_006_validates_consistency(
+    def test_br_skip_001_scenario_006_validates_consistency(
         self, session: Session, habit: Habit
     ):
         """CENÁRIO 6: Validação de consistência após skip."""
@@ -265,7 +265,7 @@ class TestBRHabitSkip001ReskipAndValidation:
 class TestBRHabitSkip001Errors:
     """Cenários 7-10: Validações e erros."""
 
-    def test_br_habit_skip_001_scenario_007_error_instance_not_found(self, session: Session):
+    def test_br_skip_001_scenario_007_error_instance_not_found(self, session: Session):
         """CENÁRIO 7: Erro - HabitInstance não existe."""
         service = HabitInstanceService()
 
@@ -277,7 +277,7 @@ class TestBRHabitSkip001Errors:
                 session=session,
             )
 
-    def test_br_habit_skip_001_scenario_008_error_note_too_long(
+    def test_br_skip_001_scenario_008_error_note_too_long(
         self, session: Session, habit: Habit
     ):
         """CENÁRIO 8: Erro - Nota muito longa (>500 chars)."""
@@ -309,7 +309,7 @@ class TestBRHabitSkip001Errors:
                 session=session,
             )
 
-    def test_br_habit_skip_001_scenario_009_error_timer_active(
+    def test_br_skip_001_scenario_009_error_timer_active(
         self, session: Session, habit: Habit
     ):
         """CENÁRIO 9: Erro - Timer ativo."""
@@ -349,7 +349,7 @@ class TestBRHabitSkip001Errors:
                 session=session,
             )
 
-    def test_br_habit_skip_001_scenario_010_error_already_completed(
+    def test_br_skip_001_scenario_010_error_already_completed(
         self, session: Session, habit: Habit
     ):
         """CENÁRIO 10: Erro - Instância já completada."""
@@ -386,7 +386,7 @@ class TestBRHabitSkip001Errors:
 class TestBRHabitSkip001CompletionFields:
     """Cenário 11: Skip limpa campos de completion."""
 
-    def test_br_habit_skip_001_scenario_011_clears_completion_fields(
+    def test_br_skip_001_scenario_011_clears_completion_fields(
         self, session: Session, habit: Habit
     ):
         """CENÁRIO 11: Skip limpa campos de completion anteriores."""
@@ -426,7 +426,7 @@ class TestBRHabitSkip001CompletionFields:
 class TestBRHabitSkip001AllCategories:
     """Cenário 12: Skip com todas as 8 categorias."""
 
-    def test_br_habit_skip_001_scenario_012_all_categories(self, session: Session, habit: Habit):
+    def test_br_skip_001_scenario_012_all_categories(self, session: Session, habit: Habit):
         """CENÁRIO 12: Skip com todas as 8 categorias."""
         assert habit.id is not None
 
