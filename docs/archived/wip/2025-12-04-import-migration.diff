@@ -1,0 +1,306 @@
+diff --git a/cli/src/timeblock/commands/habit.py b/cli/src/timeblock/commands/habit.py
+index 3003d6f..1f1234e 100644
+--- a/cli/src/timeblock/commands/habit.py
++++ b/cli/src/timeblock/commands/habit.py
+@@ -8,14 +8,14 @@ from dateutil.relativedelta import relativedelta  # type: ignore[import-untyped]
+ from rich.console import Console
+ from sqlmodel import Session
+ 
+-from src.timeblock.database import get_engine_context
+-from src.timeblock.models import Recurrence
+-from src.timeblock.models.enums import SkipReason
+-from src.timeblock.models.habit_instance import HabitInstance
+-from src.timeblock.services.habit_instance_service import HabitInstanceService
+-from src.timeblock.services.habit_service import HabitService
+-from src.timeblock.services.routine_service import RoutineService
+-from src.timeblock.utils.conflict_display import display_conflicts
++from timeblock.database import get_engine_context
++from timeblock.models import Recurrence
++from timeblock.models.enums import SkipReason
++from timeblock.models.habit_instance import HabitInstance
++from timeblock.services.habit_instance_service import HabitInstanceService
++from timeblock.services.habit_service import HabitService
++from timeblock.services.routine_service import RoutineService
++from timeblock.utils.conflict_display import display_conflicts
+ 
+ app = typer.Typer(help="Gerenciar hábitos")
+ console = Console()
+diff --git a/cli/src/timeblock/commands/report.py b/cli/src/timeblock/commands/report.py
+index d6f9c68..b28f2cd 100644
+--- a/cli/src/timeblock/commands/report.py
++++ b/cli/src/timeblock/commands/report.py
+@@ -6,10 +6,10 @@ import typer
+ from rich.console import Console
+ from rich.table import Table
+ 
+-from src.timeblock.services.habit_instance_service import HabitInstanceService
+-from src.timeblock.services.habit_service import HabitService
+-from src.timeblock.services.task_service import TaskService
+-from src.timeblock.services.timer_service import TimerService
++from timeblock.services.habit_instance_service import HabitInstanceService
++from timeblock.services.habit_service import HabitService
++from timeblock.services.task_service import TaskService
++from timeblock.services.timer_service import TimerService
+ 
+ app = typer.Typer(help="Gerar relatórios e análises")
+ console = Console()
+diff --git a/cli/src/timeblock/commands/reschedule.py b/cli/src/timeblock/commands/reschedule.py
+index 4b81d98..806fa51 100644
+--- a/cli/src/timeblock/commands/reschedule.py
++++ b/cli/src/timeblock/commands/reschedule.py
+@@ -5,8 +5,8 @@ from datetime import datetime
+ import typer
+ from rich.console import Console
+ 
+-from src.timeblock.services.event_reordering_service import EventReorderingService
+-from src.timeblock.utils.conflict_display import display_conflicts
++from timeblock.services.event_reordering_service import EventReorderingService
++from timeblock.utils.conflict_display import display_conflicts
+ 
+ app = typer.Typer(help="Comandos de detecção de conflitos")
+ console = Console()
+diff --git a/cli/src/timeblock/commands/routine.py b/cli/src/timeblock/commands/routine.py
+index a097c22..e262320 100644
+--- a/cli/src/timeblock/commands/routine.py
++++ b/cli/src/timeblock/commands/routine.py
+@@ -4,9 +4,9 @@ import typer
+ from rich.console import Console
+ from sqlmodel import Session
+ 
+-from src.timeblock.database import get_engine_context
+-from src.timeblock.services.habit_service import HabitService
+-from src.timeblock.services.routine_service import RoutineService
++from timeblock.database import get_engine_context
++from timeblock.services.habit_service import HabitService
++from timeblock.services.routine_service import RoutineService
+ 
+ app = typer.Typer(help="Gerenciar rotinas")
+ console = Console()
+diff --git a/cli/src/timeblock/commands/schedule.py b/cli/src/timeblock/commands/schedule.py
+index a601844..7205b73 100644
+--- a/cli/src/timeblock/commands/schedule.py
++++ b/cli/src/timeblock/commands/schedule.py
+@@ -9,10 +9,10 @@ import typer
+ from rich.console import Console
+ from rich.table import Table
+ 
+-from src.timeblock.services.event_reordering_service import EventReorderingService
+-from src.timeblock.services.habit_instance_service import HabitInstanceService
+-from src.timeblock.services.habit_service import HabitService
+-from src.timeblock.utils.proposal_display import confirm_apply_proposal, display_proposal
++from timeblock.services.event_reordering_service import EventReorderingService
++from timeblock.services.habit_instance_service import HabitInstanceService
++from timeblock.services.habit_service import HabitService
++from timeblock.utils.proposal_display import confirm_apply_proposal, display_proposal
+ 
+ app = typer.Typer(help="Gerenciar agenda de hábitos")
+ console = Console()
+diff --git a/cli/src/timeblock/commands/tag.py b/cli/src/timeblock/commands/tag.py
+index f03b2ab..037be02 100644
+--- a/cli/src/timeblock/commands/tag.py
++++ b/cli/src/timeblock/commands/tag.py
+@@ -4,7 +4,7 @@ import typer
+ from rich.console import Console
+ from rich.table import Table
+ 
+-from src.timeblock.services.tag_service import TagService
++from timeblock.services.tag_service import TagService
+ 
+ app = typer.Typer(help="Gerenciar tags")
+ console = Console()
+diff --git a/cli/src/timeblock/commands/task.py b/cli/src/timeblock/commands/task.py
+index c2b6bc0..a0c7743 100644
+--- a/cli/src/timeblock/commands/task.py
++++ b/cli/src/timeblock/commands/task.py
+@@ -6,8 +6,8 @@ import typer
+ from rich.console import Console
+ from rich.table import Table
+ 
+-from src.timeblock.services.task_service import TaskService
+-from src.timeblock.utils.conflict_display import display_conflicts
++from timeblock.services.task_service import TaskService
++from timeblock.utils.conflict_display import display_conflicts
+ 
+ app = typer.Typer(help="Gerenciar tarefas")
+ console = Console()
+diff --git a/cli/src/timeblock/commands/timer.py b/cli/src/timeblock/commands/timer.py
+index 3b0e830..5e9ab78 100644
+--- a/cli/src/timeblock/commands/timer.py
++++ b/cli/src/timeblock/commands/timer.py
+@@ -11,11 +11,11 @@ from rich.live import Live
+ from rich.panel import Panel
+ from rich.text import Text
+ 
+-from src.timeblock.services.habit_instance_service import HabitInstanceService
+-from src.timeblock.services.habit_service import HabitService
+-from src.timeblock.services.task_service import TaskService
+-from src.timeblock.services.timer_service import TimerService
+-from src.timeblock.utils.conflict_display import display_conflicts
++from timeblock.services.habit_instance_service import HabitInstanceService
++from timeblock.services.habit_service import HabitService
++from timeblock.services.task_service import TaskService
++from timeblock.services.timer_service import TimerService
++from timeblock.utils.conflict_display import display_conflicts
+ 
+ app = typer.Typer(help="Gerenciar timer de tracking")
+ console = Console()
+diff --git a/cli/src/timeblock/main.py b/cli/src/timeblock/main.py
+index 2ad8459..b095f07 100644
+--- a/cli/src/timeblock/main.py
++++ b/cli/src/timeblock/main.py
+@@ -2,7 +2,7 @@
+ 
+ import typer
+ 
+-from src.timeblock.commands import (
++from timeblock.commands import (
+     add,
+     habit,
+     init,
+@@ -14,7 +14,7 @@ from src.timeblock.commands import (
+     task,
+     timer,
+ )
+-from src.timeblock.commands import list as list_cmd
++from timeblock.commands import list as list_cmd
+ 
+ app = typer.Typer(
+     name="timeblock",
+diff --git a/cli/src/timeblock/services/__init__.py b/cli/src/timeblock/services/__init__.py
+index a0f15a9..d51a84d 100644
+--- a/cli/src/timeblock/services/__init__.py
++++ b/cli/src/timeblock/services/__init__.py
+@@ -1,10 +1,10 @@
+ """Services do TimeBlock Organizer."""
+ 
+-from src.timeblock.services.habit_instance_service import HabitInstanceService
+-from src.timeblock.services.habit_service import HabitService
+-from src.timeblock.services.routine_service import RoutineService
+-from src.timeblock.services.task_service import TaskService
+-from src.timeblock.services.timer_service import TimerService
++from timeblock.services.habit_instance_service import HabitInstanceService
++from timeblock.services.habit_service import HabitService
++from timeblock.services.routine_service import RoutineService
++from timeblock.services.task_service import TaskService
++from timeblock.services.timer_service import TimerService
+ 
+ __all__ = [
+     "HabitInstanceService",
+diff --git a/cli/src/timeblock/services/event_reordering_service.py b/cli/src/timeblock/services/event_reordering_service.py
+index fa470f2..4073e2b 100644
+--- a/cli/src/timeblock/services/event_reordering_service.py
++++ b/cli/src/timeblock/services/event_reordering_service.py
+@@ -4,8 +4,8 @@ from datetime import date, datetime, timedelta
+ 
+ from sqlmodel import Session, or_, select
+ 
+-from src.timeblock.database import get_engine_context
+-from src.timeblock.models import Event, HabitInstance, Task
++from timeblock.database import get_engine_context
++from timeblock.models import Event, HabitInstance, Task
+ 
+ from .event_reordering_models import Conflict, ConflictType
+ 
+diff --git a/cli/src/timeblock/services/habit_instance_service.py b/cli/src/timeblock/services/habit_instance_service.py
+index 0292c6f..eb18263 100644
+--- a/cli/src/timeblock/services/habit_instance_service.py
++++ b/cli/src/timeblock/services/habit_instance_service.py
+@@ -4,11 +4,11 @@ from datetime import date, time, timedelta
+ 
+ from sqlmodel import Session, select
+ 
+-from src.timeblock.database import get_engine_context
+-from src.timeblock.models import Habit, HabitInstance, Recurrence
+-from src.timeblock.models.enums import NotDoneSubstatus, SkipReason, Status
+-from src.timeblock.models.time_log import TimeLog
+-from src.timeblock.utils.logger import get_logger
++from timeblock.database import get_engine_context
++from timeblock.models import Habit, HabitInstance, Recurrence
++from timeblock.models.enums import NotDoneSubstatus, SkipReason, Status
++from timeblock.models.time_log import TimeLog
++from timeblock.utils.logger import get_logger
+ 
+ from .event_reordering_models import Conflict
+ from .event_reordering_service import EventReorderingService
+diff --git a/cli/src/timeblock/services/habit_service.py b/cli/src/timeblock/services/habit_service.py
+index 4a88aee..ef9b7d6 100644
+--- a/cli/src/timeblock/services/habit_service.py
++++ b/cli/src/timeblock/services/habit_service.py
+@@ -4,8 +4,8 @@ from datetime import time
+ 
+ from sqlmodel import Session, select
+ 
+-from src.timeblock.database import get_engine_context
+-from src.timeblock.models import Habit, Recurrence
++from timeblock.database import get_engine_context
++from timeblock.models import Habit, Recurrence
+ 
+ 
+ class HabitService:
+diff --git a/cli/src/timeblock/services/routine_service.py b/cli/src/timeblock/services/routine_service.py
+index 8fbe3f1..3739aff 100644
+--- a/cli/src/timeblock/services/routine_service.py
++++ b/cli/src/timeblock/services/routine_service.py
+@@ -2,7 +2,7 @@
+ 
+ from sqlmodel import Session, select
+ 
+-from src.timeblock.models import Routine
++from timeblock.models import Routine
+ 
+ 
+ class RoutineService:
+diff --git a/cli/src/timeblock/services/tag_service.py b/cli/src/timeblock/services/tag_service.py
+index 92e8e75..3647bc4 100644
+--- a/cli/src/timeblock/services/tag_service.py
++++ b/cli/src/timeblock/services/tag_service.py
+@@ -2,8 +2,8 @@
+ 
+ from sqlmodel import Session, select
+ 
+-from src.timeblock.database import get_engine_context
+-from src.timeblock.models import Tag
++from timeblock.database import get_engine_context
++from timeblock.models import Tag
+ 
+ 
+ class TagService:
+diff --git a/cli/src/timeblock/services/task_service.py b/cli/src/timeblock/services/task_service.py
+index d9c8673..f26c190 100644
+--- a/cli/src/timeblock/services/task_service.py
++++ b/cli/src/timeblock/services/task_service.py
+@@ -4,7 +4,7 @@ from datetime import datetime
+ 
+ from sqlmodel import Session, select
+ 
+-from src.timeblock.database import get_engine_context
++from timeblock.database import get_engine_context
+ 
+ from ..models import Task
+ from .event_reordering_models import Conflict
+diff --git a/cli/src/timeblock/utils/conflict_display.py b/cli/src/timeblock/utils/conflict_display.py
+index 6974fae..29f3b0f 100644
+--- a/cli/src/timeblock/utils/conflict_display.py
++++ b/cli/src/timeblock/utils/conflict_display.py
+@@ -3,7 +3,7 @@
+ from rich.console import Console
+ from rich.table import Table
+ 
+-from src.timeblock.services.event_reordering_models import Conflict
++from timeblock.services.event_reordering_models import Conflict
+ 
+ 
+ def display_conflicts(conflicts: list[Conflict], console: Console) -> None:
+diff --git a/cli/src/timeblock/utils/proposal_display.py b/cli/src/timeblock/utils/proposal_display.py
+index e9bd75d..4318ea3 100644
+--- a/cli/src/timeblock/utils/proposal_display.py
++++ b/cli/src/timeblock/utils/proposal_display.py
+@@ -4,7 +4,7 @@ import typer
+ from rich.console import Console
+ from rich.table import Table
+ 
+-from src.timeblock.services.event_reordering_models import ReorderingProposal
++from timeblock.services.event_reordering_models import ReorderingProposal
+ 
+ 
+ def display_proposal(proposal: ReorderingProposal, console: Console):

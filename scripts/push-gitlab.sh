@@ -45,3 +45,13 @@ log_info "Pushing para origin/$CURRENT_BRANCH..."
 git push origin "$CURRENT_BRANCH"
 
 log_success "Push para GitLab completo!"
+
+# ========================================
+# LEMBRETE PÓS-PUSH
+# ========================================
+echo ""
+echo "[LEMBRETE] Push GitLab completo. Considere atualizar:"
+echo "  - docs/core/workflows.md (se workflow mudou)"
+echo "  - CHANGELOG.md (features, fixes, breaking changes)"
+echo "  - docs/decisions/ (nova ADR se decisão arquitetural)"
+echo ""

@@ -96,3 +96,13 @@ git push github "$TEMP_BRANCH:$CURRENT_BRANCH" --force
 
 log_success "Push para GitHub completo!"
 log_info "Branch GitHub: $CURRENT_BRANCH"
+
+# ========================================
+# LEMBRETE PÓS-PUSH GITHUB
+# ========================================
+echo ""
+echo "[LEMBRETE] GitHub showcase atualizado. Verifique:"
+echo "  - README.md público está atualizado"
+echo "  - Docs/ foram corretamente filtrados"
+echo "  - Showcase está profissional e apresentável"
+echo ""
