@@ -974,24 +974,159 @@ Footer opcional
 
 ## 9. Evolução Futura
 
-### v1.4.0 - Consolidação
+### v1.4.0 - MVP Event Reordering (Atual)
 
+- Event Reordering completo
+- E2E tests críticos
 - Documentação consolidada
-- Testes reorganizados
-- CI/CD pipeline
+- Release MVP
 
-### v2.0.0 - Sincronização
+### v1.5.0 - Infra Foundation
 
-- Sync Linux <-> Android (Termux)
-- UUID como primary keys
-- Conflict resolution
-- Queue-based sync
+**Objetivo:** Base de infraestrutura para evolução do projeto.
 
-### v3.0.0 - Analytics
+**Entregáveis:**
 
-- Dashboard de métricas
-- Streak tracking avançado
-- Reports automáticos
+| Item               | Descrição                   |
+| ------------------ | --------------------------- |
+| Dockerfile         | Multi-stage build otimizado |
+| docker-compose.yml | App + Redis + PostgreSQL    |
+| .gitlab-ci.yml     | Pipeline CI/CD completo     |
+| Makefile           | Comandos padronizados       |
+
+**Pipeline CI/CD:**
+
+```
+┌─────────┐    ┌──────────┐    ┌──────────┐
+│  TEST   │───►│  BUILD   │───►│ SECURITY │
+│         │    │          │    │          │
+│ - unit  │    │ - docker │    │ - bandit │
+│ - integ │    │ - push   │    │ - trivy  │
+│ - lint  │    │          │    │ - safety │
+└─────────┘    └──────────┘    └──────────┘
+```
+
+### v2.0.0 - FastAPI REST API
+
+**Objetivo:** Expor funcionalidade via API REST + observabilidade.
+
+**Stack:**
+
+| Componente | Tecnologia      |
+| ---------- | --------------- |
+| Framework  | FastAPI         |
+| Docs       | OpenAPI/Swagger |
+| Auth       | JWT             |
+| Metrics    | Prometheus      |
+| Dashboards | Grafana         |
+| Logs       | Loki            |
+
+**Endpoints Planejados:**
+
+```
+/health                     # Health check
+/api/v1/routines/*          # CRUD rotinas
+/api/v1/habits/*            # CRUD hábitos
+/api/v1/tasks/*             # CRUD tasks
+/api/v1/timer/*             # Controle timer
+```
+
+**Observabilidade:**
+
+```
+┌─────────────┐     ┌────────────┐     ┌─────────┐
+│  FastAPI    │────►│ Prometheus │────►│ Grafana │
+│  /metrics   │     │            │     │         │
+└─────────────┘     └────────────┘     └─────────┘
+```
+
+### v3.0.0 - Microservices Ecosystem
+
+**Objetivo:** Ecossistema de serviços independentes via event streaming.
+
+**Arquitetura Event-Driven:**
+
+```
+                    ┌─────────────────┐
+                    │   Apache Kafka  │
+                    └────────┬────────┘
+                             │
+       ┌─────────────────────┼─────────────────────┐
+       │                     │                     │
+       v                     v                     v
+┌─────────────┐       ┌──────────────┐       ┌──────────────┐
+│  TimeBlock  │       │   MedBlock   │       │ EventBlock   │
+│    Core     │       │              │       │              │
+│             │       │ Medicamentos │       │ Compromissos │
+│ - Hábitos   │       │ - Doses      │       │ - Eventos    │
+│ - Rotinas   │       │ - Estoque    │       │ - Bloqueios  │
+│ - Timer     │       │ - Lembretes  │       │              │
+└─────────────┘       └──────────────┘       └──────────────┘
+
+┌─────────────┐       ┌──────────────┐       ┌──────────────┐
+│  ListBlock  │       │   (Futuro)   │       │   (Futuro)   │
+│             │       │              │       │              │
+│ - Listas    │       │              │       │              │
+│ - Compras   │       │              │       │              │
+└─────────────┘       └──────────────┘       └──────────────┘
+```
+
+**Princípio:** Cada serviço é **100% standalone**. Integrações são **opt-in**.
+
+**Serviços Planejados:**
+
+| Serviço        | Função                       | Eventos Publicados |
+| -------------- | ---------------------------- | ------------------ |
+| TimeBlock Core | Hábitos, rotinas, timer      | `timeblock.*`      |
+| MedBlock       | Medicamentos, doses, estoque | `medblock.*`       |
+| EventBlock     | Compromissos únicos          | `eventblock.*`     |
+| ListBlock      | Listas de compras            | `listblock.*`      |
+
+**Integrações Opt-in:**
+
+| Evento                     | Consumer (opcional) | Ação               |
+| -------------------------- | ------------------- | ------------------ |
+| `medblock.dose.scheduled`  | TimeBlock Core      | Cria HabitInstance |
+| `eventblock.event.created` | TimeBlock Core      | Bloqueia slot      |
+| `listblock.list.created`   | TimeBlock Core      | Gera Task          |
+
+**Stack:**
+
+- **Broker:** Apache Kafka
+- **Protocolo:** CloudEvents
+- **Serialização:** JSON (v3.0), Avro (v3.1+)
+
+**Decisão:** Ver [ADR-023](../decisions/ADR-023-microservices-ecosystem.md)
+
+### v4.0.0 - Android App
+
+**Objetivo:** Mobile-first experience.
+
+**Stack:**
+
+| Componente  | Tecnologia      |
+| ----------- | --------------- |
+| Linguagem   | Kotlin          |
+| UI          | Jetpack Compose |
+| Arquitetura | MVVM            |
+| DB Local    | Room            |
+| Network     | Retrofit        |
+| DI          | Hilt            |
+
+**Integração:**
+
+```
+Android App (Kotlin)
+    │
+    v
+REST API (FastAPI v2.0)
+    │
+    v
+Event Bus (Kafka v3.0)
+    │
+    v
+Microservices
+```
 
 ---
 
@@ -1000,9 +1135,10 @@ Footer opcional
 - **SQLModel:** <https://sqlmodel.tiangolo.com/>
 - **Typer:** <https://typer.tiangolo.com/>
 - **Rich:** <https://rich.readthedocs.io/>
-- **Atomic Habits:** James Clear
+- **FastAPI:** <https://fastapi.tiangolo.com/>
+- **Apache Kafka:** <https://kafka.apache.org/>
 - **Business Rules:** `docs/core/business-rules.md`
 
 ---
 
-**Documento consolidado em:** 28 de Novembro de 2025
+**Última atualização:** 21 de Dezembro de 2025

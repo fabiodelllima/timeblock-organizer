@@ -2,7 +2,7 @@
 
 Registro de decisões arquiteturais do TimeBlock Organizer.
 
-**Total:** 22 ADRs | **Status:** Todas aceitas
+**Total:** 23 ADRs | **Status:** 22 aceitas, 1 proposta
 
 ---
 
@@ -56,34 +56,41 @@ Registro de decisões arquiteturais do TimeBlock Organizer.
 | [ADR-019](ADR-019-test-naming-convention.md)      | Test Naming Convention      |
 | [ADR-020](ADR-020-business-rules-nomenclature.md) | Business Rules Nomenclature |
 
+### Microservices
+
+| ADR                                           | Título                  |
+| --------------------------------------------- | ----------------------- |
+| [ADR-023](ADR-023-microservices-ecosystem.md) | Microservices Ecosystem |
+
 ---
 
 ## Índice Numérico
 
-| #   | Título                                                                    | Status |
-| --- | ------------------------------------------------------------------------- | ------ |
-| 001 | [SQLModel ORM](ADR-001-sqlmodel-orm.md)                                   | Aceito |
-| 002 | [Typer CLI](ADR-002-typer-cli.md)                                         | Aceito |
-| 003 | [Event Reordering](ADR-003-event-reordering.md)                           | Aceito |
-| 004 | [Habit vs Instance](ADR-004-habit-vs-instance.md)                         | Aceito |
-| 005 | [Resource-First CLI](ADR-005-resource-first-cli.md)                       | Aceito |
-| 006 | [Textual TUI](ADR-006-textual-tui.md)                                     | Aceito |
-| 007 | [Service Layer](ADR-007-service-layer.md)                                 | Aceito |
-| 008 | [Tuple Returns](ADR-008-tuple-returns.md)                                 | Aceito |
-| 009 | [Flags Consolidation](ADR-009-flags-consolidation.md)                     | Aceito |
-| 010 | [Recurrence Model](ADR-010-recurrence-model.md)                           | Aceito |
-| 011 | [Conflict Philosophy](ADR-011-conflict-philosophy.md)                     | Aceito |
-| 012 | [Queue-Based Sync Strategy](ADR-012-sync-strategy.md)                     | Aceito |
-| 013 | [Offline-First Schema](ADR-013-offline-first-schema.md)                   | Aceito |
-| 014 | [Sync UX Flow](ADR-014-sync-ux-flow.md)                                   | Aceito |
-| 015 | [HabitInstance Naming](ADR-015-habitinstance-naming.md)                   | Aceito |
-| 016 | [Alembic Timing](ADR-016-alembic-timing.md)                               | Aceito |
-| 017 | [Environment Strategy](ADR-017-environment-strategy.md)                   | Aceito |
-| 018 | [Language Standards](ADR-018-language-standards.md)                       | Aceito |
-| 019 | [Test Naming Convention](ADR-019-test-naming-convention.md)               | Aceito |
-| 020 | [Business Rules Nomenclature](ADR-020-business-rules-nomenclature.md)     | Aceito |
-| 021 | [Status+Substatus Refactoring](ADR-021-status-substatus-refactoring.md)   | Aceito |
-| 022 | [Pause Tracking Simplification](ADR-022-pause-tracking-simplification.md) | Aceito |
+| #   | Título                                                                    | Status   |
+| --- | ------------------------------------------------------------------------- | -------- |
+| 001 | [SQLModel ORM](ADR-001-sqlmodel-orm.md)                                   | Aceito   |
+| 002 | [Typer CLI](ADR-002-typer-cli.md)                                         | Aceito   |
+| 003 | [Event Reordering](ADR-003-event-reordering.md)                           | Aceito   |
+| 004 | [Habit vs Instance](ADR-004-habit-vs-instance.md)                         | Aceito   |
+| 005 | [Resource-First CLI](ADR-005-resource-first-cli.md)                       | Aceito   |
+| 006 | [Textual TUI](ADR-006-textual-tui.md)                                     | Aceito   |
+| 007 | [Service Layer](ADR-007-service-layer.md)                                 | Aceito   |
+| 008 | [Tuple Returns](ADR-008-tuple-returns.md)                                 | Aceito   |
+| 009 | [Flags Consolidation](ADR-009-flags-consolidation.md)                     | Aceito   |
+| 010 | [Recurrence Model](ADR-010-recurrence-model.md)                           | Aceito   |
+| 011 | [Conflict Philosophy](ADR-011-conflict-philosophy.md)                     | Aceito   |
+| 012 | [Queue-Based Sync Strategy](ADR-012-sync-strategy.md)                     | Aceito   |
+| 013 | [Offline-First Schema](ADR-013-offline-first-schema.md)                   | Aceito   |
+| 014 | [Sync UX Flow](ADR-014-sync-ux-flow.md)                                   | Aceito   |
+| 015 | [HabitInstance Naming](ADR-015-habitinstance-naming.md)                   | Aceito   |
+| 016 | [Alembic Timing](ADR-016-alembic-timing.md)                               | Aceito   |
+| 017 | [Environment Strategy](ADR-017-environment-strategy.md)                   | Aceito   |
+| 018 | [Language Standards](ADR-018-language-standards.md)                       | Aceito   |
+| 019 | [Test Naming Convention](ADR-019-test-naming-convention.md)               | Aceito   |
+| 020 | [Business Rules Nomenclature](ADR-020-business-rules-nomenclature.md)     | Aceito   |
+| 021 | [Status+Substatus Refactoring](ADR-021-status-substatus-refactoring.md)   | Aceito   |
+| 022 | [Pause Tracking Simplification](ADR-022-pause-tracking-simplification.md) | Aceito   |
+| 023 | [Microservices Ecosystem](ADR-023-microservices-ecosystem.md)             | Proposto |
 
 ---
 
