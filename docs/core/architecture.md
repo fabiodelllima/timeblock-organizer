@@ -1130,6 +1130,115 @@ Microservices
 
 ---
 
+## 10. Deployment Options
+
+### 10.1. Visão Geral
+
+O TimeBlock suporta múltiplas estratégias de deployment, desde desenvolvimento local até servidor dedicado 24/7.
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                    DEPLOYMENT PROGRESSION                        │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  v1.x          v2.0-alpha       v2.0-stable         v3.0+        │
+│  ─────         ──────────       ───────────         ─────        │
+│  CLI Local  →  Desktop Server → Raspberry Pi    →   Cloud/Hybrid │
+│  SQLite        FastAPI+SQLite   Docker+PostgreSQL   Kafka+K8s    │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 10.2. Opções de Servidor
+
+| Opção               | Disponibilidade | Consumo  | Complexidade |
+| ------------------- | --------------- | -------- | ------------ |
+| Desktop Linux       | Quando ligado   | ~50-100W | Baixa        |
+| Raspberry Pi 4      | 24/7            | ~5W      | Média        |
+| VPS Cloud           | 24/7            | N/A      | Média        |
+| Hybrid (Pi + Cloud) | 24/7 + Backup   | ~5W      | Alta         |
+
+### 10.3. Raspberry Pi Homelab
+
+**Arquitetura:**
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│                     RASPBERRY PI HOMELAB                       │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │                   Raspberry Pi 4                        │   │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐      │   │
+│  │  │  Docker     │  │  Docker     │  │  Docker     │      │   │
+│  │  │  ─────────  │  │  ─────────  │  │  ─────────  │      │   │
+│  │  │  FastAPI    │  │  PostgreSQL │  │  Prometheus │      │   │
+│  │  │  TimeBlock  │  │             │  │  + Grafana  │      │   │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘      │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                              │                                 │
+│                              v                                 │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │                    Rede Local                           │   │
+│  │   Desktop ◄────► Pi Server ◄────► Android/Termux        │   │
+│  │   (cliente)      (24/7)           (cliente)             │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+```
+
+**Stack v2.0-stable:**
+
+```yaml
+# docker-compose.yml (simplificado)
+services:
+  timeblock-api:
+    image: timeblock/api:latest
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://timeblock:pass@db/timeblock
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=timeblock
+      - POSTGRES_USER=timeblock
+      - POSTGRES_PASSWORD=pass
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+```
+
+### 10.4. Princípios de Sync (ADR-012)
+
+**IMPORTANTE:** Independente da opção de deployment:
+
+- Sync SEMPRE manual via `timeblock connect`
+- Sem daemon no cliente
+- Usuário decide quando sincronizar
+- Raspberry Pi = servidor disponível 24/7, NÃO auto-sync
+
+```bash
+# Sem Pi: precisa iniciar servidor antes
+$ timeblock server start  # No desktop
+$ timeblock connect       # No Android
+
+# Com Pi: servidor já disponível
+$ timeblock connect       # Funciona direto (Pi rodando 24/7)
+```
+
 ## Referências
 
 - **SQLModel:** <https://sqlmodel.tiangolo.com/>

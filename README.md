@@ -6,7 +6,7 @@
 ╔═══════════════════════════════════════════════════════════════╗
 ║  TimeBlock Organizer v2.0.0                                   ║
 ║  ───────────────────────────────────────────────────────────  ║
-║  [x] 492 testes  [x] 99% cobertura  [x] 23 ADRs  [x] 50+ BRs  ║
+║  [x] 492 testes  [x] 99% cobertura  [x] 24 ADRs  [x] 50+ BRs  ║
 ╚═══════════════════════════════════════════════════════════════╝
 ```
 
@@ -340,7 +340,7 @@ timeblock task complete 1
 ║   Cobertura       99%        ███████████████████████████░   99%    ║
 ║   Modelos         7+1        ████████░░░░░░░░░░░░░░░░░░░░   27%    ║
 ║   Services        8          ████████░░░░░░░░░░░░░░░░░░░░   27%    ║
-║   ADRs            23         ██████████████████████░░░░░░   73%    ║
+║   ADRs            24         ██████████████████████░░░░░░   73%    ║
 ║   Business Rules  50+        ██████████████████████████░░   87%    ║
 ║                                                                    ║
 ╚════════════════════════════════════════════════════════════════════╝
@@ -416,7 +416,7 @@ Tipos: feat, fix, refactor, test, docs, chore
 │ v1.4.0 │ [CURRENT] │ MVP Event Reordering, E2E tests               │
 ├────────────────────────────────────────────────────────────────────┤
 │ v1.5.0 │ [PLANNED] │ Infra Foundation (Docker, CI/CD)              │
-│ v2.0.0 │ [PLANNED] │ FastAPI REST API + Observabilidade            │
+│ v2.0.0 │ [PLANNED] │ FastAPI REST API + Raspberry Pi Homelab       │
 │ v3.0.0 │ [FUTURE]  │ Microservices Ecosystem (Kafka)               │
 │ v4.0.0 │ [FUTURE]  │ Android App (Kotlin)                          │
 └────────────────────────────────────────────────────────────────────┘

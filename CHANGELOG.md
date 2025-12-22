@@ -9,6 +9,13 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/spec/v2.0.
 
 ### Alterado (Documentação)
 
+- **(2025-12-21)** Deployment Options e ADR-024
+  - Nova seção 10 em architecture.md: Deployment Options
+  - Documentado Raspberry Pi homelab como servidor recomendado
+  - Comparativo: Pi vs VPS vs Desktop
+  - ADR-024: Homelab Infrastructure Strategy
+  - Atualizado índice de ADRs: 23 → 24 (2 propostas)
+
 - **(2025-12-21)** Roadmap v1.5-v4.0 e ADR-023
   - Adicionada ADR-023: Microservices Ecosystem (Kafka, CloudEvents)
   - Documentado roadmap completo em architecture.md:
@@ -16,7 +23,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/spec/v2.0.
     - v2.0.0: FastAPI REST API + Observabilidade (Prometheus, Grafana, Loki)
     - v3.0.0: Microservices Ecosystem (Apache Kafka)
     - v4.0.0: Android App (Kotlin)
-  - Atualizado índice de ADRs: 22 → 23 (1 proposta)
+  - Atualizado índice de ADRs: 22 → 23
 
 - **(2025-12-01)** Reorganização completa de docs/
   - Consolidado 4 documentos principais em `docs/core/`:
