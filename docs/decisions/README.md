@@ -2,7 +2,7 @@
 
 Registro de decisões arquiteturais do TimeBlock Organizer.
 
-**Total:** 23 ADRs | **Status:** 22 aceitas, 1 proposta
+**Total:** 24 ADRs | **Status:** 22 aceitas, 2 propostas
 
 ---
 
@@ -62,6 +62,12 @@ Registro de decisões arquiteturais do TimeBlock Organizer.
 | --------------------------------------------- | ----------------------- |
 | [ADR-023](ADR-023-microservices-ecosystem.md) | Microservices Ecosystem |
 
+### Infraestrutura
+
+| ADR                                          | Título                          | Status   |
+| -------------------------------------------- | ------------------------------- | -------- |
+| [ADR-024](ADR-024-homelab-infrastructure.md) | Homelab Infrastructure Strategy | Proposto |
+
 ---
 
 ## Índice Numérico
@@ -91,6 +97,7 @@ Registro de decisões arquiteturais do TimeBlock Organizer.
 | 021 | [Status+Substatus Refactoring](ADR-021-status-substatus-refactoring.md)   | Aceito   |
 | 022 | [Pause Tracking Simplification](ADR-022-pause-tracking-simplification.md) | Aceito   |
 | 023 | [Microservices Ecosystem](ADR-023-microservices-ecosystem.md)             | Proposto |
+| 024 | [Homelab Infrastructure Strategy](ADR-024-homelab-infrastructure.md)      | Proposto |
 
 ---
 
