@@ -16,11 +16,9 @@ stages:
   - deploy
 
 before_script:
-  - cd cli
-  - python -m venv venv
-  - source venv/bin/activate
   - pip install --upgrade pip
-  - pip install -r requirements.txt --break-system-packages
+  - pip install -r requirements.txt
+  - cd cli
   - python -c "from src.timeblock.database.engine import create_db_and_tables; create_db_and_tables()"
 
 test:unit:
@@ -66,8 +64,7 @@ test:typecheck:
 build:docs:
   stage: build
   script:
-    - cd ..
-    - pip install mkdocs mkdocs-material --break-system-packages
+    - pip install mkdocs mkdocs-material
     - mkdocs build --strict
   artifacts:
     paths:
@@ -80,8 +77,7 @@ build:docs:
 pages:
   stage: deploy
   script:
-    - cd ..
-    - pip install mkdocs mkdocs-material --break-system-packages
+    - pip install mkdocs mkdocs-material
     - mkdocs build --strict
     - mv site public
   artifacts:
