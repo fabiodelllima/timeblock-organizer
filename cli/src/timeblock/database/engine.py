@@ -1,4 +1,4 @@
-"""Database connection and operations."""
+"""Conexão e operações de banco de dados."""
 
 import os
 from contextlib import contextmanager
@@ -10,7 +10,7 @@ from sqlmodel import SQLModel, create_engine
 
 
 def get_db_path() -> str:
-    """Get database path from environment or default."""
+    """Retorna caminho do banco de dados (env ou default)."""
     db_path = os.getenv("TIMEBLOCK_DB_PATH")
     if db_path is None:
         data_dir = Path(__file__).parent.parent.parent / "data"
@@ -20,11 +20,10 @@ def get_db_path() -> str:
 
 
 def get_engine():
-    """Get SQLite engine with foreign keys enabled."""
+    """Retorna engine SQLite com foreign keys habilitadas."""
     db_path = get_db_path()
     engine = create_engine(f"sqlite:///{db_path}", echo=False)
 
-    # Habilitar foreign keys no SQLite (CRÍTICO para RESTRICT)
     @event.listens_for(engine, "connect")
     def set_sqlite_pragma(dbapi_conn: Any, connection_record: Any) -> None:
         """Habilita foreign keys no SQLite."""
@@ -37,7 +36,7 @@ def get_engine():
 
 @contextmanager
 def get_engine_context():
-    """Get SQLite engine with automatic cleanup."""
+    """Retorna engine SQLite com cleanup automático."""
     engine = get_engine()
     try:
         yield engine
@@ -46,7 +45,20 @@ def get_engine_context():
 
 
 def create_db_and_tables():
-    """Create database tables."""
+    """Cria tabelas do banco de dados.
+
+    Importa todos os modelos para registrar no SQLModel.metadata
+    antes de criar as tabelas.
+    """
+    from src.timeblock.models import (  # noqa: F401
+        Habit,
+        HabitInstance,
+        Routine,
+        Tag,
+        Task,
+        TimeLog,
+    )
+
     with get_engine_context() as engine:
         SQLModel.metadata.create_all(engine)
     return engine
