@@ -1239,6 +1239,87 @@ $ timeblock connect       # No Android
 $ timeblock connect       # Funciona direto (Pi rodando 24/7)
 ```
 
+## 11. Processo de Desenvolvimento
+
+### 11.1. Visão Geral
+
+O projeto adota **Vertical Slicing** com práticas de Docs-First, BDD e Strict TDD.
+
+**Hierarquia obrigatória:**
+
+```
+DOCS ──> BDD ──> TDD ──> CODE
+```
+
+### 11.2. Práticas Adotadas
+
+| Prática          | Origem                   | Aplicação               |
+| ---------------- | ------------------------ | ----------------------- |
+| Vertical Slicing | Agile                    | Uma BR completa por vez |
+| Docs-First       | Specification by Example | BR documentada primeiro |
+| BDD              | Dan North (2006)         | pytest-bdd com Gherkin  |
+| Strict TDD       | Robert Martin (2003)     | 3 Leis rigorosas        |
+| Sprints          | Scrum                    | Iterações 1-2 semanas   |
+| WIP Limits       | Kanban/Lean              | Max 2 itens In Progress |
+
+### 11.3. Fluxo por Business Rule
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  VERTICAL SLICE (1 BR)                      │
+├─────────────────────────────────────────────────────────────┤
+│  1. Documentar BR (docs/core/business-rules.md)             │
+│  2. Escrever cenário BDD (.feature)                         │
+│  3. Implementar steps (step_defs/)                          │
+│  4. Criar teste unitário (RED)                              │
+│  5. Implementar código (GREEN)                              │
+│  6. Refatorar                                               │
+│  7. Commit                                                  │
+├─────────────────────────────────────────────────────────────┤
+│  [OK] BR completa ──> Próxima BR                            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 11.4. As 3 Leis do Strict TDD
+
+1. Não escreva código de produção exceto para passar um teste que falha
+2. Não escreva mais de um teste que seja suficiente para falhar
+3. Não escreva mais código do que o suficiente para passar o teste
+
+### 11.5. Estrutura de Testes
+
+```
+cli/tests/
+├── bdd/
+│   ├── features/        # .feature (Gherkin)
+│   └── step_defs/       # Steps Python
+├── unit/                # ~70% (BR isolada)
+├── integration/         # ~25% (Service + DB)
+└── e2e/                 # ~5% (CLI completa)
+```
+
+**Status BDD:** 8 testes passando com pytest-bdd.
+
+### 11.6. WIP Limits
+
+| Coluna         | Limite     |
+| -------------- | ---------- |
+| Backlog        | Sem limite |
+| Sprint Backlog | 5-10       |
+| In Progress    | 1-2        |
+| Code Review    | 2-3        |
+| Done           | Sem limite |
+
+### 11.7. Sprints
+
+- **Duração:** 1-2 semanas
+- **Planejamento:** Início (selecionar BRs)
+- **Daily:** Check-in diário
+- **Review:** Fim (validar entregas)
+- **Retro:** Fim (identificar melhorias)
+
+Ver também: [ADR-025: Processo de Desenvolvimento](../decisions/ADR-025-development-methodology.md)
+
 ## Referências
 
 - **SQLModel:** <https://sqlmodel.tiangolo.com/>

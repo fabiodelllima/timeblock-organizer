@@ -9,7 +9,15 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/spec/v2.0.
 
 ### Alterado (Documentação)
 
+- **(2025-12-22)** Processo de Desenvolvimento e ADR-025
+
+  - Nova seção 11 em architecture.md: Processo de Desenvolvimento
+  - ADR-025: Development Methodology (Vertical Slicing + Strict TDD)
+  - Documentado: Docs-First, BDD, Strict TDD, Sprints, WIP Limits
+  - Atualizado índice de ADRs: 24 → 25 (23 aceitas, 2 propostas)
+
 - **(2025-12-21)** Deployment Options e ADR-024
+
   - Nova seção 10 em architecture.md: Deployment Options
   - Documentado Raspberry Pi homelab como servidor recomendado
   - Comparativo: Pi vs VPS vs Desktop
@@ -17,6 +25,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/spec/v2.0.
   - Atualizado índice de ADRs: 23 → 24 (2 propostas)
 
 - **(2025-12-21)** Roadmap v1.5-v4.0 e ADR-023
+
   - Adicionada ADR-023: Microservices Ecosystem (Kafka, CloudEvents)
   - Documentado roadmap completo em architecture.md:
     - v1.5.0: Infra Foundation (Docker, CI/CD)

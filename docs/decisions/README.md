@@ -2,7 +2,7 @@
 
 Registro de decisões arquiteturais do TimeBlock Organizer.
 
-**Total:** 24 ADRs | **Status:** 22 aceitas, 2 propostas
+**Total:** 25 ADRs | **Status:** 23 aceitas, 2 propostas
 
 ---
 
@@ -55,6 +55,7 @@ Registro de decisões arquiteturais do TimeBlock Organizer.
 | [ADR-018](ADR-018-language-standards.md)          | Language Standards          |
 | [ADR-019](ADR-019-test-naming-convention.md)      | Test Naming Convention      |
 | [ADR-020](ADR-020-business-rules-nomenclature.md) | Business Rules Nomenclature |
+| [ADR-025](ADR-025-development-methodology.md)     | Development Methodology     |
 
 ### Microservices
 
@@ -98,6 +99,7 @@ Registro de decisões arquiteturais do TimeBlock Organizer.
 | 022 | [Pause Tracking Simplification](ADR-022-pause-tracking-simplification.md) | Aceito   |
 | 023 | [Microservices Ecosystem](ADR-023-microservices-ecosystem.md)             | Proposto |
 | 024 | [Homelab Infrastructure Strategy](ADR-024-homelab-infrastructure.md)      | Proposto |
+| 025 | [Development Methodology](ADR-025-development-methodology.md)             | Aceito   |
 
 ---
 
