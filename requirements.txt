@@ -35,3 +35,5 @@ typer==0.19.2
 typing-inspection==0.4.2
 typing_extensions==4.15.0
 uc-micro-py==1.0.3
+freezegun==1.5.1
+pytest-bdd==8.1.0
