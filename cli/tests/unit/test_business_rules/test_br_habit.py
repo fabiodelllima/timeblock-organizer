@@ -14,28 +14,28 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session
 
-from src.timeblock.models import Habit, Recurrence, Routine
+from src.timeblock.models import Habit, Recurrence
 from src.timeblock.services.habit_service import HabitService
-from src.timeblock.services.routine_service import RoutineService
 
 
 class TestBRHabit001TitleValidation:
     """BR-HABIT-001: Title Validation."""
 
-    def test_br_habit_001_empty_title_rejected(self, test_engine, routine_service):
+    def test_br_habit_001_empty_title_rejected(self, session, routine_service):
         """BR-HABIT-001: Título vazio deve ser rejeitado."""
         routine = routine_service.create_routine("Test Routine")
 
         with pytest.raises(ValueError, match="cannot be empty"):
             HabitService.create_habit(
                 routine_id=routine.id,
-                title="   ",  # Apenas espaços
+                title="   ",
                 scheduled_start=time(9, 0),
                 scheduled_end=time(10, 0),
                 recurrence=Recurrence.EVERYDAY,
+                session=session,
             )
 
-    def test_br_habit_001_long_title_rejected(self, test_engine, routine_service):
+    def test_br_habit_001_long_title_rejected(self, session, routine_service):
         """BR-HABIT-001: Título > 200 caracteres deve ser rejeitado."""
         routine = routine_service.create_routine("Test Routine")
 
@@ -46,9 +46,10 @@ class TestBRHabit001TitleValidation:
                 scheduled_start=time(9, 0),
                 scheduled_end=time(10, 0),
                 recurrence=Recurrence.EVERYDAY,
+                session=session,
             )
 
-    def test_br_habit_001_whitespace_trimmed(self, test_engine, routine_service):
+    def test_br_habit_001_whitespace_trimmed(self, session, routine_service):
         """BR-HABIT-001: Whitespace deve ser removido automaticamente."""
         routine = routine_service.create_routine("Test Routine")
 
@@ -58,6 +59,7 @@ class TestBRHabit001TitleValidation:
             scheduled_start=time(6, 0),
             scheduled_end=time(7, 0),
             recurrence=Recurrence.EVERYDAY,
+            session=session,
         )
 
         assert habit.title == "Morning Meditation"
@@ -66,22 +68,22 @@ class TestBRHabit001TitleValidation:
 class TestBRHabit002TimeRangeValidation:
     """BR-HABIT-002: Time Range Validation."""
 
-    def test_br_habit_002_start_before_end_required(self, test_engine, routine_service):
+    def test_br_habit_002_start_before_end_required(self, session, routine_service):
         """BR-HABIT-002: Start deve ser antes de end."""
         routine = routine_service.create_routine("Test Routine")
 
-        # Válido: start < end
         habit = HabitService.create_habit(
             routine_id=routine.id,
             title="Valid Habit",
             scheduled_start=time(9, 0),
             scheduled_end=time(10, 0),
             recurrence=Recurrence.EVERYDAY,
+            session=session,
         )
 
         assert habit.scheduled_start < habit.scheduled_end
 
-    def test_br_habit_002_equal_times_rejected(self, test_engine, routine_service):
+    def test_br_habit_002_equal_times_rejected(self, session, routine_service):
         """BR-HABIT-002: Start == end é inválido."""
         routine = routine_service.create_routine("Test Routine")
 
@@ -90,11 +92,12 @@ class TestBRHabit002TimeRangeValidation:
                 routine_id=routine.id,
                 title="Invalid Habit",
                 scheduled_start=time(9, 0),
-                scheduled_end=time(9, 0),  # Igual
+                scheduled_end=time(9, 0),
                 recurrence=Recurrence.EVERYDAY,
+                session=session,
             )
 
-    def test_br_habit_002_end_before_start_rejected(self, test_engine, routine_service):
+    def test_br_habit_002_end_before_start_rejected(self, session, routine_service):
         """BR-HABIT-002: End antes de start é inválido."""
         routine = routine_service.create_routine("Test Routine")
 
@@ -103,17 +106,17 @@ class TestBRHabit002TimeRangeValidation:
                 routine_id=routine.id,
                 title="Invalid Habit",
                 scheduled_start=time(10, 0),
-                scheduled_end=time(9, 0),  # Antes
+                scheduled_end=time(9, 0),
                 recurrence=Recurrence.EVERYDAY,
+                session=session,
             )
 
 
 class TestBRHabit003RoutineAssociation:
     """BR-HABIT-003: Routine Association."""
 
-    def test_br_habit_003_requires_routine_id(self, test_engine, routine_service):
+    def test_br_habit_003_requires_routine_id(self, test_engine):
         """BR-HABIT-003: routine_id é obrigatório."""
-        # Tentar criar Habit diretamente sem routine_id
         with Session(test_engine) as session:
             with pytest.raises(IntegrityError):
                 habit = Habit(
@@ -125,24 +128,23 @@ class TestBRHabit003RoutineAssociation:
                 session.add(habit)
                 session.commit()
 
-    def test_br_habit_003_invalid_routine_rejected(self, test_engine, routine_service):
+    def test_br_habit_003_invalid_routine_rejected(self, session):
         """BR-HABIT-003: routine_id deve existir."""
         with pytest.raises(IntegrityError):
             HabitService.create_habit(
-                routine_id=99999,  # ID inexistente
+                routine_id=99999,
                 title="Invalid Habit",
                 scheduled_start=time(9, 0),
                 scheduled_end=time(10, 0),
                 recurrence=Recurrence.EVERYDAY,
+                session=session,
             )
-
-            routine_delete_helper(routine.id)
 
 
 class TestBRHabit004RecurrencePattern:
     """BR-HABIT-004: Recurrence Pattern."""
 
-    def test_br_habit_004_valid_recurrence_accepted(self, test_engine, routine_service):
+    def test_br_habit_004_valid_recurrence_accepted(self, session, routine_service):
         """BR-HABIT-004: Todos padrões válidos devem ser aceitos."""
         routine = routine_service.create_routine("Test Routine")
 
@@ -160,31 +162,30 @@ class TestBRHabit004RecurrencePattern:
                 scheduled_start=time(9, 0),
                 scheduled_end=time(10, 0),
                 recurrence=pattern,
+                session=session,
             )
             assert habit.recurrence == pattern
 
-    def test_br_habit_004_invalid_recurrence_rejected(self, test_engine, routine_service):
+    def test_br_habit_004_invalid_recurrence_rejected(self, session, routine_service):
         """BR-HABIT-004: String inválida deve ser rejeitada."""
         routine = routine_service.create_routine("Test Routine")
 
-        # Tentar criar com string inválida diretamente
-        with Session(test_engine) as session:
-            with pytest.raises(ValueError):
-                habit = Habit(
-                    routine_id=routine.id,
-                    title="Invalid Habit",
-                    scheduled_start=time(9, 0),
-                    scheduled_end=time(10, 0),
-                    recurrence="INVALID_PATTERN",  # type: ignore
-                )
-                session.add(habit)
-                session.commit()
+        with pytest.raises(ValueError):
+            habit = Habit(
+                routine_id=routine.id,
+                title="Invalid Habit",
+                scheduled_start=time(9, 0),
+                scheduled_end=time(10, 0),
+                recurrence="INVALID_PATTERN",  # type: ignore
+            )
+            session.add(habit)
+            session.commit()
 
 
 class TestBRHabit005OptionalColor:
     """BR-HABIT-005: Optional Color."""
 
-    def test_br_habit_005_color_optional(self, test_engine, routine_service):
+    def test_br_habit_005_color_optional(self, session, routine_service):
         """BR-HABIT-005: Color é opcional."""
         routine = routine_service.create_routine("Test Routine")
 
@@ -194,11 +195,12 @@ class TestBRHabit005OptionalColor:
             scheduled_start=time(9, 0),
             scheduled_end=time(10, 0),
             recurrence=Recurrence.EVERYDAY,
+            session=session,
         )
 
         assert habit.color is None
 
-    def test_br_habit_005_valid_hex_color(self, test_engine, routine_service):
+    def test_br_habit_005_valid_hex_color(self, session, routine_service):
         """BR-HABIT-005: Hex color válido é aceito."""
         routine = routine_service.create_routine("Test Routine")
 
@@ -209,6 +211,7 @@ class TestBRHabit005OptionalColor:
             scheduled_end=time(10, 0),
             recurrence=Recurrence.EVERYDAY,
             color="#FF5733",
+            session=session,
         )
 
         assert habit.color == "#FF5733"
