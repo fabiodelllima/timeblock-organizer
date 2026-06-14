@@ -54,6 +54,11 @@ skip_note: str | None             # Nota opcional (max 500 chars)
 2. SKIPPED_UNJUSTIFIED não tem skip_reason
 3. skip_note é sempre opcional
 
+**Como cada estado é criado:**
+
+- SKIPPED_JUSTIFIED — `habit skip <id> --reason <CATEGORIA>` no CLI, ou a seleção de categoria no modal (BR-TUI-024).
+- SKIPPED_UNJUSTIFIED — `habit skip <id> --unjustified` no CLI, ou a opção "Sem justificativa" no modal (BR-TUI-024).
+
 **Validação:**
 
 ```python
@@ -92,36 +97,8 @@ else:
 
 ---
 
-### BR-SKIP-004: CLI Prompt Interativo
+### BR-SKIP-004: CLI Prompt Interativo (DESCONTINUADO)
 
-**Descrição:** Ao dar skip, CLI oferece prompt interativo para categorizar.
+> **Substituída pelo ADR-058 e pela BR-TUI-024.** O prompt interativo `[1-9]` no CLI não foi adotado. A seleção interativa de motivo pertence ao TUI (modal da BR-TUI-024, com as 8 categorias e a opção "Sem justificativa"); o CLI recebe o motivo por flag — `--reason` para justificado, `--unjustified` para sem justificativa (ver BR-SKIP-001 e BR-SKIP-002).
 
-**Fluxo:**
-
-```bash
-$ habit skip 42
-
-Por que você esta pulando Academia hoje?
-
-[1] Saúde
-[2] Trabalho
-[3] Família
-[4] Viagem
-[5] Clima
-[6] Falta de recursos
-[7] Emergência
-[8] Outro
-[9] Sem justificativa
-
-Escolha [1-9]: _
-```
-
-**Comportamento:**
-
-- Opções 1-8: SKIPPED_JUSTIFIED + skip_reason
-- Opção 9: SKIPPED_UNJUSTIFIED + skip_reason=None
-
-**Testes:**
-
-- `test_br_skip_004_interactive_justified`
-- `test_br_skip_004_interactive_unjustified`
+**Descrição original (histórica):** o CLI ofereceria um prompt para categorizar, com as opções 1-8 mapeando para SKIPPED_JUSTIFIED e a opção 9 para SKIPPED_UNJUSTIFIED. A divisão acima a substitui.
