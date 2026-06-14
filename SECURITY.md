@@ -12,7 +12,7 @@
 > [!CAUTION]
 > **Do not open public issues for security vulnerabilities.** Use the private disclosure process below.
 
-To report a security vulnerability, email **delimafabio@proton.me** with:
+To report a security vulnerability, email **fabiodelima@proton.me** with:
 
 - Description of the vulnerability
 - Steps to reproduce
