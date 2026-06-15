@@ -454,3 +454,40 @@ class TestBRHabitSkip001AllCategories:
             assert result.status == Status.NOT_DONE
             assert result.not_done_substatus == NotDoneSubstatus.SKIPPED_JUSTIFIED
             assert result.skip_reason == category
+
+
+class TestSkipUnjustified:
+    """Skip sem justificativa (ADR-058): skip_reason=None gera SKIPPED_UNJUSTIFIED."""
+
+    def test_skip_with_none_reason_sets_unjustified(self, session: Session, habit: Habit):
+        """Skip sem motivo: None produz SKIPPED_UNJUSTIFIED com skip_reason nulo."""
+        assert habit.id is not None
+
+        # DADO
+        instance = HabitInstance(
+            habit_id=habit.id,
+            date=date.today(),
+            scheduled_start=time(7, 0),
+            scheduled_end=time(8, 30),
+            status=Status.PENDING,
+        )
+        session.add(instance)
+        session.commit()
+        session.refresh(instance)
+        assert instance.id is not None
+
+        # QUANDO
+        service = HabitInstanceService()
+        result = service.skip_habit_instance(
+            habit_instance_id=instance.id,
+            skip_reason=None,
+            session=session,
+        )
+
+        # ENTÃO
+        assert result.status == Status.NOT_DONE
+        assert result.not_done_substatus == NotDoneSubstatus.SKIPPED_UNJUSTIFIED
+        assert result.skip_reason is None
+        assert result.skip_note is None
+        assert result.done_substatus is None
+        assert result.completion_percentage is None
