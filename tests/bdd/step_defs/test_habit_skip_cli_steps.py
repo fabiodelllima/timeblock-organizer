@@ -166,3 +166,22 @@ def verificar_skip_note_null_cli(session: Session, instance_id: int) -> None:
     instance = session.get(HabitInstance, instance_id)
     assert instance is not None
     assert instance.skip_note is None
+
+
+@then(parsers.parse("HabitInstance {instance_id:d} should have substatus {substatus_name}"))
+def verificar_substatus_cli(session: Session, instance_id: int, substatus_name: str) -> None:
+    """Verifica not_done_substatus da instância."""
+    session.expire_all()
+    instance = session.get(HabitInstance, instance_id)
+    assert instance is not None
+    assert instance.not_done_substatus is not None
+    assert instance.not_done_substatus.name == substatus_name
+
+
+@then(parsers.parse("HabitInstance {instance_id:d} should have skip_reason NULL"))
+def verificar_skip_reason_null_cli(session: Session, instance_id: int) -> None:
+    """Verifica que skip_reason é None."""
+    session.expire_all()
+    instance = session.get(HabitInstance, instance_id)
+    assert instance is not None
+    assert instance.skip_reason is None
