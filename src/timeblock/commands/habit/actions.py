@@ -50,38 +50,52 @@ def adjust_instance(
 
 def skip_instance(
     instance_id: int = typer.Argument(..., help="ID da instância do hábito"),
-    category: str = typer.Option(
+    reason: str = typer.Option(
         None,
-        "--category",
-        "-c",
-        help="Categoria do skip (HEALTH|WORK|FAMILY|TRAVEL|WEATHER|LACK_RESOURCES|EMERGENCY|OTHER)",
+        "--reason",
+        "-r",
+        help="Razão do skip (HEALTH|WORK|FAMILY|TRAVEL|WEATHER|LACK_RESOURCES|EMERGENCY|OTHER)",
+    ),
+    unjustified: bool = typer.Option(
+        False,
+        "--unjustified",
+        "-u",
+        help="Marca skip sem justificativa",
     ),
     note: str = typer.Option(None, "--note", "-n", help="Nota opcional (máx 500 chars)"),
 ):
     """
-    Marca instância de hábito como skipped (pulada) com categorização.
+    Marca instância de hábito como skipped (pulada).
 
     Exemplos:
-        timeblock habit skip 42 --category WORK --note "Reunião urgente"
-        timeblock habit skip 42 --category HEALTH
+        timeblock habit skip 42 --reason WORK --note "Reunião urgente"
+        timeblock habit skip 42 --unjustified
     """
     try:
-        if category is None:
-            console.print("[red]Categoria obrigatória. Use --category[/red]")
-            console.print("\nCategorias válidas:")
+        if reason is not None and unjustified:
+            console.print("[red]--reason e --unjustified são mutuamente exclusivos[/red]")
+            raise typer.Exit(1)
+
+        if reason is None and not unjustified:
+            console.print("[red]Informe uma razão com --reason ou use --unjustified[/red]")
+            console.print("\nRazões válidas:")
             console.print("  HEALTH, WORK, FAMILY, TRAVEL, WEATHER,")
             console.print("  LACK_RESOURCES, EMERGENCY, OTHER")
             raise typer.Exit(1)
 
-        try:
-            skip_reason = SkipReason[category.upper()]
-        except KeyError:
-            logger.warning("Opção inválida selecionada")
-            console.print(f"[red]Categoria inválida: {category}[/red]")
-            console.print("\nCategorias válidas:")
-            console.print("  HEALTH, WORK, FAMILY, TRAVEL, WEATHER,")
-            console.print("  LACK_RESOURCES, EMERGENCY, OTHER")
-            raise typer.Exit(1)
+        skip_reason: SkipReason | None
+        if unjustified:
+            skip_reason = None
+        else:
+            try:
+                skip_reason = SkipReason[reason.upper()]
+            except KeyError:
+                logger.warning("Razão inválida fornecida")
+                console.print(f"[red]Razão inválida: {reason}[/red]")
+                console.print("\nRazões válidas:")
+                console.print("  HEALTH, WORK, FAMILY, TRAVEL, WEATHER,")
+                console.print("  LACK_RESOURCES, EMERGENCY, OTHER")
+                raise typer.Exit(1)
 
         if note and len(note) > 500:
             console.print("[red]Nota muito longa (máximo 500 caracteres)[/red]")
@@ -96,19 +110,21 @@ def skip_instance(
                 session=session,
             )
 
-            category_pt = {
-                "health": "Saúde",
-                "work": "Trabalho",
-                "family": "Família",
-                "travel": "Viagem",
-                "weather": "Clima",
-                "lack_resources": "Falta de recursos",
-                "emergency": "Emergência",
-                "other": "Outro",
-            }
-
             console.print("[green]Hábito marcado como skipped[/green]")
-            console.print(f"  Categoria: {category_pt.get(skip_reason.value, skip_reason.value)}")
+            if skip_reason is None:
+                console.print("  Razão: sem justificativa")
+            else:
+                reason_pt = {
+                    "health": "Saúde",
+                    "work": "Trabalho",
+                    "family": "Família",
+                    "travel": "Viagem",
+                    "weather": "Clima",
+                    "lack_resources": "Falta de recursos",
+                    "emergency": "Emergência",
+                    "other": "Outro",
+                }
+                console.print(f"  Razão: {reason_pt.get(skip_reason.value, skip_reason.value)}")
             if note:
                 console.print(f"  Nota: {note}")
 
