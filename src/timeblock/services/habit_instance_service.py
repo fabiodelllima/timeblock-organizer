@@ -229,7 +229,7 @@ class HabitInstanceService:
     @staticmethod
     def skip_habit_instance(
         habit_instance_id: int,
-        skip_reason: SkipReason,
+        skip_reason: SkipReason | None,
         skip_note: str | None = None,
         session: Session | None = None,
     ) -> HabitInstance:
@@ -237,7 +237,7 @@ class HabitInstanceService:
 
         Args:
             habit_instance_id: ID da instância
-            skip_reason: Categoria do skip (SkipReason enum)
+            skip_reason: Categoria do skip, ou None para skip sem justificativa
             skip_note: Nota opcional (max 500 chars)
             session: Optional session (for tests/transactions)
 
@@ -249,15 +249,15 @@ class HabitInstanceService:
 
         Side effects:
             - status → NOT_DONE
-            - not_done_substatus → SKIPPED_JUSTIFIED
-            - skip_reason → valor fornecido
+            - not_done_substatus → SKIPPED_JUSTIFIED (ou SKIPPED_UNJUSTIFIED se skip_reason=None)
+            - skip_reason → valor fornecido (ou None no skip sem justificativa)
             - skip_note → texto fornecido ou None
             - done_substatus → None
             - completion_percentage → None
         """
+        reason_label = skip_reason.value if skip_reason else "UNJUSTIFIED"
         logger.debug(
-            f"Skip habit_instance_id={habit_instance_id}, "
-            f"reason={skip_reason.value}, note={skip_note}"
+            f"Skip habit_instance_id={habit_instance_id}, reason={reason_label}, note={skip_note}"
         )
 
         def _skip(sess: Session) -> HabitInstance:
@@ -296,8 +296,12 @@ class HabitInstanceService:
 
             # 5. Atualizar campos (BR-HABIT-SKIP-001)
             instance.status = Status.NOT_DONE
-            instance.not_done_substatus = NotDoneSubstatus.SKIPPED_JUSTIFIED
-            instance.skip_reason = skip_reason
+            if skip_reason is None:
+                instance.not_done_substatus = NotDoneSubstatus.SKIPPED_UNJUSTIFIED
+                instance.skip_reason = None
+            else:
+                instance.not_done_substatus = NotDoneSubstatus.SKIPPED_JUSTIFIED
+                instance.skip_reason = skip_reason
             instance.skip_note = skip_note
 
             # Limpar campos de completion
@@ -312,9 +316,7 @@ class HabitInstanceService:
             sess.commit()
             sess.refresh(instance)
 
-            logger.info(
-                f"Instance skipped: instance_id={habit_instance_id}, reason={skip_reason.value}"
-            )
+            logger.info(f"Instance skipped: instance_id={habit_instance_id}, reason={reason_label}")
             return instance
 
         if session is not None:
