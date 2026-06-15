@@ -44,7 +44,7 @@ def mock_engine_context(test_engine: Engine, monkeypatch: MonkeyPatch) -> None:
 
 
 @given('an active routine "Rotina Matinal" exists', target_fixture="test_routine_cli")
-def criar_rotina_cli(session: Session) -> Routine:
+def create_routine_cli(session: Session) -> Routine:
     """Cria rotina ativa para testes."""
     routine = Routine(name="Rotina Matinal", is_active=True)
     session.add(routine)
@@ -57,7 +57,7 @@ def criar_rotina_cli(session: Session) -> Routine:
     parsers.parse('a habit "{habit_name}" with ID 1 exists'),
     target_fixture="test_habit_cli",
 )
-def criar_habit_cli(session: Session, test_routine_cli: Routine, habit_name: str) -> Habit:
+def create_habit_cli(session: Session, test_routine_cli: Routine, habit_name: str) -> Habit:
     """Cria habit na rotina."""
     assert test_routine_cli.id is not None
     habit_obj = Habit(
@@ -77,7 +77,7 @@ def criar_habit_cli(session: Session, test_routine_cli: Routine, habit_name: str
     "a HabitInstance with ID 42 for today exists",
     target_fixture="test_instance_cli",
 )
-def criar_instance_cli(session: Session, test_habit_cli: Habit) -> HabitInstance:
+def create_instance_cli(session: Session, test_habit_cli: Habit) -> HabitInstance:
     """Cria HabitInstance com ID 42 para hoje."""
     assert test_habit_cli.id is not None
     instance = HabitInstance(
@@ -95,7 +95,7 @@ def criar_instance_cli(session: Session, test_habit_cli: Habit) -> HabitInstance
 
 
 @when(parsers.parse('the user executes command "{command}"'))
-def executar_comando(cli_runner: CliRunner, command: str, session: Session) -> None:
+def execute_command(cli_runner: CliRunner, command: str, session: Session) -> None:
     """Executa comando CLI."""
     result = cli_runner.invoke(app, shlex.split(command))
     session.info = {
@@ -106,7 +106,7 @@ def executar_comando(cli_runner: CliRunner, command: str, session: Session) -> N
 
 
 @then("the command should succeed")
-def verificar_sucesso(session: Session) -> None:
+def assert_command_succeeds(session: Session) -> None:
     """Verifica que comando teve sucesso."""
     info = getattr(session, "info", {})
     result = info.get("cli_result")
@@ -115,7 +115,7 @@ def verificar_sucesso(session: Session) -> None:
 
 
 @then("the command should fail")
-def verificar_falha(session: Session) -> None:
+def assert_command_fails(session: Session) -> None:
     """Verifica que comando falhou."""
     info = getattr(session, "info", {})
     result = info.get("cli_result")
@@ -124,7 +124,7 @@ def verificar_falha(session: Session) -> None:
 
 
 @then(parsers.parse('the output should contain "{text}"'))
-def verificar_output_contem(session: Session, text: str) -> None:
+def assert_output_contains(session: Session, text: str) -> None:
     """Verifica que output contém texto."""
     info = getattr(session, "info", {})
     output = info.get("output", "")
@@ -132,7 +132,7 @@ def verificar_output_contem(session: Session, text: str) -> None:
 
 
 @then(parsers.parse("HabitInstance {instance_id:d} should have status {status_name}"))
-def verificar_status_cli(session: Session, instance_id: int, status_name: str) -> None:
+def assert_status_cli(session: Session, instance_id: int, status_name: str) -> None:
     """Verifica status da instância."""
     session.expire_all()
     instance = session.get(HabitInstance, instance_id)
@@ -141,7 +141,7 @@ def verificar_status_cli(session: Session, instance_id: int, status_name: str) -
 
 
 @then(parsers.parse("HabitInstance {instance_id:d} should have skip_reason {reason_name}"))
-def verificar_skip_reason_cli(session: Session, instance_id: int, reason_name: str) -> None:
+def assert_skip_reason_cli(session: Session, instance_id: int, reason_name: str) -> None:
     """Verifica skip_reason da instância."""
     session.expire_all()
     instance = session.get(HabitInstance, instance_id)
@@ -151,7 +151,7 @@ def verificar_skip_reason_cli(session: Session, instance_id: int, reason_name: s
 
 
 @then(parsers.parse('HabitInstance {instance_id:d} should have skip_note "{note}"'))
-def verificar_skip_note_cli(session: Session, instance_id: int, note: str) -> None:
+def assert_skip_note_cli(session: Session, instance_id: int, note: str) -> None:
     """Verifica skip_note da instância."""
     session.expire_all()
     instance = session.get(HabitInstance, instance_id)
@@ -160,7 +160,7 @@ def verificar_skip_note_cli(session: Session, instance_id: int, note: str) -> No
 
 
 @then(parsers.parse("HabitInstance {instance_id:d} should have skip_note NULL"))
-def verificar_skip_note_null_cli(session: Session, instance_id: int) -> None:
+def assert_skip_note_null_cli(session: Session, instance_id: int) -> None:
     """Verifica que skip_note é None."""
     session.expire_all()
     instance = session.get(HabitInstance, instance_id)
@@ -169,7 +169,7 @@ def verificar_skip_note_null_cli(session: Session, instance_id: int) -> None:
 
 
 @then(parsers.parse("HabitInstance {instance_id:d} should have substatus {substatus_name}"))
-def verificar_substatus_cli(session: Session, instance_id: int, substatus_name: str) -> None:
+def assert_substatus_cli(session: Session, instance_id: int, substatus_name: str) -> None:
     """Verifica not_done_substatus da instância."""
     session.expire_all()
     instance = session.get(HabitInstance, instance_id)
@@ -178,9 +178,9 @@ def verificar_substatus_cli(session: Session, instance_id: int, substatus_name: 
     assert instance.not_done_substatus.name == substatus_name
 
 
-@then(parsers.parse("HabitInstance {instance_id:d} should have skip_reason NULL"))
-def verificar_skip_reason_null_cli(session: Session, instance_id: int) -> None:
-    """Verifica que skip_reason é None."""
+@then(parsers.parse("HabitInstance {instance_id:d} should have no skip_reason"))
+def assert_no_skip_reason_cli(session: Session, instance_id: int) -> None:
+    """Verifica que skip_reason é None (skip sem justificativa)."""
     session.expire_all()
     instance = session.get(HabitInstance, instance_id)
     assert instance is not None
