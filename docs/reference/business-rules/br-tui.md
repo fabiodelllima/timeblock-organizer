@@ -159,7 +159,7 @@ class DashboardScreen(Screen):
 
 ## BR-TUI-004: Global Keybindings (REVISADA 15/03/2026, EMENDADA 28/05/2026)
 
-**Descricao:** Keybindings padronizados em toda a aplicacao conforme ADR-037. Teclas simples sem modificador. CRUD contextual (n/e/x). Quick actions por panel (v/s/u/c/t). Uma acao = um binding.
+**Descrição:** Keybindings padronizados em toda a aplicação conforme ADR-037. Teclas simples sem modificador. CRUD contextual (n/e/x). Quick actions por panel (v/s/u/c/t). Uma ação = um binding.
 
 **Mapa de keybindings:**
 
@@ -170,9 +170,9 @@ GLOBAIS (app.py):
   ? .................... help overlay (toggle)
   Escape ............... fechar modal / fechar help / voltar ao Dashboard
 
-NAVEGACAO (intra-screen):
-  Tab .................. avancar entre panels
-  j / seta baixo ....... proximo item no panel focado
+NAVEGAÇÃO (intra-screen):
+  Tab .................. avançar entre panels
+  j / seta baixo ....... próximo item no panel focado
   i / seta cima ........ item anterior no panel focado
   Enter ................ ativar placeholder / selecionar item
 
@@ -185,7 +185,7 @@ CRUD (contextual ao panel focado):
 HABITS PANEL (quick actions):
   v .................... marcar done [MODAL de substatus - BR-TUI-022]
   s .................... skip [MODAL de SkipReason - BR-TUI-024]
-  t .................... iniciar timer para habito selecionado
+  t .................... iniciar timer para hábito selecionado
   u .................... undo (reverter para pending)
 
 TASKS PANEL (quick actions):
@@ -196,7 +196,7 @@ TASKS PANEL (quick actions):
 
 TIMER PANEL (quick actions):
   space ................ pausar / retomar timer
-  s .................... parar timer (stop - marca habito como done)
+  s .................... parar timer (stop - marca hábito como done)
   c .................... cancelar timer [MODAL]
 
 PROIBIDOS (reservados pelo OS - ADR-035):
@@ -205,12 +205,12 @@ PROIBIDOS (reservados pelo OS - ADR-035):
   Ctrl+D ............... EOF (nunca capturar)
 ```
 
-**Modal de confirmacao exigido em:**
+**Modal de confirmação exigido em:**
 
 - x (deletar item - ConfirmDialog)
-- c no timer panel (cancelar timer, descarta sessao - ConfirmDialog)
+- c no timer panel (cancelar timer, descarta sessão - ConfirmDialog)
 - v no habits panel (done manual - modal de substatus, BR-TUI-022)
-- v com timer ativo (notificacao com opcoes - BR-TUI-023)
+- v com timer ativo (notificação com opções - BR-TUI-023)
 - s no habits panel (skip - modal de SkipReason, BR-TUI-024)
 - Ctrl+Q (sair da TUI - ConfirmDialog, regra 16)
 
@@ -221,21 +221,21 @@ PROIBIDOS (reservados pelo OS - ADR-035):
 3. n/e/x sem modificador para CRUD - x sempre abre ConfirmDialog
 4. v e o binding de "concluir/done" - abre modal no habits, executa direto no tasks
 5. s e contextual: skip (habits), postpone/edit (tasks), stop (timer)
-6. t inicia timer para habito selecionado
+6. t inicia timer para hábito selecionado
 7. u e undo/reopen - reverte status em ambos os panels
 8. space e toggle de pause/resume exclusivo do timer panel
 9. c e cancelar - soft delete (tasks), cancel com ConfirmDialog (timer)
 10. Enter ativa placeholders (BR-TUI-013) ou seleciona item
-11. Acoes que alteram estado devem usar modal (ADR-038 D12)
-12. Ctrl+C, Ctrl+Z, Ctrl+D nunca sao capturados pela TUI
+11. Ações que alteram estado devem usar modal (ADR-038 D12)
+12. Ctrl+C, Ctrl+Z, Ctrl+D nunca são capturados pela TUI
 13. Help overlay (?) lista todos os keybindings - toggle
 14. Footer contextual (BR-TUI-007) exibe bindings conforme panel focado
 15. Modals respondem a Enter (confirmar) e Escape (cancelar)
 16. Ctrl+Q abre ConfirmDialog antes de encerrar; Enter confirma e encerra, Escape cancela e mantém a TUI aberta. O backup de shutdown roda ao acionar Ctrl+Q, independentemente da confirmação. Havendo timer ativo, a mensagem do modal o menciona.
 
-**Supersede:** Versao 08/03/2026. Removidos todos os Ctrl+/Shift+ (ADR-037).
+**Supersede:** Versão 08/03/2026. Removidos todos os Ctrl+/Shift+ (ADR-037).
 
-**Referencia:** ADR-037, ADR-038
+**Referência:** ADR-037, ADR-038
 
 **Testes:**
 
@@ -1246,9 +1246,9 @@ src/timeblock/tui/styles/
 
 **Regras:**
 
-1. `t` no panel de habitos com habito selecionado inicia timer via TimerService.start_timer (ADR-037)
+1. `t` no panel de hábitos com hábito selecionado inicia timer via TimerService.start_timer (ADR-037)
 2. `space` no panel de timer com timer ativo alterna entre pause e resume (ADR-037)
-3. `s` no panel de timer para o timer e salva a sessao via TimerService.stop_timer (ADR-037)
+3. `s` no panel de timer para o timer e salva a sessão via TimerService.stop_timer (ADR-037)
 4. `c` no panel de timer abre ConfirmDialog e, se confirmado, cancela via TimerService.cancel_timer (ADR-037)
 5. TimerPanel atualiza elapsed a cada segundo via set_interval do Textual
 6. TimerPanel exibe nome do hábito associado ao timer ativo
@@ -1279,18 +1279,18 @@ src/timeblock/tui/styles/
 
 ### BR-TUI-022: Done Manual via Modal (NOVA 15/03/2026)
 
-**Descricao:** Ao marcar habito como done sem timer ativo, o sistema abre modal para o usuario selecionar substatus, aderindo a BR-HABITINSTANCE-002.
+**Descrição:** Ao marcar hábito como done sem timer ativo, o sistema abre modal para o usuário selecionar substatus, aderindo a BR-HABITINSTANCE-002.
 
-**Decisao arquitetural:** ADR-038 D3
+**Decisão arquitetural:** ADR-038 D3
 
 **Regras:**
 
-1. `v` em habito PENDING sem timer ativo e sem TimeLog DONE existente abre modal
+1. `v` em hábito PENDING sem timer ativo e sem TimeLog DONE existente abre modal
 2. Modal exibe Select com DoneSubstatus: FULL, PARTIAL, OVERDONE, EXCESSIVE
 3. Default pre-selecionado: FULL
 4. Enter confirma, Esc cancela sem alterar status
-5. Apos confirmacao: `status=DONE`, `done_substatus=<selecionado>`
-6. `v` em habito PENDING com TimeLog DONE existente abre modal de restauracao (BR-HABITINSTANCE-007 regra 5)
+5. Após confirmação: `status=DONE`, `done_substatus=<selecionado>`
+6. `v` em hábito PENDING com TimeLog DONE existente abre modal de restauração (BR-HABITINSTANCE-007 regra 5)
 
 **Testes:**
 
@@ -1302,19 +1302,19 @@ src/timeblock/tui/styles/
 
 ---
 
-### BR-TUI-023: Notificacao de Timer Ativo no Done (NOVA 15/03/2026)
+### BR-TUI-023: Notificação de Timer Ativo no Done (NOVA 15/03/2026)
 
-**Descricao:** Ao pressionar `v` em habito com timer ativo, o sistema abre modal informativo com opcoes.
+**Descrição:** Ao pressionar `v` em hábito com timer ativo, o sistema abre modal informativo com opções.
 
-**Decisao arquitetural:** ADR-038 D4
+**Decisão arquitetural:** ADR-038 D4
 
 **Regras:**
 
-1. `v` em habito com status `running` abre modal
-2. Modal: "Timer ativo para este habito"
-3. Opcoes: [Parar timer e marcar done] / [Cancelar]
+1. `v` em hábito com status `running` abre modal
+2. Modal: "Timer ativo para este hábito"
+3. Opções: [Parar timer e marcar done] / [Cancelar]
 4. "Parar timer e marcar done": executa `TimerService.stop_timer`
-5. "Cancelar": fecha modal, nenhuma acao
+5. "Cancelar": fecha modal, nenhuma ação
 
 **Testes:**
 
@@ -1353,17 +1353,17 @@ src/timeblock/tui/styles/
 
 ### BR-TUI-025: Fluxo Routine-first (NOVA 15/03/2026)
 
-**Descrição:** Quando o usuario tenta criar hábito sem rotina ativa, o sistema redireciona para criação de rotina com mensagem explicativa.
+**Descrição:** Quando o usuário tenta criar hábito sem rotina ativa, o sistema redireciona para criação de rotina com mensagem explicativa.
 
 **Decisão arquitetural:** ADR-038 D9
 
 **Regras:**
 
 1. `n` com habits panel focado e sem rotina ativa abre FormModal de criação de rotina
-2. FormModal exibe mensagem: "Crie uma rotina primeiro para adicionar habitos"
+2. FormModal exibe mensagem: "Crie uma rotina primeiro para adicionar hábitos"
 3. Após criar rotina, retorna ao dashboard
 4. `n` sem panel focado e sem rotina ativa: mesmo comportamento
-5. `n` com tasks panel focado não depende de rotina (tasks sao independentes)
+5. `n` com tasks panel focado não depende de rotina (tasks são independentes)
 
 **Testes:**
 
@@ -1373,19 +1373,19 @@ src/timeblock/tui/styles/
 
 ---
 
-### BR-TUI-026: Limites de Exibicao nos Panels (NOVA 15/03/2026)
+### BR-TUI-026: Limites de Exibição nos Panels (NOVA 15/03/2026)
 
-**Descricao:** Panels do dashboard exibem numero limitado de items para manter legibilidade.
+**Descrição:** Panels do dashboard exibem número limitado de items para manter legibilidade.
 
-**Decisao arquitetural:** ADR-038 D10
+**Decisão arquitetural:** ADR-038 D10
 
 **Regras:**
 
-1. HabitsPanel exibe no maximo 12 habitos
-2. TasksPanel exibe no maximo 9 tasks
-3. Limites sao fixos (constantes no codigo)
-4. Items excedentes sao acessiveis via screens dedicadas (Habits Screen, Tasks Screen)
-5. Limites serao configuraveis em screen de configuracoes futura
+1. HabitsPanel exibe no máximo 12 hábitos
+2. TasksPanel exibe no máximo 9 tasks
+3. Limites são fixos (constantes no código)
+4. Items excedentes são acessíveis via screens dedicadas (Habits Screen, Tasks Screen)
+5. Limites serão configuráveis em screen de configurações futura
 
 **Testes:**
 
