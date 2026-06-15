@@ -1326,18 +1326,19 @@ src/timeblock/tui/styles/
 
 ### BR-TUI-024: Skip com Modal de SkipReason (NOVA 15/03/2026)
 
-**Descricao:** Ao pular habito via `s`, o sistema sempre abre modal para categorizacao do skip, aderindo a BR-SKIP-001.
+**Descrição:** Ao pular hábito via `s`, o sistema sempre abre modal para categorização do skip, aderindo a BR-SKIP-001.
 
-**Decisao arquitetural:** ADR-038 D6
+**Decisão arquitetural:** ADR-038 D6
 
 **Regras:**
 
-1. `s` em habito PENDING abre modal com Select de SkipReason
-2. Opcoes: HEALTH, WORK, FAMILY, TRAVEL, WEATHER, LACK_RESOURCES, EMERGENCY, OTHER
+1. `s` em hábito PENDING abre modal com Select de SkipReason
+2. Opções: as 8 categorias (HEALTH, WORK, FAMILY, TRAVEL, WEATHER, LACK_RESOURCES, EMERGENCY, OTHER) e a opção "Sem justificativa"
 3. Campo opcional de nota (texto livre, max 500 chars)
-4. Enter confirma skip com razao selecionada
+4. Enter confirma skip com razão selecionada
 5. Esc cancela sem alterar status
-6. Apos confirmacao: `status=NOT_DONE`, `not_done_substatus=SKIPPED_JUSTIFIED`, `skip_reason=<selecionado>`
+6. Após confirmação com categoria: `status=NOT_DONE`, `not_done_substatus=SKIPPED_JUSTIFIED`, `skip_reason=<selecionado>`
+7. Após confirmação com "Sem justificativa": `status=NOT_DONE`, `not_done_substatus=SKIPPED_UNJUSTIFIED`, `skip_reason=None`
 
 **Testes:**
 
@@ -1346,22 +1347,23 @@ src/timeblock/tui/styles/
 - `test_br_tui_024_note_optional`
 - `test_br_tui_024_esc_cancels`
 - `test_br_tui_024_confirm_sets_skip_reason`
+- `test_br_tui_024_unjustified_sets_no_reason`
 
 ---
 
 ### BR-TUI-025: Fluxo Routine-first (NOVA 15/03/2026)
 
-**Descricao:** Quando o usuario tenta criar habito sem rotina ativa, o sistema redireciona para criacao de rotina com mensagem explicativa.
+**Descrição:** Quando o usuario tenta criar hábito sem rotina ativa, o sistema redireciona para criação de rotina com mensagem explicativa.
 
-**Decisao arquitetural:** ADR-038 D9
+**Decisão arquitetural:** ADR-038 D9
 
 **Regras:**
 
-1. `n` com habits panel focado e sem rotina ativa abre FormModal de criacao de rotina
+1. `n` com habits panel focado e sem rotina ativa abre FormModal de criação de rotina
 2. FormModal exibe mensagem: "Crie uma rotina primeiro para adicionar habitos"
-3. Apos criar rotina, retorna ao dashboard
+3. Após criar rotina, retorna ao dashboard
 4. `n` sem panel focado e sem rotina ativa: mesmo comportamento
-5. `n` com tasks panel focado nao depende de rotina (tasks sao independentes)
+5. `n` com tasks panel focado não depende de rotina (tasks sao independentes)
 
 **Testes:**
 
