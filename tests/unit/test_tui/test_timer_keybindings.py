@@ -19,6 +19,23 @@ class TimerTestApp(App):
         yield DashboardScreen(id="dashboard-view")
 
 
+async def _wait_until(pilot, predicate, max_cycles: int = 20) -> None:
+    """Avança o message pump até predicate() ser verdadeiro ou esgotar max_cycles.
+
+    Um único ``pilot.pause()`` após um press cede apenas um ciclo do message
+    pump, insuficiente para despachar a mensagem postada antes do assert sob a
+    carga do runner do CI (BR-TUI-021, issue #67). Aguardar até o estado
+    capturado ser observado — ou até um teto de ciclos — torna o teste
+    determinístico: o caso positivo retorna assim que a mensagem chega, e o
+    negativo esgota o teto com a lista ainda vazia, seguindo capaz de pegar uma
+    mensagem inesperada.
+    """
+    for _ in range(max_cycles):
+        await pilot.pause()
+        if predicate():
+            return
+
+
 class TestBRTUI021HabitsTimerStart:
     """BR-TUI-021: Shift+Enter em hábito pendente emite TimerStartRequest."""
 
@@ -45,7 +62,7 @@ class TestBRTUI021HabitsTimerStart:
             panel._set_item_count(1)
             app.set_focus(panel)
             await pilot.press("t")
-            await pilot.pause()
+            await _wait_until(pilot, lambda: received)
         assert received == [10]
 
     @pytest.mark.asyncio
@@ -70,7 +87,7 @@ class TestBRTUI021HabitsTimerStart:
             panel._set_item_count(0)
             app.set_focus(panel)
             await pilot.press("t")
-            await pilot.pause()
+            await _wait_until(pilot, lambda: received)
         assert received == []
 
 
@@ -106,7 +123,7 @@ class TestBRTUI021StopAndDone:
             panel._set_item_count(1)
             app.set_focus(panel)
             await pilot.press("v")
-            await pilot.pause()
+            await _wait_until(pilot, lambda: received_stop_done)
         assert received_stop_done == [20]
         assert received_done == []
 
@@ -139,7 +156,7 @@ class TestBRTUI021StopAndDone:
             panel._set_item_count(1)
             app.set_focus(panel)
             await pilot.press("v")
-            await pilot.pause()
+            await _wait_until(pilot, lambda: received_done)
         assert received_done == [30]
         assert received_stop_done == []
 
@@ -168,7 +185,7 @@ class TestBRTUI021TimerPanelKeys:
             panel.update_data({"id": 5, "status": "running", "elapsed": "01:30", "name": "T"})
             app.set_focus(panel)
             await pilot.press("space")
-            await pilot.pause()
+            await _wait_until(pilot, lambda: received)
         assert received == [5]
 
     @pytest.mark.asyncio
@@ -192,7 +209,7 @@ class TestBRTUI021TimerPanelKeys:
             panel.update_data({"id": 6, "status": "paused", "elapsed": "02:00", "name": "T"})
             app.set_focus(panel)
             await pilot.press("space")
-            await pilot.pause()
+            await _wait_until(pilot, lambda: received)
         assert received == [6]
 
     @pytest.mark.asyncio
@@ -216,7 +233,7 @@ class TestBRTUI021TimerPanelKeys:
             panel.update_data({"id": 7, "status": "running", "elapsed": "05:00", "name": "T"})
             app.set_focus(panel)
             await pilot.press("s")
-            await pilot.pause()
+            await _wait_until(pilot, lambda: received)
         assert received == [7]
 
     @pytest.mark.asyncio
@@ -240,7 +257,7 @@ class TestBRTUI021TimerPanelKeys:
             panel.update_data({"id": 8, "status": "running", "elapsed": "03:00", "name": "T"})
             app.set_focus(panel)
             await pilot.press("c")
-            await pilot.pause()
+            await _wait_until(pilot, lambda: received)
         assert received == [8]
 
     @pytest.mark.asyncio
@@ -270,5 +287,5 @@ class TestBRTUI021TimerPanelKeys:
             await pilot.press("space")
             await pilot.press("s")
             await pilot.press("c")
-            await pilot.pause()
+            await _wait_until(pilot, lambda: received)
         assert received == []
