@@ -18,7 +18,7 @@ repos:
         stages: [pre-push]
       - id: pytest-all
         name: pytest full suite (unit + integration + bdd + e2e)
-        entry: bash -c './venv/bin/python -m pytest tests/ -q --tb=short --ignore=tests/e2e/test_snapshots.py --ignore=tests/e2e/test_snapshot_cruds.py'
+        entry: bash -c './venv/bin/python -m pytest tests/ -q --tb=short'
         language: system
         pass_filenames: false
         always_run: true
