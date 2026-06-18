@@ -1,9 +1,9 @@
-"""E2E snapshot testing configuration.
+"""Configuração de testes de snapshot e2e.
 
-Custom snap_compare fixture using syrupy 5.x + Textual's pilot API,
-replacing the legacy pytest-textual-snapshot dependency.
+Fixture snap_compare customizada usando syrupy 5.x + a API pilot do Textual,
+substituindo a dependência legada pytest-textual-snapshot.
 
-The fixture preserves the same interface used by all existing tests:
+A fixture preserva a mesma interface usada por todos os testes existentes:
     assert snap_compare(app, terminal_size=(...), run_before=callback)
 """
 
@@ -13,6 +13,7 @@ import asyncio
 from typing import TYPE_CHECKING, Any
 
 import pytest
+from freezegun import freeze_time
 from syrupy.extensions.single_file import SingleFileSnapshotExtension
 
 if TYPE_CHECKING:
@@ -23,11 +24,35 @@ if TYPE_CHECKING:
     from textual.app import App
 
 
-class SVGSnapshotExtension(SingleFileSnapshotExtension):
-    """Syrupy extension that stores snapshots as individual .svg files.
+SNAPSHOT_FROZEN_DATETIME = "2025-06-16 09:00:00"
 
-    Overrides serialize to accept str from Textual's export_screenshot(),
-    since SingleFileSnapshotExtension expects bytes by default.
+
+@pytest.fixture(autouse=True)
+def _freeze_snapshot_clock(request: pytest.FixtureRequest):
+    """Congela o relógio nos testes de snapshot para render determinístico (#66).
+
+    Restrito aos módulos de snapshot: as fontes de "agora" do dashboard
+    (cabeçalho, loader, agenda, elapsed do timer) passam por
+    date.today()/datetime.now(), e o congelamento remove a variação diária.
+    Usa tick=True para o relógio avançar em tempo real a partir da data fixa:
+    sem isso o freezegun congela time.monotonic() e os timers do asyncio nunca
+    disparam, travando o pilot.pause() dos testes que abrem modais. Com tick,
+    data e minuto seguem fixos (o teste roda em milissegundos) e o elapsed do
+    timer trunca para o valor esperado. Demais testes e2e (com
+    freeze próprio ou dependentes de now real) ficam intactos. Ver ADR-059.
+    """
+    if "snapshot" not in request.module.__name__:
+        yield
+        return
+    with freeze_time(SNAPSHOT_FROZEN_DATETIME, tick=True):
+        yield
+
+
+class SVGSnapshotExtension(SingleFileSnapshotExtension):
+    """Extensão do syrupy que armazena snapshots como arquivos .svg individuais.
+
+    Sobrescreve serialize para aceitar str do export_screenshot() do Textual,
+    já que SingleFileSnapshotExtension espera bytes por padrão.
     """
 
     _file_extension = "svg"
@@ -40,7 +65,7 @@ class SVGSnapshotExtension(SingleFileSnapshotExtension):
         include: Any = None,
         matcher: Any = None,
     ) -> SerializedData:
-        """Encode SVG string to bytes for single-file storage."""
+        """Codifica a string SVG em bytes para armazenamento em arquivo único."""
         if isinstance(data, str):
             return data.encode("utf-8")
         return super().serialize(data, exclude=exclude, include=include, matcher=matcher)
@@ -59,16 +84,16 @@ def _allow_color_for_snapshots(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.fixture
 def snapshot(snapshot: SnapshotAssertion) -> SnapshotAssertion:
-    """Configure syrupy to use SVG single-file snapshots."""
+    """Configura o syrupy para usar snapshots SVG em arquivo único."""
     return snapshot.use_extension(SVGSnapshotExtension)
 
 
 @pytest.fixture
 def snap_compare(snapshot: SnapshotAssertion):
-    """Drop-in replacement for pytest-textual-snapshot's snap_compare.
+    """Substituto direto do snap_compare do pytest-textual-snapshot.
 
-    Uses Textual's App.run_test() + export_screenshot() with syrupy
-    for snapshot comparison. Maintains identical call signature.
+    Usa App.run_test() + export_screenshot() do Textual com o syrupy
+    para a comparação de snapshot. Mantém a mesma assinatura de chamada.
     """
 
     def _compare(

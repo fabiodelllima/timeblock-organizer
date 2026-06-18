@@ -439,7 +439,7 @@ class TestDashboardStateSnapshots:
 
             timelog = TimeLog(
                 habit_instance_id=instance.id,
-                start_time=datetime.now(),
+                start_time=datetime.now() - timedelta(hours=1, minutes=25),
                 status=TimerStatus.RUNNING,
             )
             session.add(timelog)
