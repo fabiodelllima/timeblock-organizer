@@ -101,3 +101,7 @@ migrate_*.py
 *.tar.gz
 *.zip
 demo.cast
+
+# Structurizr Lite/Local
+docs/architecture/.structurizr/
+docs/architecture/workspace.json
