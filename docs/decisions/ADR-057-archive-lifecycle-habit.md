@@ -1,9 +1,8 @@
 # ADR-057: Archive Lifecycle para Habit
 
-- **Status:** Proposto
+- **Status:** Aceito
 - **Data:** 2026-05-01
-- **Decisores:** F. (proprietário do projeto)
-- **Issue de origem:** #61 (reescopada da Sessão 28)
+- **Issue de origem:** #61
 - **ADRs relacionados:** ADR-007 (Service Layer), ADR-022 (Pause Tracking Simplification), ADR-036 (Task Lifecycle)
 - **BRs relacionadas:** BR-HABIT-005 (Deleção de Habit — reescrita), BR-HABIT-006 (Archive Lifecycle — nova), BR-ROUTINE-006 (Soft Delete e Purge — precedente), BR-TASK-009 (Task lifecycle — precedente)
 
