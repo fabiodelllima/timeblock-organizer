@@ -331,9 +331,6 @@ class TestTaskCrudSnapshots:
 class TestDashboardStateSnapshots:
     """Snapshots do dashboard em estados resultantes de operações."""
 
-    @pytest.mark.skip(
-        reason="Snapshot flaky por acoplamento com relógio do sistema — ref issue #54"
-    )
     def test_snapshot_dashboard_habit_done(self, snap_compare) -> None:
         """Dashboard com hábito marcado como done (FULL, 100%)."""
         with get_engine_context() as engine, Session(engine) as session:
