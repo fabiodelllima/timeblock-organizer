@@ -9,16 +9,20 @@
 
 ### Added
 
-- BR-HABIT-006: Archive lifecycle for Habit (archive/purge/restore semantics with table of operations × surfaces (CLI/TUI), three Gherkin scenarios, nine unit test methods specified)
+- Archive lifecycle for Habit — `delete_habit` now soft-deletes via an `archived_at` timestamp; a dedicated `purge_habit` performs the administrative hard delete (CLI `habit purge <id>` with literal "purge" confirmation, listing the TimeLogs/instances it will destroy); `restore_habit` reverses an archive; `habit list --archived` lists archived habits. Schema migration `migration_004_habit_archive` (idempotent `ALTER TABLE ADD COLUMN` via `PRAGMA table_info`). Standard listings and `HabitInstanceService.generate_instances` exclude archived habits. Preserves HabitInstance and TimeLog history, the core of the product. Implements BR-HABIT-005 (rewritten) and BR-HABIT-006 (new). (Closes #61)
+- `habit skip` justification flags — `--reason` (justified skip, optionally with `--note`) and `--unjustified` (deliberate skip without justification), mutually exclusive; the distinction feeds adherence metrics that previously could not tell an intentional skip from a missing record. (ADR-058)
+- C4 model in Structurizr DSL (`docs/architecture/workspace.dsl`) — versionable canonical source for the architecture views.
 - ADR-056: Selective adoption of Object Calisthenics
-- ADR-057: Archive Lifecycle for Habit — `delete_habit` changes semantics to soft delete via `archived_at` field; hard delete moves to dedicated `purge_habit` (CLI-only with literal "purge" confirmation); `restore_habit` reverses archive
+- ADR-057: Archive Lifecycle for Habit (Accepted; implementation errata 2026-06-05)
+- ADR-058: `habit skip` reason/unjustified CLI flags
+- ADR-059: Snapshot clock determinism
 - DT-075: Phantom BR-EVENT-002 vs BR-REORDER-XXX nomenclature drift (planned for v1.7.5)
 - DT-076: TimerScreen placeholder with 5 TODOs to TimerService (planned for v1.8.0)
 - DT-077: Historical drift `__version__` 0.1.0 vs pyproject.toml — resolved retroactively in v1.7.3
 
 ### Changed
 
-- BR-HABIT-005: Rewritten to reflect new semantics where `delete_habit` archives instead of hard-deleting, preserving HabitInstance and TimeLog history
+- `HabitService.delete_habit` semantics — archives (`archived_at = datetime.now()`, naive local, per BR-TASK-009 convention) instead of hard-deleting; `get_habit` does not filter archived habits (administrative inspection). (BR-HABIT-005)
 - `roadmap.md` bumped to v10.0.0 absorbing v1.7.2 and v1.7.3, current metrics (1.402 tests, 120 BRs, 52 active ADRs)
 - `sprints.md` v8.0.0 marked as `[HISTORICAL]` — operational tracking migrated to GitLab Issues as Single Source of Truth
 - `technical-debt.md` bumped to v2.34.0 (DT-074 resolved, DT-075/076/077 added, alignment with current roadmap)
@@ -26,12 +30,14 @@
 
 ### Fixed
 
+- E2E snapshot determinism — an autouse fixture restricted to the snapshot modules freezes the clock with `freeze_time(..., tick=True)`; snapshots are back in the pre-push and CI gates (`--ignore` removed). `tick=True` keeps `time.monotonic()` advancing so asyncio still schedules modal transitions under the freeze, while date and minute stay fixed. (ADR-059, closes #66)
+- Flaky TUI keybinding tests (BR-TUI-021) — the single post-event `pilot.pause()` is replaced by a `_wait_until` polling helper that pumps the message loop until the predicate holds or a cycle cap is reached, deterministic on both fast and CI-contended runners. (Closes #67)
 - DT-074: BRs and Humble Objects without test coverage — closed in v1.7.2; documented as resolved
 - Gitflow technical debt: `main` had been frozen at v1.7.2 since mid-April while `develop` accumulated v1.7.3 + Sessão 29 housekeeping. Synchronization performed without release-cut as a transitional sync; next tag will be v1.8.0 when archive lifecycle ships. (Refs #64)
 
 ### Notes
 
-- Implementation of BR-HABIT-006 (schema migration `migration_004_habit_archive`, service methods, CLI commands, tests) is planned for v1.8.0 — see `docs/wiki/Session-29-Implementation-Plan-Habit-Archive.md` (gitignored)
+- Archive lifecycle (BR-HABIT-006) is implemented and merged to `develop`; the next release tag will be **v1.8.0**. Implementation plan retained at `docs/wiki/Session-29-Implementation-Plan-Habit-Archive.md` (gitignored).
 - v1.8.0 will additionally include namespace rename `src/timeblock/` → `src/atomvs/` (ADR-045/050) and Agenda/Sidebar redesign (ADR-041/042)
 
 ---
