@@ -123,7 +123,7 @@ class TimerPanel(Static):
         for row in art:
             lines.append(f"    [bold {color}]{row}[/bold {color}]")
         lines.append("")
-        lines.append(f"    [{color}]{icon} {label}[/{color}]  {name}")
+        lines.append(f"    [{color}]{icon} {label}[/{color}] · {name}")
         return lines
 
     def _build_idle_lines(self) -> list[str]:
