@@ -33,6 +33,20 @@ from timeblock.tui.widgets.agenda_panel import AgendaPanel
 from timeblock.tui.widgets.habits_panel import HabitsPanel
 from timeblock.tui.widgets.tasks_panel import TasksPanel
 
+# Determinismo do snapshot do timer ativo (follow-up do #66): o loader
+# calcula o elapsed como now() - start_time. Sob a fixture autouse com
+# tick=True — necessaria para que os timers do dashboard (set_interval/
+# set_timer) nao pendurem o asyncio —, now() avanca em tempo real e um
+# render lento assa um segundo diferente do render rapido. Congelamos
+# apenas o now() do loader, sem tocar em time.monotonic().
+_TIMER_FIXED_NOW = datetime(2025, 6, 16, 9, 0, 0)
+
+
+class _FixedNowDatetime(datetime):
+    @classmethod
+    def now(cls, tz=None):  # type: ignore[override]
+        return _TIMER_FIXED_NOW
+
 
 @pytest.fixture(autouse=True)
 def _isolated_snapshot_db(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -404,7 +418,9 @@ class TestDashboardStateSnapshots:
             terminal_size=(120, 40),
         )
 
-    def test_snapshot_dashboard_timer_running(self, snap_compare) -> None:
+    def test_snapshot_dashboard_timer_running(
+        self, snap_compare, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Dashboard com timer ativo em hábito."""
         with get_engine_context() as engine, Session(engine) as session:
             routine = Routine(name="Rotina Matinal", is_active=True)
@@ -436,12 +452,13 @@ class TestDashboardStateSnapshots:
 
             timelog = TimeLog(
                 habit_instance_id=instance.id,
-                start_time=datetime.now() - timedelta(hours=1, minutes=25),
+                start_time=_TIMER_FIXED_NOW - timedelta(hours=1, minutes=25),
                 status=TimerStatus.RUNNING,
             )
             session.add(timelog)
             session.commit()
 
+        monkeypatch.setattr("timeblock.tui.screens.dashboard.loader.datetime", _FixedNowDatetime)
         assert snap_compare(
             _make_app(),
             terminal_size=(120, 40),
