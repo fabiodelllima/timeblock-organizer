@@ -1,6 +1,6 @@
 # ADR-060: Canonicalização de XML nas snapshots SVG
 
-- **Status:** Proposto
+- **Status:** Aceito
 - **Data:** 2026-07-04
 - **Issue de origem:** #69
 - **ADRs relacionados:** ADR-059 (Snapshot Clock Determinism — trata determinismo de relógio; este trata determinismo de formatação)
