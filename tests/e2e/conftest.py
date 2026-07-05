@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 from freezegun import freeze_time
+from svg_canonical import canonicalize_svg
 from syrupy.extensions.single_file import SingleFileSnapshotExtension
 
 if TYPE_CHECKING:
@@ -55,7 +56,7 @@ class SVGSnapshotExtension(SingleFileSnapshotExtension):
     já que SingleFileSnapshotExtension espera bytes por padrão.
     """
 
-    _file_extension = "svg"
+    file_extension = "svg"
 
     def serialize(
         self,
@@ -67,7 +68,7 @@ class SVGSnapshotExtension(SingleFileSnapshotExtension):
     ) -> SerializedData:
         """Codifica a string SVG em bytes para armazenamento em arquivo único."""
         if isinstance(data, str):
-            return data.encode("utf-8")
+            return canonicalize_svg(data).encode("utf-8")
         return super().serialize(data, exclude=exclude, include=include, matcher=matcher)
 
 
