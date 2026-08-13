@@ -13,7 +13,6 @@ frozenlist==1.8.0
 gherkin-official==29.0.0
 greenlet==3.4.0
 idna==3.15
-urllib3>=2.7.0  # CVE PYSEC-2026-141/142 (transitiva via requests)
 iniconfig==2.3.0
 Jinja2==3.1.6
 librt==0.8.1
@@ -59,4 +58,5 @@ types-python-dateutil==2.9.0.20260408
 typing-inspection==0.4.2
 typing_extensions==4.15.0
 uc-micro-py==2.0.0
+urllib3==2.7.0
 yarl==1.23.0
