@@ -5,7 +5,7 @@ aiosignal==1.4.0
 annotated-doc==0.0.4
 annotated-types==0.7.0
 attrs==26.1.0
-click==8.3.2
+click==8.3.3
 coverage==7.13.5
 execnet==2.1.2
 freezegun==1.5.5
