@@ -153,7 +153,7 @@ def is_overdue(self) -> bool:
 **Comando:**
 
 ```bash
-habit edit INSTANCE_ID --start 08:00 --end 09:30
+habit adjust INSTANCE_ID --start 08:00 --end 09:30
 ```
 
 **Comportamento:**
@@ -161,11 +161,14 @@ habit edit INSTANCE_ID --start 08:00 --end 09:30
 - Novo horário aplicado apenas àquela instância
 - Outras instâncias mantêm horário do template
 - Não afeta Habit (template)
+- Horário planejado preservado em `original_scheduled_*` (BR-HABITINSTANCE-008)
 
 **Testes:**
 
 - `test_br_habitinstance_005_edit_single`
 - `test_br_habitinstance_005_preserves_template`
+
+---
 
 ### BR-HABITINSTANCE-006: Listagem de Instâncias
 
@@ -217,3 +220,33 @@ habit edit INSTANCE_ID --start 08:00 --end 09:30
 - `test_br_habitinstance_007_undo_preserves_timelog`
 - `test_br_habitinstance_007_redone_detects_timelog`
 - `test_br_habitinstance_007_redone_restores_substatus`
+
+---
+
+### BR-HABITINSTANCE-008: Preservação do Horário Planejado (NOVA 14/08/2026)
+
+**Descrição:** A HabitInstance distingue horário planejado de horário efetivo. O ajuste altera apenas o efetivo, e a divergência entre plano e execução passa a ser consultável em vez de destruída no momento do registro.
+
+**Decisão arquitetural:** ADR-036 (precedente de BR-TASK-008, aplicado a outro agregado sem alterar a decisão)
+
+**Regras:**
+
+1. `scheduled_start` e `scheduled_end` significam horário efetivo
+2. `original_scheduled_start` e `original_scheduled_end` guardam o horário planejado
+3. `generate_instances` fixa o planejado a partir do template do Habit
+4. `adjust_instance_time` captura o valor corrente em `original_*` quando encontra `None`, antes de sobrescrever — o primeiro ajuste é o último instante em que o horário pré-ajuste ainda é conhecido
+5. Uma vez preenchido, `original_*` nunca é reescrito
+6. `adjustment_count` incrementa apenas quando o horário muda de fato; ajuste para os valores já vigentes não incrementa
+7. A migração 005 faz backfill igualando `original_*` ao horário corrente das linhas existentes
+
+**Nulabilidade:** os campos `original_*` são nuláveis no modelo, ao contrário do precedente `Task.original_scheduled_datetime`. O motivo é a existência de cerca de 90 construções diretas de `HabitInstance` na suíte, que campos obrigatórios quebrariam. Como `table=True` desativa a validação do Pydantic, a invariante da regra 5 vive na camada de service.
+
+**Assimetria conhecida:** `adjustment_count` é declarado `int` não-nulável no modelo, mas o `ALTER TABLE ADD COLUMN ... INTEGER DEFAULT 0` deixa a coluna nulável no schema SQLite. O backfill da migração e o default do modelo cobrem os dois caminhos de escrita, de modo que `None` não é alcançável no fluxo real. É a mesma divergência que `Task` carrega desde a migração 002.
+
+**Testes:**
+
+- `test_br_habitinstance_008_adjust_preserves_original`
+- `test_br_habitinstance_008_original_is_immutable`
+- `test_br_habitinstance_008_count_increments`
+- `test_br_habitinstance_008_noop_does_not_increment`
+- `test_br_habitinstance_008_generate_populates_original`
