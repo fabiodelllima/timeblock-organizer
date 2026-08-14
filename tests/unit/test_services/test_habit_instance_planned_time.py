@@ -72,7 +72,9 @@ def habit_with_instance(session: Session) -> HabitInstance:
 class TestPlannedTimePreservation:
     """Tests for BR-HABITINSTANCE-008: planned time survives adjustment."""
 
-    def test_adjust_preserves_original_time(self, habit_with_instance: HabitInstance) -> None:
+    def test_br_habitinstance_008_adjust_preserves_original(
+        self, habit_with_instance: HabitInstance
+    ) -> None:
         """Adjusting the effective time leaves the planned time untouched.
 
         The original values are captured on first adjustment when absent, since
@@ -86,7 +88,7 @@ class TestPlannedTimePreservation:
         assert updated.original_scheduled_start == time(7, 0)
         assert updated.original_scheduled_end == time(8, 0)
 
-    def test_second_adjust_does_not_overwrite_original(
+    def test_br_habitinstance_008_original_is_immutable(
         self, habit_with_instance: HabitInstance
     ) -> None:
         """Once captured, the planned time is immutable across further adjustments."""
@@ -97,7 +99,7 @@ class TestPlannedTimePreservation:
         assert updated.original_scheduled_start == time(7, 0)
         assert updated.original_scheduled_end == time(8, 0)
 
-    def test_adjust_increments_adjustment_count(
+    def test_br_habitinstance_008_count_increments(
         self, habit_with_instance: HabitInstance
     ) -> None:
         """Each effective time change increments the counter."""
@@ -110,14 +112,16 @@ class TestPlannedTimePreservation:
         )
         assert second.adjustment_count == 2
 
-    def test_noop_adjust_does_not_increment(self, habit_with_instance: HabitInstance) -> None:
+    def test_br_habitinstance_008_noop_does_not_increment(
+        self, habit_with_instance: HabitInstance
+    ) -> None:
         """Adjusting to the values already in place does not inflate the counter."""
         updated, _ = HabitInstanceService.adjust_instance_time(
             habit_with_instance.id, time(7, 0), time(8, 0)
         )
         assert updated.adjustment_count == 0
 
-    def test_generate_populates_original_time(self, session: Session) -> None:
+    def test_br_habitinstance_008_generate_populates_original(self, session: Session) -> None:
         """generate_instances fixes the planned time from the habit template."""
         routine = Routine(name="Generate Routine")
         session.add(routine)
