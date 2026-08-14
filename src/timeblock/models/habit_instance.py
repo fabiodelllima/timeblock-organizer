@@ -34,6 +34,12 @@ class HabitInstance(SQLModel, table=True):
     skip_reason: SkipReason | None = Field(default=None)
     skip_note: str | None = Field(default=None)
     completion_percentage: int | None = Field(default=None)
+
+    # BR-HABITINSTANCE-008: horário planejado preservado (None em linhas legadas,
+    # capturado no primeiro ajuste)
+    original_scheduled_start: time | None = Field(default=None)
+    original_scheduled_end: time | None = Field(default=None)
+    adjustment_count: int = Field(default=0)
     habit: Optional["Habit"] = Relationship(back_populates="instances")
 
     @property
