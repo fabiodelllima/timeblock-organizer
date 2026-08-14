@@ -122,6 +122,8 @@ class HabitInstanceService:
                             date=current,
                             scheduled_start=habit.scheduled_start,
                             scheduled_end=habit.scheduled_end,
+                            original_scheduled_start=habit.scheduled_start,
+                            original_scheduled_end=habit.scheduled_end,
                             status=Status.PENDING,
                         )
                         sess.add(instance)
@@ -184,6 +186,11 @@ class HabitInstanceService:
 
             time_changed = False
 
+            if instance.original_scheduled_start is None:
+                instance.original_scheduled_start = instance.scheduled_start
+            if instance.original_scheduled_end is None:
+                instance.original_scheduled_end = instance.scheduled_end
+
             if new_start is not None and new_start != instance.scheduled_start:
                 instance.scheduled_start = new_start
                 time_changed = True
@@ -193,6 +200,7 @@ class HabitInstanceService:
                 time_changed = True
 
             if time_changed:
+                instance.adjustment_count += 1
                 logger.info(
                     f"Horário ajustado para instance_id={instance_id}, "
                     f"novo horário={instance.scheduled_start}-{instance.scheduled_end}"
