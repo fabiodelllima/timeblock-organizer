@@ -21,6 +21,7 @@ MIGRATIONS: list[tuple[str, str]] = [
     ("002", "timeblock.database.migrations.migration_002_task_lifecycle"),
     ("003", "timeblock.database.migrations.migration_003_best_streak"),
     ("004", "timeblock.database.migrations.migration_004_habit_archive"),
+    ("005", "timeblock.database.migrations.migration_005_habitinstance_planned_time"),
 ]
 
 
